@@ -454,10 +454,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     </div>
     <div id="acctBox" style="display:none">
       <h3>2 · Your profile</h3>
+      <div class="mut" style="margin-bottom:8px">Pick any ID and password. First time on a device: <b>Create account</b>. Already have one: <b>Sign in</b> with the same ID and password to pull your progress down. No email needed — but that also means there is no password reset, so use something you will remember.</div>
       <div id="acctSignedOut">
         <div class="frm">
-          <div><label>Email</label><input id="acctEmail" type="email" style="width:220px"></div>
-          <div><label>Password</label><input id="acctPw" type="password" style="width:180px"></div>
+          <div><label>ID</label><input id="acctEmail" type="text" autocomplete="username" placeholder="e.g. matthew" style="width:200px"></div>
+          <div><label>Password</label><input id="acctPw" type="password" autocomplete="current-password" placeholder="6+ characters" style="width:180px"></div>
           <div><button class="btn" onclick="doAuth('in')">Sign in</button></div>
           <div><button class="btn2" onclick="doAuth('up')">Create account</button></div>
         </div>
@@ -507,7 +508,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v2.0';
+const BUILD='v2.1';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -829,6 +830,20 @@ async function refreshSession(){
     return true;
   }catch(e){return false}
 }
+// Users sign in with a plain ID. Supabase Auth needs an email, so we map
+// "matthew" → "matthew@cadence.example.com" internally. example.com is RFC-reserved
+// and never routable, so no real mail is ever involved. An input containing "@"
+// is treated as a real email and passed through unchanged.
+const IDDOMAIN='@cadence.example.com';
+function idToEmail(id){
+  const s=String(id).trim();
+  if(s.includes('@'))return s.toLowerCase();
+  return s.toLowerCase().replace(/[^a-z0-9._-]/g,'')+IDDOMAIN;
+}
+function emailToId(em){
+  const s=String(em||'');
+  return s.endsWith(IDDOMAIN)?s.slice(0,-IDDOMAIN.length):s;
+}
 async function authCall(kind,email,pw){
   const c=cloudCfg();if(!c)throw new Error('Add your Supabase URL and anon key first.');
   const path=kind==='up'?'/auth/v1/signup':'/auth/v1/token?grant_type=password';
@@ -881,12 +896,19 @@ function saveCloudCfg(){
   toast('Cloud configured');renderAccount();
 }
 async function doAuth(kind){
-  const email=document.getElementById('acctEmail').value.trim(),pw=document.getElementById('acctPw').value;
-  if(!email||!pw)return alert('Enter an email and password.');
+  const raw=document.getElementById('acctEmail').value.trim(),pw=document.getElementById('acctPw').value;
+  if(!raw||!pw)return alert('Enter an ID and password.');
+  if(pw.length<6)return alert('Password must be at least 6 characters.');
+  const email=idToEmail(raw);
   const st=document.getElementById('acctStatus');st.textContent='working…';
   try{await authCall(kind,email,pw);st.textContent='signed in';renderAccount();await cloudPull();
-    popup('SYNCED','profile linked · '+email);ding('ok');
-  }catch(e){st.textContent=e.message}
+    popup('SYNCED','profile linked · '+emailToId(email));ding('ok');
+  }catch(e){
+    let m=e.message||'sign-in failed';
+    if(/invalid login/i.test(m))m='ID or password not recognized. New here? Use Create account.';
+    if(/already registered|already been/i.test(m))m='That ID is taken — use Sign in instead.';
+    st.textContent=m;
+  }
 }
 function signOut(){setSess(null);syncBadge('off','b');renderAccount();toast('Signed out')}
 function renderAccount(){
@@ -897,7 +919,7 @@ function renderAccount(){
   acctBox.style.display=c?'block':'none';
   document.getElementById('acctSignedOut').style.display=s?'none':'block';
   document.getElementById('acctSignedIn').style.display=s?'block':'none';
-  if(s)document.getElementById('acctWho').textContent=s.email||'signed in';
+  if(s)document.getElementById('acctWho').textContent=emailToId(s.email)||'signed in';
 }
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function parseD(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}

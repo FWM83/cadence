@@ -34,17 +34,21 @@ With it on, each new user must click a confirmation link before their first sign
 ## 4. Get your two values
 **Project Settings → API**:
 - **Project URL** → e.g. `https://abcdefgh.supabase.co`
-- **anon / public** key → the long `eyJhbGci...` string
+- **Publishable key** → starts with `sb_publishable_...` (this replaced the old `anon` key)
 
-⚠️ Use the **anon/public** key, never the `service_role` key. The anon key is meant to be
+⚠️ Use the **Publishable** key, never the **Secret** key. Publishable keys are meant to be
 embedded in client apps; RLS is what protects the data.
 
 ## 5. Connect Cadence
 In the app: **Settings → Cloud sync & profile** → paste the URL and anon key → **Save**.
-Then **Create account** with your email + password. Repeat on your phone (same email/password)
-and both devices will share one profile.
+Then **Create account** with any **ID + password** (no email needed). Repeat on your phone with the
+same ID and password and both devices share one profile.
 
-To add other people: they just tap **Create account** with their own email. Each gets a
+Note: IDs are mapped internally to `yourid@cadence.example.com` (a reserved, non-routable domain)
+because Supabase Auth is email-based. Since there is no real mailbox, there is **no password reset** —
+if someone forgets theirs, delete that user under **Authentication → Users** and have them re-create it.
+
+To add other people: they just tap **Create account** with their own ID. Each gets a
 private profile automatically — no admin work for you.
 
 ## How syncing behaves
