@@ -458,7 +458,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
       <div class="mut" style="margin-bottom:8px">Pick any ID and password. First time on a device: <b>Create account</b>. Already have one: <b>Sign in</b> with the same ID and password to pull your progress down. No email needed — but that also means there is no password reset, so use something you will remember.</div>
       <div id="acctSignedOut">
         <div class="frm">
-          <div><label>ID</label><input id="acctEmail" type="text" autocomplete="username" placeholder="e.g. matthew" style="width:200px"></div>
+          <div><label>ID</label><input id="acctEmail" type="text" autocomplete="username" placeholder="e.g. John" style="width:200px"></div>
           <div><label>Password</label><input id="acctPw" type="password" autocomplete="current-password" placeholder="6+ characters" style="width:180px"></div>
           <div><button class="btn" onclick="doAuth('in')">Sign in</button></div>
           <div><button class="btn2" onclick="doAuth('up')">Create account</button></div>
@@ -509,7 +509,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v2.2';
+const BUILD='v2.3';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1583,22 +1583,63 @@ function gradeSet(target){
   S.scores.sort((a,b)=>a.date<b.date?-1:1);save();renderScores();
 }
 
-// Today's knowledge check — scoped to what today's session covered
+// Draw n questions that the user has NOT seen recently, walking tiered pools in priority
+// order (today's material first, then the rest of this week's unit, then earlier units).
+// Only recycles once every question in the whole scope has been used.
+function pickFresh(pools,n){
+  S.usedQ=S.usedQ||{};
+  let used=Array.isArray(S.usedQ.quiz)?S.usedQ.quiz:[];
+  const out=[],seen=new Set();
+  const take=list=>{
+    const shuffled=[...list].sort(()=>Math.random()-.5);
+    for(const q of shuffled){if(out.length>=n)break;
+      if(seen.has(q.id))continue;out.push(q);seen.add(q.id)}
+  };
+  for(const pool of pools){if(out.length>=n)break;take(pool.filter(x=>!used.includes(x.id)))}
+  let recycled=false;
+  if(out.length<n){ // whole scope seen → clear scope history and go again
+    recycled=true;
+    const scopeIds=new Set([].concat(...pools).map(x=>x.id));
+    used=used.filter(id=>!scopeIds.has(id));
+    for(const pool of pools){if(out.length>=n)break;take(pool)}
+  }
+  S.usedQ.quiz=used.concat(out.map(x=>x.id)).slice(-500);
+  save();
+  return {set:out,recycled};
+}
+// Today's knowledge check — scoped by the 12-week plan: today's material first,
+// widening to this week's unit and previously-studied units so every regenerate is fresh.
+let qSetNo=0;
 function startTodayQuiz(){
   const w=curWeek()||1, dn=DAYS[new Date().getDay()];
-  let units,topics,note;
-  if(w>=11){units=[1,2,3,4,5,6,7,8,9,10];topics=null;note='Final review — everything is fair game.'}
-  else if(dn==='wed'){units=[];for(let u=1;u<=Math.min(w,10);u++)units.push(u);topics=null;note='Wednesday cumulative — all units studied so far (F1–F'+Math.min(w,10)+').'}
-  else{const u=Math.min(w,10);units=[u];topics=DAY_TOPIC[dn];
-    const names=(topics||[]).map(t=>TOPICS[u][t]).join(' + ');
-    note=(dn==='mon'||dn==='tue'||dn==='thu')?
-      'Scoped to tonight’s material only: '+names+'.':
-      'Whole unit F'+u+' — weekend consolidation.';}
-  const pool=poolFor(units,topics);
-  curSet={q:pickSet(pool,5),target:'q',scoreType:'Knowledge check',
-    unitLabel:units.length===1?'F'+units[0]:'Mixed'};
-  document.getElementById('qScope').textContent=units.length===1?'F'+units[0]+(topics&&topics.length<3?' · today only':''):'F1–F'+Math.max(...units);
-  document.getElementById('qScopeNote').textContent=note;
+  const uMax=Math.min(w,10);
+  let pools=[],scopeLbl='',note='';
+  if(w>=11){
+    pools=[poolFor([1,2,3,4,5,6,7,8,9,10],null)];
+    scopeLbl='F1–F10';note='Final review — everything you have covered is fair game.';
+  }else if(dn==='wed'){
+    const units=[];for(let u=1;u<=uMax;u++)units.push(u);
+    pools=[poolFor(units,null)];
+    scopeLbl=uMax>1?('F1–F'+uMax):'F1';
+    note='Wednesday cumulative — drawn from every unit studied so far'+(uMax>1?(' (F1–F'+uMax+')'):' (F1)')+'.';
+  }else{
+    const topics=DAY_TOPIC[dn]||null;
+    const prior=[];for(let u=1;u<uMax;u++)prior.push(u);
+    pools=[poolFor([uMax],topics),poolFor([uMax],null)];
+    if(prior.length)pools.push(poolFor(prior,null));
+    const names=(topics||[]).map(t=>TOPICS[uMax][t]).filter(Boolean).join(' + ');
+    scopeLbl='F'+uMax+(names?' · today':'');
+    note=(dn==='mon'||dn==='tue'||dn==='thu')
+      ? 'Tonight’s material first ('+names+'), then the rest of F'+uMax+(prior.length?', then earlier units.':'.')
+      : 'Whole unit F'+uMax+(prior.length?', widening to earlier units.':'.');
+  }
+  const {set,recycled}=pickFresh(pools,5);
+  qSetNo++;
+  curSet={q:set,target:'q',scoreType:'Knowledge check',unitLabel:'F'+uMax};
+  document.getElementById('qScope').textContent=scopeLbl+' · set '+qSetNo;
+  document.getElementById('qScopeNote').textContent=note+(recycled
+    ? ' — you have now seen every question in this scope, so these are repeats. Use the Knowledge Base tab for a wider pool.'
+    : ' All five are questions you have not seen yet.');
   renderQuiz('q',curSet.q);
   document.getElementById('quizCard').style.display='block';
   document.getElementById('quizCard').scrollIntoView({behavior:'smooth'});
