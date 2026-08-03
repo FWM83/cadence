@@ -433,7 +433,7 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 </div>
 
 <script>
-const BUILD='v1.2.1';
+const BUILD='v1.4';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -803,13 +803,23 @@ function celebrate(level,gold){
 }
 function toast(txt,big,neg){const el=document.createElement('div');el.className='xtoast'+(big?' big':'')+(neg?' neg':'');el.textContent=txt;
   el.style.left=Math.min(lastX,innerWidth-140)+'px';el.style.top=(lastY-10)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1000)}
-function popup(title,sub,gold){
+// Popup queue: one celebration on screen at a time. Each entry can carry its own fx
+// (confetti/sound) which fire only when ITS popup appears — so a level-up triggered by a
+// week-complete stays hidden until the week banner clears, then hits as a surprise.
+let popQ=[],popActive=false;
+function popup(title,sub,gold,fx){popQ.push({title,sub,gold,fx});pumpPop()}
+function pumpPop(){
+  if(popActive||!popQ.length)return;
+  popActive=true;
+  const it=popQ.shift();
   let w=document.getElementById('popWrap');
   if(!w){w=document.createElement('div');w.id='popWrap';document.body.appendChild(w)}
-  const b=document.createElement('div');b.className='popbox'+(gold?' gold':'');
-  b.innerHTML='<div class="t1">'+title+'</div>'+(sub?'<div class="t2">'+sub+'</div>':'');
+  const b=document.createElement('div');b.className='popbox'+(it.gold?' gold':'');
+  b.innerHTML='<div class="t1">'+it.title+'</div>'+(it.sub?'<div class="t2">'+it.sub+'</div>':'');
   w.appendChild(b);
-  setTimeout(()=>b.classList.add('out'),1900);setTimeout(()=>b.remove(),2350);
+  if(it.fx)try{it.fx()}catch(e){}
+  setTimeout(()=>b.classList.add('out'),2050);
+  setTimeout(()=>{b.remove();popActive=false;setTimeout(pumpPop,220)},2520);
 }
 let AC=null;
 function actx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();return AC}
@@ -901,7 +911,7 @@ function renderXp(){
   S.xp=computeXp();
   const lv=Math.min(Math.floor(S.xp/600),LVLS.length-1);
   if(S.lvlSeen===undefined)S.lvlSeen=lv;                      // first load: no popup storm
-  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv],true);celebrate('max');ding('levelup')}
+  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv],true,()=>{celebrate('max');ding('levelup')})}
   S.lvlSeen=lv;save();
   document.getElementById('lvlPill').textContent='Lv '+(lv+1)+' · '+LVLS[lv];
   document.getElementById('xpNum').textContent=S.xp+' XP';
@@ -938,7 +948,7 @@ function checkin(){
   S.checkins[t]=true; if(m>0)S.minutes[t]=(S.minutes[t]||0)+m;
   toast('+15 XP — checked in');
   const st=streak();
-  if(MILES.includes(st)){popup(st+'-DAY STREAK','🔥 that is how CPAs are made',true);celebrate('week',true);ding('complete');document.getElementById('checkinNote').textContent='🔥 '+st+'-day streak!'}
+  if(MILES.includes(st)){popup(st+'-DAY STREAK','🔥 that is how CPAs are made',true,()=>{celebrate('week',true);ding('complete')});document.getElementById('checkinNote').textContent='🔥 '+st+'-day streak!'}
   else{ding('ok');document.getElementById('checkinNote').textContent='Logged. See you tomorrow.'}
   save();render();
 }
@@ -988,7 +998,7 @@ function autoSyncWeeks(){
   // Pre-season agenda steps and Week 0 tasks are ONE state (S.preTasks) — no sync loop needed, they can never diverge.
   const preFull=S.preTasks.length&&S.preTasks.every(x=>x.done);
   if(preFull&&!S.weekPopped.pre){S.weekPopped.pre=1;changed=true;
-    popup('PRE-SEASON COMPLETE','+50 XP · day 1 needs zero decisions',true);celebrate('week',true);ding('complete')}
+    popup('PRE-SEASON COMPLETE','+50 XP · day 1 needs zero decisions',true,()=>{celebrate('week',true);ding('complete')})}
   else if(!preFull&&S.weekPopped.pre){delete S.weekPopped.pre;changed=true}
   S.weeks.forEach((wk,i)=>{
     const wd=weekDates(i);
@@ -1009,8 +1019,7 @@ function autoSyncWeeks(){
     const full=wk.tasks.length&&wk.tasks.every(x=>x.done);
     if(full&&!S.weekPopped[i]){
       S.weekPopped[i]=1;changed=true;
-      popup('WEEK '+(i+1)+' COMPLETE','+100 XP · '+wk.unit.split('—')[0].trim()+' in the books',true);
-      celebrate('week',true);ding('complete');
+      popup('WEEK '+(i+1)+' COMPLETE','+100 XP · '+wk.unit.split('—')[0].trim()+' in the books',true,()=>{celebrate('week',true);ding('complete')});
     }else if(!full&&S.weekPopped[i]){delete S.weekPopped[i];changed=true}
   });
   if(changed)save();
@@ -1113,7 +1122,7 @@ function togStep(d,i,total){S.steps[d]=S.steps[d]||{};const on=!S.steps[d][i];S.
   S.dayDone=S.dayDone||{};
   let allDone=true;for(let j=0;j<total;j++)if(!S.steps[d][j])allDone=false;
   if(on){burst(lastX,lastY,14);xpFx(10);ding('one');
-    if(allDone&&!S.dayDone[d]){S.dayDone[d]=1;popup('DAY COMPLETE','+50 XP · session banked');celebrate('day');ding('complete')}}
+    if(allDone&&!S.dayDone[d]){S.dayDone[d]=1;popup('DAY COMPLETE','+50 XP · session banked',false,()=>{celebrate('day');ding('complete')})}}
   else{xpFx(-10);if(!allDone&&S.dayDone[d])delete S.dayDone[d]}
   save();render()}
 function togMid(d,k){S.steps[d]=S.steps[d]||{};const on=!S.steps[d][k];S.steps[d][k]=on;
@@ -1132,7 +1141,7 @@ function togObj(wi,oi){
   const on=!S.weeks[wi].obj[oi];S.weeks[wi].obj[oi]=on;
   const now=S.weeks[wi].obj.every(Boolean);
   if(on){burst(lastX,lastY,12);xpFx(20);ding('one');
-    if(now&&!was){popup('OBJECTIVES MASTERED','+50 XP · you can DO this unit now');celebrate('day');ding('complete')}}
+    if(now&&!was){popup('OBJECTIVES MASTERED','+50 XP · you can DO this unit now',false,()=>{celebrate('day');ding('complete')})}}
   else xpFx(-20);
   save();render()}
 
@@ -1333,7 +1342,7 @@ function gradeSet(target){
   const t=today();S.quizXp=S.quizXp||{};S.quizXp[t]=(S.quizXp[t]||0);
   if(S.quizXp[t]<50){const pts=Math.min(right*5,50-S.quizXp[t]);S.quizXp[t]+=pts;save();renderXp();if(pts)toast('+'+pts+' XP')}
   else toast('Practice mode — XP capped for today');
-  if(pct===100){popup('PERFECT SET',set.length+'/'+set.length+' · 💯',true);celebrate('day',true);ding('complete')}else if(pct>=80){burst(lastX,lastY,26);ding('ok')}
+  if(pct===100){popup('PERFECT SET',set.length+'/'+set.length+' · 💯',true,()=>{celebrate('day',true);ding('complete')})}else if(pct>=80){burst(lastX,lastY,26);ding('ok')}
   S.scores.push({date:t,unit:curSet.unitLabel,type:curSet.scoreType,n:set.length,pct});
   S.scores.sort((a,b)=>a.date<b.date?-1:1);save();renderScores();
 }
@@ -1554,6 +1563,14 @@ render();
     const sp=document.getElementById('splash');sp.classList.add('gone');setTimeout(()=>sp.remove(),650)}},340);
 })();
 </script>
-<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(r=>{try{r.update()}catch(e){}}).catch(()=>{});
+  let swReloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(swReloaded)return;swReloaded=true;location.reload();
+  });
+}
+</script>
 </body>
 </html>
