@@ -469,7 +469,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v1.7';
+const BUILD='v1.8';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1514,6 +1514,104 @@ async function coachSend(prompt){
   }
   throw new Error('nobackend');
 }
+// ---------- LOCAL COACH ----------
+// Deterministic schedule reasoner. No AI required — works on phone, offline, everywhere.
+// Reads a plain-language dump and produces the same action objects the AI path emits.
+const DAYWORDS={sunday:'sun',sun:'sun',monday:'mon',mon:'mon',tuesday:'tue',tues:'tue',tue:'tue',
+ wednesday:'wed',weds:'wed',wed:'wed',thursday:'thu',thurs:'thu',thu:'thu',friday:'fri',fri:'fri',
+ saturday:'sat',sat:'sat'};
+const TOPIC_HINTS=[[/\bf1\b|framework|income statement|standard.setting/i,1],[/\bf2\b|revenue|receivab|606|cash equiv/i,2],
+ [/\bf3\b|inventor|fifo|lifo|depreciat|pp&e|ppe/i,3],[/\bf4\b|investment|equity method|goodwill|intangib|fair value/i,4],
+ [/\bf5\b|bond|debt|amortiz|effective interest/i,5],[/\bf6\b|lease|842|treasury stock/i,6],
+ [/\bf7\b|tax|deferred|dta|dtl/i,7],[/\bf8\b|conting|cash flow|subsequent/i,8],
+ [/\bf9\b|not.for.profit|nfp|nonprofit/i,9],[/\bf10\b|government|gasb|modified accrual|fund account/i,10]];
+function parseTimes(t){
+  const out=[];const re=/(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/gi;let m;
+  while((m=re.exec(t))){
+    let h=+m[1]%12;if(/pm/i.test(m[3]))h+=12;
+    out.push({h,min:+(m[2]||0),i:m.index,ctx:t.slice(Math.max(0,m.index-46),m.index).toLowerCase()});
+  }
+  return out;
+}
+function fmt12(h,m){const ap=h>=12?'PM':'AM';let hh=h%12;if(hh===0)hh=12;return hh+':'+String(m).padStart(2,'0')+' '+ap}
+function addDays(d,n){const x=parseD(d);x.setDate(x.getDate()+n);
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+function localCoach(txt){
+  const acts=[],t=txt.toLowerCase();
+  const daysIn=s=>{const o=[];Object.keys(DAYWORDS).forEach(w=>{if(new RegExp('\\b'+w+'\\b').test(s)){const k=DAYWORDS[w];if(!o.includes(k))o.push(k)}});return o};
+  // split into sentences/lines so "Tue/Wed on-site" and "Mon/Thu/Fri normal" stay separate facts
+  const segs=txt.split(/(?:[.!?\n]+)/).map(s=>s.trim()).filter(Boolean);
+  const heavySeg=[],normSeg=[];
+  segs.forEach(s=>{const ls=s.toLowerCase();
+    const isHard=/on.?site|onsite|client site|travel|in the field|out of town|late|heavy|crunch|slammed|swamped|long hours|not home|won.t be home/.test(ls);
+    const isNorm=/normal|regular|home\/office|work from home|wfh|office|standard|done by|usual/.test(ls)&&!isHard;
+    const d=daysIn(ls);
+    if(!d.length)return;
+    if(isHard)heavySeg.push({days:d,seg:s});
+    else if(isNorm)normSeg.push({days:d,seg:s});
+  });
+  const hardDays=[...new Set(heavySeg.flatMap(x=>x.days))].filter(d=>d!=='sat'&&d!=='sun');
+  const normDays=[...new Set(normSeg.flatMap(x=>x.days))].filter(d=>d!=='sat'&&d!=='sun'&&!hardDays.includes(d));
+  const onsite=/on.?site|onsite|client site|travel|in the field|out of town/.test(t);
+  const heavy=/heavy|crunch|slammed|busy|long hours|late night|swamped|deadline/.test(t);
+  const engage=/engagement|audit|client|inventory count|fieldwork|busy season/.test(t);
+  // times: prefer ones inside the hard-day sentences
+  const hardText=heavySeg.map(x=>x.seg).join(' ')||txt;
+  const pick=src=>{const ts=parseTimes(src);let home=null,start=null;
+    ts.forEach(x=>{if(/home|back|done|finish|end|until|till|leave|out at|wrap/.test(x.ctx)&&x.h>=13)home=x;
+      else if(/alarm|start|begin|up at|morning|day starts|in by|arrive/.test(x.ctx)&&x.h<13)start=x;});
+    if(!home){const pm=ts.filter(x=>x.h>=15);if(pm.length)home=pm[pm.length-1]}
+    return {home,start}};
+  let {home,start}=pick(hardText);
+  if(!home)({home,start}=pick(txt));
+  const slack=/downtime|down time|waiting|wait on|pbc|idle|slow period|dead time|slack/.test(t);
+  let midTime='12:00';
+  if(/mid.?morning|before lunch/.test(t))midTime='10:30';
+  else if(/afternoon/.test(t))midTime='14:00';
+  let ovr='',why='';
+  if(home){
+    let sh=home.h+1,sm=home.min+15;if(sm>=60){sm-=60;sh++}
+    if(sh>=21){const st=start||{h:7,min:30};let ms=Math.max(st.h-2,5);
+      ovr=fmt12(ms,st.min)+'–'+fmt12(ms+2,st.min);why='home too late for a real evening block — morning block before your '+fmt12(st.h,st.min)+' start';
+    }else{ovr=fmt12(sh,sm)+'–'+fmt12(sh+2,sm);why='home '+fmt12(home.h,home.min)+' → eat, reset, start '+fmt12(sh,sm)}
+  }
+  const twoWeek=/two weeks|2 weeks|both weeks|next two|couple weeks/.test(t);
+  const nextWeek=/next week/.test(t),thisWeek=/this week/.test(t);
+  const today0=today();let exFrom=null,exTo=null;
+  if(twoWeek||(nextWeek&&thisWeek)){exFrom=today0;exTo=addDays(today0,13)}
+  else if(nextWeek){exFrom=addDays(today0,(8-parseD(today0).getDay())%7||7);exTo=addDays(exFrom,6)}
+  else if(thisWeek){exFrom=today0;exTo=addDays(today0,6)}
+  let label='';const nm=txt.match(/with ([A-Z][A-Za-z&.' ]{2,28})/);
+  if(nm)label=nm[1].trim().replace(/[.,;]+$/,'');
+  const DN={mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri'};
+  // hard days: heavy load + shifted block + midday sprint
+  hardDays.forEach(d=>{const a={type:'day',day:d,load:(onsite&&home)?'eng-heavy':(onsite?'travel':'eng-heavy')};
+    if(ovr)a.ovr=ovr;if(slack){a.midday=true;a.midTime=midTime}acts.push(a)});
+  // explicitly-normal days: make sure they are NOT left flagged heavy
+  normDays.forEach(d=>{const a={type:'day',day:d,load:engage?'eng-light':'office',midday:false};
+    const n=pick(normSeg.filter(x=>x.days.includes(d)).map(x=>x.seg).join(' '));
+    if(n.home){let sh=n.home.h+1,sm=n.home.min+15;if(sm>=60){sm-=60;sh++}a.ovr=fmt12(sh,sm)+'–'+fmt12(sh+2,sm)}
+    else a.ovr='';
+    acts.push(a)});
+  if(exFrom&&exTo&&(onsite||heavy||engage))
+    acts.push({type:'exception',from:exFrom,to:exTo,extype:onsite?'Travel / on-site':'Engagement crunch',note:label||'engagement'});
+  if(/struggl|stuck|killing me|destroy|lost on|bad at|don.t get|confus|tank|bomb/.test(t))
+    TOPIC_HINTS.forEach(([re,u])=>{if(re.test(txt))acts.push({type:'weak',unit:u,topic:null,note:'flagged in coach update'})});
+  const R=[];
+  if(hardDays.length&&ovr)
+    R.push('Read that as: '+hardDays.map(d=>DN[d]).join('/')+' are your compressed days'+(label?' ('+label+')':'')+
+      '. '+why.charAt(0).toUpperCase()+why.slice(1)+' — proposing a '+ovr+' block on those days. Two hours is enough for lectures plus the MCQs behind them; do not try to be a hero after an on-site day.');
+  else if(hardDays.length)R.push('Flagged '+hardDays.map(d=>DN[d]).join('/')+' as your heavy days.');
+  if(normDays.length)R.push(normDays.map(d=>DN[d]).join('/')+' stay normal — those are your best sessions of the week, so that is where new material should land.');
+  if(slack)R.push('That downtime is real study time. Midday sprint on around '+midTime+' for the hard days: 20–25 MCQs on the Becker app while you wait on PBCs. Two of those a week is a full extra session you never had to find at night.');
+  if(exFrom)R.push('Marked '+exFrom+' → '+exTo+' as an exception'+(label?' ('+label+')':'')+'. If a weeknight dies, the plan drops to a protect-the-streak minimum instead of showing you a session you were never going to do.');
+  if(/sunday|unit exam|protect/.test(t))R.push('Sunday stays sacred — unit exam, the one block I will not move. Lose a weeknight and Friday is your makeup; take it Friday rather than stacking onto Saturday, which is already SIMs.');
+  if(/behind|catch up|don.t want to start|already behind/.test(t))R.push('On not starting behind: you are still in pre-season, so bank F1 lectures on the open weekend BEFORE this engagement peaks. Front-load while you have energy — that is the whole game.');
+  if(!R.length)R.push('Logged. Nothing in that update changes your schedule — keep the blocks as they are.');
+  R.push('Uncheck anything you do not want, then apply.');
+  return {reply:R.join('\n\n'),actions:acts};
+}
+
 // Pull the reply text out of ANY response envelope shape — never assume the wrapper.
 function extractText(r){
   if(r==null)return '';
@@ -1556,15 +1654,25 @@ async function askCoach(){
   'Dates: resolve relative dates ("next week Tue-Thu") against today. Never invent problems the user did not mention.\n'+
   'IMPORTANT: if the update describes work-schedule constraints (on-site days, long hours, engagement weeks, commutes), you MUST propose concrete day and/or exception actions that adapt the study schedule around those constraints — reason about when study time realistically fits (e.g. home 6pm → evening block 7:15-9:15 PM, or a morning block before a 7:30 start). Zero actions is only acceptable for pure status updates with no scheduling impact.';
   try{
-    let raw=await coachSend(prompt);
-    if(!raw||!String(raw).trim()||String(raw).trim()==='undefined')
-      throw new Error('empty AI reply · payload was: '+(window.__coachDbg||'nothing'));
-    raw=String(raw).replace(/```json|```/g,'');
-    const a=raw.indexOf('{'),b=raw.lastIndexOf('}');
+    let reply='',usedLocal=false;
+    let raw='';
+    try{raw=await coachSend(prompt)}catch(e){raw=''}
+    raw=String(raw||'').replace(/```json|```/g,'').trim();
     let parsed=null;
-    try{parsed=JSON.parse(raw.slice(a,b+1))}catch(e){}
-    const reply=parsed&&parsed.reply?parsed.reply:raw.trim();
-    coachActs=(parsed&&Array.isArray(parsed.actions)?parsed.actions:[]).filter(x=>x&&x.type);
+    if(raw&&raw!=='undefined'){
+      const a=raw.indexOf('{'),b=raw.lastIndexOf('}');
+      if(a>=0&&b>a){try{parsed=JSON.parse(raw.slice(a,b+1))}catch(e){}}
+    }
+    if(parsed&&parsed.reply){
+      reply=parsed.reply;
+      coachActs=(Array.isArray(parsed.actions)?parsed.actions:[]).filter(x=>x&&x.type);
+    }else{
+      // AI unavailable or unparseable → local reasoner handles it end to end
+      const lc=localCoach(txt);
+      reply=lc.reply;coachActs=lc.actions;usedLocal=true;
+      if(raw&&raw.length>40)reply=raw+'\n\n— proposed changes below —\n\n'+reply;
+    }
+    st.textContent=usedLocal?'':'';
     document.getElementById('coachReply').textContent=reply;
     document.getElementById('coachActions').innerHTML=coachActs.length?
       '<h3>Proposed changes — uncheck any you don’t want</h3>'+coachActs.map((x,i)=>
@@ -1576,6 +1684,14 @@ async function askCoach(){
     S.coachLog=S.coachLog.slice(0,12);save();renderCoachLog();
     st.textContent='';
   }catch(e){
+    try{const lc=localCoach(txt);document.getElementById('coachReply').textContent=lc.reply;coachActs=lc.actions;
+      document.getElementById('coachActions').innerHTML=coachActs.length?
+        '<h3>Proposed changes — uncheck any you don\u2019t want</h3>'+coachActs.map((x,i)=>
+          '<div class="task"><input type="checkbox" checked id="ca'+i+'"> '+coachDesc(x)+'</div>').join('')+
+        '<button class="btn" style="margin-top:8px" onclick="applyCoach()">Apply selected changes</button>':'';
+      document.getElementById('coachOut').style.display='block';
+      S.coachLog.unshift({d:today(),txt,reply:lc.reply.slice(0,200),applied:0});S.coachLog=S.coachLog.slice(0,12);save();renderCoachLog();
+      st.textContent='';return}catch(e2){}
     st.textContent=e.message==='nobackend'?
       'No coach brain available here. Open this dashboard inside Cowork (built-in Claude), or add an Anthropic/OpenAI API key in Settings for standalone/phone use.':
       (e instanceof TypeError?
