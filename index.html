@@ -151,6 +151,42 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 #flash{position:fixed;inset:0;z-index:10000;pointer-events:none;opacity:0}
 #flash.go{animation:fl2 .6s ease-out}
 @keyframes fl2{0%{opacity:.55}100%{opacity:0}}
+/* LEVEL UP — prismatic ascension card, unlike any other popup */
+.popbox.lvl{border:2px solid transparent;
+  background:linear-gradient(rgba(8,12,18,.92),rgba(8,12,18,.92)) padding-box,
+    linear-gradient(120deg,#7df9ff,#b388ff,#5dffd6,#e0b3ff,#7df9ff) border-box;
+  background-size:100% 100%,300% 300%;
+  box-shadow:0 0 70px rgba(125,249,255,.45),0 0 120px rgba(179,136,255,.25),inset 0 0 40px rgba(125,249,255,.06);
+  animation:popin .5s cubic-bezier(.16,1.5,.4,1),lvlBorder 2.6s linear infinite}
+@keyframes lvlBorder{0%{background-position:0 0,0% 50%}100%{background-position:0 0,300% 50%}}
+.popbox.lvl::after{opacity:0;animation:none}
+.popbox.lvl .t1{background:linear-gradient(90deg,#7df9ff,#ffffff,#b388ff,#5dffd6);background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(125,249,255,.6));animation:t1in .55s cubic-bezier(.2,1.3,.3,1) both,lvlText 2.2s linear infinite}
+@keyframes lvlText{0%{background-position:0% 0}100%{background-position:250% 0}}
+.popbox.lvl .t2{color:#9fd8e8;letter-spacing:3px}
+/* modern pass: depth, gradients, focus states, motion */
+body{background:radial-gradient(1100px 700px at 15% -8%,#101c13,var(--bg)) fixed}
+.card,.stat{background:linear-gradient(180deg,#131b14,#0e150f);border-color:#233827;border-radius:14px;
+  box-shadow:0 10px 26px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.03)}
+.tab{border-radius:10px;transition:all .18s ease}
+.tab:hover{border-color:var(--grn);color:var(--ink);transform:translateY(-1px)}
+.btn,.btnG{background:linear-gradient(180deg,#5cffa4,#2be878);border-radius:10px;transition:all .16s ease}
+.btn:hover,.btnG:hover{transform:translateY(-1px);box-shadow:0 4px 22px var(--grnGlow)}
+.btn2{border-radius:10px;transition:all .16s ease}
+.btn2:hover{border-color:var(--grn);color:var(--grn)}
+input,select,textarea{border-radius:9px;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box-shadow:0 0 0 3px rgba(61,255,139,.14)}
+.bar,.bar>div{border-radius:6px}
+.week,.schedday{border-radius:13px;transition:border-color .2s,box-shadow .2s}
+.qq{border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.task,.step,.obj{transition:background .15s;border-radius:8px}
+.task:hover,.step:hover,.obj:hover{background:rgba(61,255,139,.045)}
+.pill{border-radius:7px}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#26402d;border-radius:5px}
+::-webkit-scrollbar-thumb:hover{background:var(--grnDim,#2f5a3c)}
+::-webkit-scrollbar-track{background:transparent}
 </style>
 </head>
 <body>
@@ -433,7 +469,7 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 </div>
 
 <script>
-const BUILD='v1.4';
+const BUILD='v1.5';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -737,6 +773,7 @@ function rs(){cv.width=innerWidth;cv.height=innerHeight}addEventListener('resize
 document.addEventListener('pointerdown',e=>{lastX=e.clientX;lastY=e.clientY},true);
 const COLS=['#3dff8b','#7CFFB2','#ffd75e','#00e5c0','#b6ff4d','#ffffff'];
 const GOLDS=['#ffd75e','#ffe9a3','#ffb347','#fff3c4','#ffffff'];
+const ASCEND=['#7df9ff','#b388ff','#ffffff','#5dffd6','#e0b3ff','#8ab4ff'];
 let RINGS=[],RAYS=[];
 function loop(){
   cx.clearRect(0,0,cv.width,cv.height);
@@ -768,18 +805,18 @@ function loop(){
   else{raf=null;cx.clearRect(0,0,cv.width,cv.height)}}
 function kick(){if(!raf)raf=requestAnimationFrame(loop)}
 function ring(x,y,c,spd,w,life){RINGS.push({x,y,rad:4,spd:spd||9,w:w||3,c:c||'#3dff8b',life:life||26,max:life||26});kick()}
-function burst(x,y,n,gold){const pal=gold?GOLDS:COLS;
+function burst(x,y,n,gold,palX){const pal=palX||(gold?GOLDS:COLS);
   ring(x,y,pal[0],7,2.5,20);
   for(let i=0;i<n;i++){const a=Math.random()*6.283,v=2+Math.random()*4;
     P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1.2,g:.13,d:.985,s:4+Math.random()*4,c:pal[i%pal.length],
       sh:Math.random()<.45?'spark':'rect',life:34+Math.random()*22,max:56,rot:Math.random()*6,vr:.25*(Math.random()-.5)})}kick()}
-function confettiRain(n,gold){const pal=gold?GOLDS:COLS;
+function confettiRain(n,gold,palX){const pal=palX||(gold?GOLDS:COLS);
   for(let i=0;i<n;i++){const r=Math.random();
     P.push({x:Math.random()*cv.width,y:-15-Math.random()*cv.height*.4,vx:(Math.random()-.5)*2.6,vy:2+Math.random()*3.2,g:.045,
       s:5+Math.random()*7,c:pal[i%pal.length],sh:r<.22?'spark':(r<.42?'streamer':'rect'),
       life:130+Math.random()*80,max:210,rot:Math.random()*6,vr:.3*(Math.random()-.5)})}kick()}
-function fountain(n,gold){ // upward cannon from bottom corners — celebratory, unlike falling confetti
-  const pal=gold?GOLDS:COLS;
+function fountain(n,gold,palX){ // upward cannon from bottom corners — celebratory, unlike falling confetti
+  const pal=palX||(gold?GOLDS:COLS);
   [[cv.width*.12,cv.height],[cv.width*.88,cv.height]].forEach(([ox,oy],side)=>{
     for(let i=0;i<n/2;i++){const a=-1.571+(side?-1:1)*(0.15+Math.random()*.6),v=13+Math.random()*10;
       P.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.28,d:.99,s:5+Math.random()*6,c:pal[i%pal.length],
@@ -787,19 +824,27 @@ function fountain(n,gold){ // upward cannon from bottom corners — celebratory,
   kick()}
 function rays(gold){RAYS.push({x:cv.width/2,y:cv.height/2,rot:0,vr:.012,n:12,len:Math.max(cv.width,cv.height)*.75,w:16,
   c:gold?'#ffd75e':'#3dff8b',life:80,max:80});kick()}
-function screenFlash(gold){let f=document.getElementById('flash');
+function screenFlash(kind){let f=document.getElementById('flash');
   if(!f){f=document.createElement('div');f.id='flash';document.body.appendChild(f)}
-  f.style.background='radial-gradient(circle at 50% 50%, '+(gold?'rgba(255,215,94,.5)':'rgba(61,255,139,.42)')+', transparent 68%)';
+  f.style.background=kind==='lvl'
+    ?'radial-gradient(circle at 50% 42%, rgba(125,249,255,.55), rgba(179,136,255,.4) 42%, transparent 72%)'
+    :'radial-gradient(circle at 50% 50%, '+(kind?'rgba(255,215,94,.5)':'rgba(61,255,139,.42)')+', transparent 68%)';
   f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
 // Layered celebration: sound + light + particles, scaled to the moment.
 function celebrate(level,gold){
   if(level==='day'){screenFlash(gold);ring(cv.width/2,cv.height/2,gold?'#ffd75e':'#3dff8b',16,5,40);confettiRain(130,gold);fountain(40,gold)}
   else if(level==='week'){screenFlash(gold);rays(gold);ring(cv.width/2,cv.height/2,gold?'#ffd75e':'#3dff8b',20,6,50);confettiRain(200,gold);fountain(80,gold)}
-  else if(level==='max'){screenFlash(true);rays(true);
-    ring(cv.width/2,cv.height/2,'#ffd75e',22,7,55);
-    setTimeout(()=>ring(cv.width/2,cv.height/2,'#fff3c4',18,5,45),160);
-    setTimeout(()=>ring(cv.width/2,cv.height/2,'#ffd75e',15,4,40),330);
-    confettiRain(260,true);fountain(110,true);setTimeout(()=>fountain(70,true),450)}
+  else if(level==='max'){ // LEVEL UP: prismatic ascension — nothing else in the app looks like this
+    screenFlash('lvl');
+    RAYS.push({x:cv.width/2,y:cv.height/2,rot:0,vr:.016,n:12,len:Math.max(cv.width,cv.height)*.8,w:15,c:'#7df9ff',life:95,max:95});
+    RAYS.push({x:cv.width/2,y:cv.height/2,rot:.26,vr:-.011,n:8,len:Math.max(cv.width,cv.height)*.62,w:22,c:'#b388ff',life:95,max:95});
+    ring(cv.width/2,cv.height/2,'#7df9ff',24,7,58);
+    setTimeout(()=>ring(cv.width/2,cv.height/2,'#ffffff',19,5,48),150);
+    setTimeout(()=>ring(cv.width/2,cv.height/2,'#b388ff',16,4,42),300);
+    setTimeout(()=>ring(cv.width/2,cv.height/2,'#5dffd6',13,3,38),460);
+    confettiRain(280,false,ASCEND);fountain(120,false,ASCEND);
+    setTimeout(()=>fountain(80,false,ASCEND),420);setTimeout(()=>confettiRain(90,false,ASCEND),700);
+    kick()}
 }
 function toast(txt,big,neg){const el=document.createElement('div');el.className='xtoast'+(big?' big':'')+(neg?' neg':'');el.textContent=txt;
   el.style.left=Math.min(lastX,innerWidth-140)+'px';el.style.top=(lastY-10)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1000)}
@@ -814,12 +859,13 @@ function pumpPop(){
   const it=popQ.shift();
   let w=document.getElementById('popWrap');
   if(!w){w=document.createElement('div');w.id='popWrap';document.body.appendChild(w)}
-  const b=document.createElement('div');b.className='popbox'+(it.gold?' gold':'');
+  const b=document.createElement('div');b.className='popbox'+(it.gold===true?' gold':it.gold==='lvl'?' lvl':'');
   b.innerHTML='<div class="t1">'+it.title+'</div>'+(it.sub?'<div class="t2">'+it.sub+'</div>':'');
   w.appendChild(b);
   if(it.fx)try{it.fx()}catch(e){}
-  setTimeout(()=>b.classList.add('out'),2050);
-  setTimeout(()=>{b.remove();popActive=false;setTimeout(pumpPop,220)},2520);
+  const hold=it.gold==='lvl'?2900:2050;
+  setTimeout(()=>b.classList.add('out'),hold);
+  setTimeout(()=>{b.remove();popActive=false;setTimeout(pumpPop,220)},hold+470);
 }
 let AC=null;
 function actx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();return AC}
@@ -873,14 +919,17 @@ function ding(kind){if(!S.sound)return;try{
     [1175,1568,1976].forEach(f=>bell(f,t2,1.25,.05));         // ringing major triad
     bell(3136,t2+.1,.9,.028);                                 // sparkle
   }
-  else if(kind==='levelup'||kind==='fanfare'){
-    voice(65,t,.9,{vol:.13});voice(130,t,.6,{vol:.06});       // sub impact
-    sweep(180,1200,t,.5,{type:'triangle',vol:.06});           // long riser
-    const t1=t+.5;
-    [523,659,784,1047,1319,1568,2093,2637].forEach((f,i)=>bell(f,t1+i*.07,.5,.085)); // octave climb
-    const t2=t1+8*.07;
-    [1047,1319,1568,2093,2637].forEach(f=>bell(f,t2,2.0,.05));// huge sustained chord
-    [3136,3951,4186].forEach((f,i)=>bell(f,t2+.18+i*.12,1.1,.022)); // sparkle cascade
+  else if(kind==='levelup'||kind==='fanfare'){ // ASCENSION: brighter, higher, longer than anything else
+    voice(98,t,.5,{vol:.09});                                  // light launch thump
+    sweep(400,3200,t,.42,{type:'triangle',vol:.055});          // fast upward rip
+    sweep(800,4200,t+.08,.4,{type:'sine',vol:.03});            // twin riser, octave up
+    const t1=t+.44;
+    [659,784,1047,1319,1568,2093,2637,3136,3520,4186].forEach((f,i)=>bell(f,t1+i*.055,.42,.08)); // 10-bell rocket climb
+    const t2=t1+10*.055;
+    [1568,2093,2637,3136].forEach(f=>bell(f,t2,2.4,.048));     // high shimmering chord, held
+    voice(3136,t2,.9,{vol:.02,detune:9});voice(3136,t2,.9,{vol:.02,detune:-9}); // chorus halo
+    [4699,5274,5920,6272].forEach((f,i)=>bell(f,t2+.15+i*.11,.8,.018)); // stardust twinkles
+    bell(4186,t2+.85,1.2,.03);                                 // final high ting
   }
 }catch(e){}}
 const LVLS=['Intern','Staff I','Staff II','Senior I','Senior II','Supervisor','Manager','Senior Manager','Director','Partner','CPA Legend'];
@@ -911,7 +960,7 @@ function renderXp(){
   S.xp=computeXp();
   const lv=Math.min(Math.floor(S.xp/600),LVLS.length-1);
   if(S.lvlSeen===undefined)S.lvlSeen=lv;                      // first load: no popup storm
-  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv],true,()=>{celebrate('max');ding('levelup')})}
+  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv],'lvl',()=>{celebrate('max');ding('levelup')})}
   S.lvlSeen=lv;save();
   document.getElementById('lvlPill').textContent='Lv '+(lv+1)+' · '+LVLS[lv];
   document.getElementById('xpNum').textContent=S.xp+' XP';
