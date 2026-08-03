@@ -387,6 +387,14 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 <!-- SETTINGS -->
 <div class="pane" id="p-set" style="display:none">
   <div class="card">
+    <h2>About this build</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="pill gold" id="verPill">build</span>
+      <span class="mut" id="verNote"></span>
+    </div>
+    <div class="mut" style="margin-top:8px">Updates deploy from GitHub automatically. If the version here looks behind after an update, fully close the app and reopen it — the offline cache serves the old copy once, then swaps.</div>
+  </div>
+  <div class="card">
     <h2>Dates</h2>
     <div class="frm">
       <div><label>Plan start</label><input type="date" id="setStart"></div>
@@ -411,14 +419,6 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
     <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="setSound" onchange="S.sound=this.checked;save()"> Celebration sounds</label>
   </div>
   <div class="card">
-    <h2>About this build</h2>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <span class="pill gold" id="verPill">build</span>
-      <span class="mut" id="verNote"></span>
-    </div>
-    <div class="mut" style="margin-top:8px">Updates deploy from GitHub automatically. If the version here looks behind after an update, fully close the app and reopen it — the offline cache serves the old copy once, then swaps.</div>
-  </div>
-  <div class="card">
     <h2>Backup / transfer</h2>
     <div class="mut" style="margin-bottom:8px">Data lives on this device only. Export here, then Import on your phone (or vice versa) to move your progress. Do this occasionally as a backup too.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -433,7 +433,7 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 </div>
 
 <script>
-const BUILD='v1.2';
+const BUILD='v1.2.1';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
