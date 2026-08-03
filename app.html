@@ -203,6 +203,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <h1>CADENCE</h1>
       <span class="pill b" style="font-size:12px">CPA · FAR TRACK</span>
+      <span class="pill b" id="syncPill">local</span>
       <select id="secSel" title="Exam section">
         <option value="FAR" selected>FAR — active</option>
         <option disabled>AUD — coming soon</option>
@@ -440,6 +441,38 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="mut">Changing the start date re-anchors all 12 weeks, the Today tab, and every week's date range immediately. If the start is in the future, the dashboard runs in <b>pre-season build mode</b> — a prep checklist instead of study blocks — until day 1. Weeks run 7 days from whatever start day you pick (a Friday start means weeks run Fri→Thu; daily session types still follow the weekday).</div>
   </div>
   <div class="card">
+    <h2>Cloud sync &amp; profile <span class="pill b" id="syncPill2">setup</span></h2>
+    <div class="mut" style="margin-bottom:10px">Sign in and your progress follows you across phone and desktop automatically. Each person gets their own login and their own private profile.</div>
+    <div id="cloudCfgBox">
+      <h3>1 · Connect your Supabase project</h3>
+      <div class="mut" style="margin-bottom:8px">Create a free project at supabase.com, then Project Settings → API. Paste the Project URL and the <b>anon/public</b> key (that key is designed to be public — row-level security keeps profiles private). Run the SQL from the setup notes once in the SQL Editor.</div>
+      <div class="frm">
+        <div><label>Project URL</label><input id="sbUrl" placeholder="https://xxxx.supabase.co" style="width:280px"></div>
+        <div><label>Anon / public key</label><input id="sbKey" type="password" placeholder="eyJhbGci..." style="width:240px"></div>
+        <div><button class="btn" onclick="saveCloudCfg()">Save</button></div>
+      </div>
+    </div>
+    <div id="acctBox" style="display:none">
+      <h3>2 · Your profile</h3>
+      <div id="acctSignedOut">
+        <div class="frm">
+          <div><label>Email</label><input id="acctEmail" type="email" style="width:220px"></div>
+          <div><label>Password</label><input id="acctPw" type="password" style="width:180px"></div>
+          <div><button class="btn" onclick="doAuth('in')">Sign in</button></div>
+          <div><button class="btn2" onclick="doAuth('up')">Create account</button></div>
+        </div>
+      </div>
+      <div id="acctSignedIn" style="display:none">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="pill g" id="acctWho"></span>
+          <button class="btn2" onclick="cloudPull()">↻ Sync now</button>
+          <button class="btn2" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
+      <div class="mut" style="margin-top:8px" id="acctStatus"></div>
+    </div>
+  </div>
+  <div class="card">
     <h2>Coach AI provider</h2>
     <div class="mut" style="margin-bottom:10px;line-height:1.6"><b>Built-in Claude</b> works automatically inside Cowork — no setup. To run the coach on a phone or standalone copy of this file, add your own API key: <b>Anthropic</b> (console.anthropic.com) or <b>OpenAI</b> (platform.openai.com). Note: these are pay-per-use developer keys, not your Claude Pro / ChatGPT Plus subscription — subscriptions can't be linked to outside apps. Coach messages cost fractions of a cent. Your key is stored only on this device. Inside Cowork's sandbox, outside API calls are blocked, so built-in Claude is always used there.</div>
     <div class="frm">
@@ -474,7 +507,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v1.9';
+const BUILD='v2.0';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -766,7 +799,106 @@ function fill(s){
   }
   return s;
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function save(){S.__t=Date.now();localStorage.setItem(KEY,JSON.stringify(S));schedulePush()}
+
+// ================= CLOUD SYNC (Supabase) =================
+const CKEY='cadenceCloud',SKEY='cadenceSession';
+function cloudCfg(){try{return JSON.parse(localStorage.getItem(CKEY))||null}catch(e){return null}}
+function sess(){try{return JSON.parse(localStorage.getItem(SKEY))||null}catch(e){return null}}
+function setSess(s){s?localStorage.setItem(SKEY,JSON.stringify(s)):localStorage.removeItem(SKEY)}
+let syncState='off',pushTimer=null,pulling=false;
+function syncBadge(txt,cls){syncState=txt;const el=document.getElementById('syncPill');
+  if(el){el.textContent=txt;el.className='pill '+(cls||'b')}
+  const el2=document.getElementById('acctStatus');if(el2)el2.textContent=txt==='synced'?('Synced · '+new Date().toLocaleTimeString()):txt;}
+async function sbFetch(path,opts,retry){
+  const c=cloudCfg();if(!c||!c.url||!c.key)throw new Error('cloud not configured');
+  const s=sess();const o=opts||{};
+  const h=Object.assign({'apikey':c.key,'content-type':'application/json'},o.headers||{});
+  if(s&&s.access_token)h['Authorization']='Bearer '+s.access_token;
+  const r=await fetch(c.url.replace(/\/+$/,'')+path,Object.assign({},o,{headers:h}));
+  if(r.status===401&&s&&s.refresh_token&&!retry){if(await refreshSession())return sbFetch(path,opts,true)}
+  return r;
+}
+async function refreshSession(){
+  const s=sess();if(!s||!s.refresh_token)return false;
+  try{const c=cloudCfg();
+    const r=await fetch(c.url.replace(/\/+$/,'')+'/auth/v1/token?grant_type=refresh_token',
+      {method:'POST',headers:{'apikey':c.key,'content-type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});
+    if(!r.ok)return false;const j=await r.json();
+    setSess({access_token:j.access_token,refresh_token:j.refresh_token,uid:(j.user&&j.user.id)||s.uid,email:(j.user&&j.user.email)||s.email});
+    return true;
+  }catch(e){return false}
+}
+async function authCall(kind,email,pw){
+  const c=cloudCfg();if(!c)throw new Error('Add your Supabase URL and anon key first.');
+  const path=kind==='up'?'/auth/v1/signup':'/auth/v1/token?grant_type=password';
+  const r=await fetch(c.url.replace(/\/+$/,'')+path,{method:'POST',
+    headers:{'apikey':c.key,'content-type':'application/json'},body:JSON.stringify({email,password:pw})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.msg||j.error_description||j.message||('auth failed ('+r.status+')'));
+  if(!j.access_token)throw new Error(j.msg||'Check your email to confirm the account, then sign in.');
+  setSess({access_token:j.access_token,refresh_token:j.refresh_token,uid:j.user&&j.user.id,email:(j.user&&j.user.email)||email});
+  return true;
+}
+async function cloudPull(){
+  const s=sess();if(!s||!s.uid)return;
+  if(pulling)return;pulling=true;
+  try{
+    syncBadge('syncing…','w');
+    const r=await sbFetch('/rest/v1/profiles?select=data,updated_at&user_id=eq.'+s.uid,{method:'GET'});
+    if(!r.ok){syncBadge('sync error','r');pulling=false;return}
+    const rows=await r.json();
+    if(rows&&rows.length&&rows[0].data){
+      const remote=rows[0].data,rt=remote.__t||0,lt=S.__t||0;
+      if(rt>lt){ // last-write-wins: remote is newer, adopt it
+        localStorage.setItem(KEY,JSON.stringify(remote));
+        S=load();syncBadge('synced','g');render();pulling=false;return;
+      }
+      if(lt>rt){await cloudPush(true)}
+    }else{await cloudPush(true)}
+    syncBadge('synced','g');
+  }catch(e){syncBadge('offline','w')}
+  pulling=false;
+}
+async function cloudPush(force){
+  const s=sess();if(!s||!s.uid)return;
+  try{
+    if(!force)syncBadge('syncing…','w');
+    const body=[{user_id:s.uid,data:S,updated_at:new Date().toISOString()}];
+    const r=await sbFetch('/rest/v1/profiles?on_conflict=user_id',{method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)});
+    syncBadge(r.ok?'synced':'sync error',r.ok?'g':'r');
+  }catch(e){syncBadge('offline','w')}
+}
+function schedulePush(){
+  if(!sess()||!cloudCfg())return;
+  clearTimeout(pushTimer);pushTimer=setTimeout(()=>cloudPush(),1400);
+}
+function saveCloudCfg(){
+  const url=document.getElementById('sbUrl').value.trim(),key=document.getElementById('sbKey').value.trim();
+  if(!url||!key)return alert('Both the project URL and the anon key are required.');
+  localStorage.setItem(CKEY,JSON.stringify({url,key}));
+  toast('Cloud configured');renderAccount();
+}
+async function doAuth(kind){
+  const email=document.getElementById('acctEmail').value.trim(),pw=document.getElementById('acctPw').value;
+  if(!email||!pw)return alert('Enter an email and password.');
+  const st=document.getElementById('acctStatus');st.textContent='working…';
+  try{await authCall(kind,email,pw);st.textContent='signed in';renderAccount();await cloudPull();
+    popup('SYNCED','profile linked · '+email);ding('ok');
+  }catch(e){st.textContent=e.message}
+}
+function signOut(){setSess(null);syncBadge('off','b');renderAccount();toast('Signed out')}
+function renderAccount(){
+  const c=cloudCfg(),s=sess();
+  const cfgBox=document.getElementById('cloudCfgBox'),acctBox=document.getElementById('acctBox');
+  if(!cfgBox)return;
+  if(c){document.getElementById('sbUrl').value=c.url;document.getElementById('sbKey').value=c.key}
+  acctBox.style.display=c?'block':'none';
+  document.getElementById('acctSignedOut').style.display=s?'none':'block';
+  document.getElementById('acctSignedIn').style.display=s?'block':'none';
+  if(s)document.getElementById('acctWho').textContent=s.email||'signed in';
+}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function parseD(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}
 function curWeek(){const diff=Math.floor((parseD(today())-parseD(S.start))/864e5);return diff<0?0:Math.min(Math.floor(diff/7)+1,12)}
@@ -1263,6 +1395,7 @@ function renderExList(){
     '<div class="rule" style="display:flex;justify-content:space-between;gap:8px"><span><b>'+e.from+' → '+e.to+'</b> · '+e.type+(e.note?' — '+e.note:'')+'</span><button class="btn2" style="padding:2px 8px" onclick="S.exceptions.splice('+i+',1);save();render()">✕</button></div>').join('')||'<div class="mut">None. Nice.</div>';
 }
 function renderSet(){
+  renderAccount();
   document.getElementById('verPill').textContent='CADENCE '+BUILD;
   document.getElementById('verNote').textContent='CPA · FAR track';
   document.getElementById('setStart').value=S.start;
@@ -1765,6 +1898,12 @@ function renderCoachLog(){
     :'<div class="mut">Nothing yet. First time something shifts at work, tell the coach instead of suffering in silence.</div>';
 }
 render();
+
+// cloud: initial pull + refresh whenever the app regains focus (covers phone→desktop handoff)
+if(cloudCfg()&&sess()){syncBadge('syncing…','w');cloudPull()}else{syncBadge(cloudCfg()?'signed out':'local','b')}
+addEventListener('visibilitychange',()=>{if(!document.hidden&&sess())cloudPull()});
+addEventListener('focus',()=>{if(sess())cloudPull()});
+addEventListener('beforeunload',()=>{if(sess())try{navigator.sendBeacon&&null}catch(e){}});
 
 // ---------- boot splash ----------
 (function(){
