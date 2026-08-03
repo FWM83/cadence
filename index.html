@@ -469,7 +469,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v1.6';
+const BUILD='v1.7';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1509,9 +1509,27 @@ async function coachSend(prompt){
   }
   if(inCowork){
     const r=await window.cowork.askClaude(prompt,[]);
-    return typeof r==='string'?r:(r&&(r.text||r.reply||(r.content&&(typeof r.content==='string'?r.content:(r.content[0]&&r.content[0].text)))))||JSON.stringify(r);
+    try{window.__coachDbg=JSON.stringify(r).slice(0,400)}catch(e){window.__coachDbg=String(r)}
+    return extractText(r);
   }
   throw new Error('nobackend');
+}
+// Pull the reply text out of ANY response envelope shape — never assume the wrapper.
+function extractText(r){
+  if(r==null)return '';
+  if(typeof r==='string')return r;
+  if(Array.isArray(r)){for(const x of r){const t=extractText(x);if(t)return t}return ''}
+  if(typeof r==='object'){
+    for(const k of ['text','reply','response','result','output','answer','completion'])
+      if(typeof r[k]==='string'&&r[k].trim())return r[k];
+    for(const k of ['content','message','result','response','output','data','choices'])
+      if(r[k]!=null){const t=extractText(r[k]);if(t)return t}
+    // last resort: longest string found anywhere in the object
+    let best='';const walk=o=>{if(typeof o==='string'){if(o.length>best.length)best=o}
+      else if(o&&typeof o==='object')Object.values(o).forEach(walk)};
+    walk(r);return best;
+  }
+  return '';
 }
 function saveAi(){
   S.ai={provider:document.getElementById('aiProv').value,key:document.getElementById('aiKey').value.trim(),model:document.getElementById('aiModel').value.trim()};
@@ -1535,9 +1553,12 @@ async function askCoach(){
   '{"type":"focus","note":"short task text"} — adds an extra task to the current week (e.g. extra reps on a topic that is hurting).\n'+
   '{"type":"weak","unit":1-10,"topic":0|1|2|null,"note":"why"} — registers a weak area (use farTopicGroups in the state JSON to pick the right topic index, null = whole module). The practice generator then biases 60% of adaptive question sets toward these. Use this whenever the user says they are struggling with, stuck on, or scoring badly in something.\n'+
   '{"type":"unweak","unit":1-10,"topic":0|1|2|null} — removes a weak area the user says is now fixed.\n'+
-  'Dates: resolve relative dates ("next week Tue-Thu") against today. Never invent problems the user did not mention.';
+  'Dates: resolve relative dates ("next week Tue-Thu") against today. Never invent problems the user did not mention.\n'+
+  'IMPORTANT: if the update describes work-schedule constraints (on-site days, long hours, engagement weeks, commutes), you MUST propose concrete day and/or exception actions that adapt the study schedule around those constraints — reason about when study time realistically fits (e.g. home 6pm → evening block 7:15-9:15 PM, or a morning block before a 7:30 start). Zero actions is only acceptable for pure status updates with no scheduling impact.';
   try{
     let raw=await coachSend(prompt);
+    if(!raw||!String(raw).trim()||String(raw).trim()==='undefined')
+      throw new Error('empty AI reply · payload was: '+(window.__coachDbg||'nothing'));
     raw=String(raw).replace(/```json|```/g,'');
     const a=raw.indexOf('{'),b=raw.lastIndexOf('}');
     let parsed=null;
@@ -1613,7 +1634,6 @@ render();
 })();
 </script>
 <script>
-// Cleanup crew: if any old service worker still controls this origin, unregister it and wipe its caches.
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
   if(window.caches&&caches.keys)caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))).catch(()=>{});
