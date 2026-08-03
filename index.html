@@ -463,13 +463,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     </div>
   </div>
   <div class="card">
-    <h2>Danger zone</h2>
-    <button class="btn2" style="color:var(--bad)" onclick="if(confirm('Wipe ALL progress, scores and settings?')){localStorage.removeItem(KEY);localStorage.removeItem('farStudy_v1');location.reload()}">Reset everything</button>
+    <h2>Reset</h2>
+    <div class="mut" style="margin-bottom:10px">Two levels. Soft reset clears the <b>progress you earned</b> and leaves your setup alone — API key, work schedule, dates and exam date all survive. Hard reset wipes the device clean, including your API key.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn2" style="color:var(--warn);border-color:var(--warn)" onclick="softReset()">↺ Soft reset — progress only</button>
+      <button class="btn2" style="color:var(--bad);border-color:var(--bad)" onclick="hardReset()">⚠ Hard reset — everything</button>
+    </div>
+    <div class="mut"><b>Soft clears:</b> XP &amp; rank, streak, hours logged, all checked tasks/objectives/daily steps, scores &amp; quiz history, weak areas, coach log. &nbsp;<b>Soft keeps:</b> API key &amp; provider, work week &amp; day types, exceptions, plan start &amp; exam date, sound setting, custom unit names.</div>
   </div>
 </div>
 
 <script>
-const BUILD='v1.8';
+const BUILD='v1.9';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1285,6 +1290,27 @@ async function syncPings(){
     if((a&&a.isError)||(b&&b.isError))return 'Ping update hit an error — tell Claude your new start date in chat.';
     return 'Notification pings re-synced to '+S.start+'.';
   }catch(e){return 'Ping update failed — tell Claude your new start date in chat.'}
+}
+// Soft reset: wipe earned progress, preserve every piece of setup (API key included).
+function softReset(){
+  if(!confirm('Soft reset?\n\nCLEARS: XP & rank, streak, hours, all checked tasks/objectives/steps, scores, quiz history, weak areas, coach log.\n\nKEEPS: API key, work schedule, exceptions, plan & exam dates, unit names.'))return;
+  const keep={ai:S.ai,work:S.work,exceptions:S.exceptions,start:S.start,exam:S.exam,sound:S.sound,
+    units:S.weeks.map(w=>w.unit)};
+  const fresh={start:keep.start,exam:keep.exam,sound:keep.sound,ai:keep.ai,work:keep.work,exceptions:keep.exceptions,
+    weeks:DEF_WEEKS.map((w,i)=>({unit:keep.units[i]||w.unit,
+      tasks:(i<10?STD_TASKS:REV_TASKS).map(t=>({t,done:false})),obj:OBJ[i].map(()=>false)})),
+    preTasks:PRE_TASKS.map(t=>({t,done:false})),preObj:PRE_OBJ.map(()=>false),
+    checkins:{},minutes:{},scores:[],steps:{},dayDone:{},quizXp:{},usedQ:{},weak:[],coachLog:[],
+    weekPopped:{},xp:0,lvlSeen:0,section:'FAR'};
+  localStorage.setItem(KEY,JSON.stringify(fresh));
+  location.reload();
+}
+function hardReset(){
+  if(!confirm('HARD RESET — wipe everything on this device?\n\nThis also deletes your saved API key and work schedule. There is no undo.\n\nTip: Cancel and hit Export first if you might want this back.'))return;
+  if(!confirm('Last check: erase all Cadence data including the API key?'))return;
+  localStorage.removeItem(KEY);localStorage.removeItem('farStudy_v1');
+  try{localStorage.clear()}catch(e){}
+  location.reload();
 }
 function exportData(){
   const data=JSON.stringify(S);
