@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cadence — CPA</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0e0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cadence">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root { color-scheme: dark;
+  --bg:#0a0e0c; --card:#101711; --ink:#d2e8d6; --sub:#7da489; --line:#223425;
+  --grn:#3dff8b; --grnGlow:rgba(61,255,139,.35);
+  --acc:#3dff8b; --accSoft:rgba(61,255,139,.12);
+  --good:#3dff8b; --goodSoft:rgba(61,255,139,.14);
+  --warn:#ffc14d; --warnSoft:rgba(255,193,77,.12);
+  --bad:#ff6b6b; --badSoft:rgba(255,107,107,.14);
+  --gold:#ffd75e; --goldSoft:rgba(255,215,94,.12);
+  --paper:#f6f7f4; --paperInk:#1c2620; --paperLine:#e2e6e0;
+  --mono:ui-monospace,'Cascadia Mono','SF Mono',Consolas,'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding:18px;font-size:14px}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);opacity:.35}
+h1{font-size:20px;letter-spacing:1px;font-family:var(--mono);color:var(--grn);text-shadow:0 0 12px var(--grnGlow)}
+h2{font-size:14px;margin-bottom:10px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;color:var(--ink)}
+h3{font-size:12.5px;margin:12px 0 6px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;color:var(--sub)}
+.sub{color:var(--sub);font-size:12.5px;font-family:var(--mono)}
+.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:4px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:12px;font-weight:700;color:var(--sub);font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase}
+.tab.on{background:var(--grn);color:#06220f;border-color:var(--grn);box-shadow:0 0 14px var(--grnGlow)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.stat .n{font-size:26px;font-weight:700;letter-spacing:0;font-family:var(--mono);color:var(--grn);text-shadow:0 0 10px var(--grnGlow)}
+.stat .l{color:var(--sub);font-size:11.5px;margin-top:2px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.pill{display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.3px}
+.pill.b{background:var(--accSoft);color:var(--acc)} .pill.g{background:var(--goodSoft);color:var(--good)}
+.pill.w{background:var(--warnSoft);color:var(--warn)} .pill.r{background:var(--badSoft);color:var(--bad)}
+.pill.gold{background:var(--goldSoft);color:var(--gold)}
+button{font-family:var(--mono);cursor:pointer;border:none;border-radius:6px;padding:8px 14px;font-size:12.5px;font-weight:700;letter-spacing:.4px}
+.btn{background:var(--grn);color:#06220f;box-shadow:0 0 12px rgba(61,255,139,.25)}
+.btn:hover{box-shadow:0 0 20px var(--grnGlow)}
+.btn2{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btnG{background:var(--grn);color:#06220f;box-shadow:0 0 12px rgba(61,255,139,.25)}
+button:disabled{opacity:.45;cursor:default;box-shadow:none}
+input,select,textarea{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#0d130e;color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--sub);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line)}
+.bar{height:10px;background:#15211a;border-radius:2px;overflow:hidden;border:1px solid var(--line)}
+.bar>div{height:100%;background:var(--grn);border-radius:0;transition:width .35s;box-shadow:0 0 10px var(--grnGlow)}
+.bar.gold>div{background:linear-gradient(90deg,var(--gold),#ffe9a3);box-shadow:0 0 10px rgba(255,215,94,.4)}
+.bar.mini{height:4px;margin:1px 0 7px 24px;max-width:420px}
+.week{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.week.cur{border-color:var(--grn);box-shadow:0 0 16px rgba(61,255,139,.15),inset 0 0 20px rgba(61,255,139,.04)}
+.week.alldone{border-color:var(--gold);box-shadow:0 0 16px rgba(255,215,94,.15)}
+.week .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.task{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13px;line-height:1.4}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--good);flex-shrink:0;margin-top:1px;cursor:pointer}
+input[type=checkbox]:checked{animation:cbpop .35s ease}
+@keyframes cbpop{0%{transform:scale(1)}45%{transform:scale(1.55) rotate(8deg)}100%{transform:scale(1)}}
+.task.done{color:var(--sub);text-decoration:line-through}
+.step{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);align-items:flex-start;font-size:13px;line-height:1.45}
+.step .tm{width:82px;flex-shrink:0;font-weight:700;color:var(--acc);font-size:12px;padding-top:1px}
+.step.done .tx{color:var(--sub);text-decoration:line-through}
+.rule{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.45}
+.frm{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.frm label{display:block;font-size:11.5px;color:var(--sub);font-weight:600;margin-bottom:3px}
+.mut{color:var(--sub);font-size:12px;line-height:1.5}
+.big{font-size:15px;line-height:1.5}
+.wkname{font-weight:700;font-size:14px;border:none;background:transparent;color:var(--ink);width:100%;max-width:420px}
+.wkname:focus{outline:1px solid var(--acc);border-radius:4px}
+.banner{border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600}
+.banner.w{background:var(--warnSoft);color:var(--warn)}
+.qq{border:none;border-radius:10px;padding:14px;margin-bottom:10px;background:var(--paper);color:var(--paperInk);box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.qq .qt{font-weight:600;margin-bottom:8px;line-height:1.45;color:var(--paperInk)}
+.opt{display:flex;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;align-items:flex-start;line-height:1.4;color:var(--paperInk)}
+.opt:hover{background:#e9efe9}
+.opt input{accent-color:#0f9d58;margin-top:2px}
+.opt.correct{background:#dcf3e3} .opt.wrong{background:#fbe3e1}
+.expl{margin-top:8px;padding:8px 10px;background:#ecefe9;border-radius:8px;font-size:12.5px;color:#4a5a50;line-height:1.5}
+.schedday{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px}
+.schedday .rowtop{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.suggest{background:var(--accSoft);border-radius:8px;padding:8px 10px;font-size:12.5px;margin-top:6px;line-height:1.5}
+.suggest.mid{background:var(--goldSoft)}
+.obj{display:flex;gap:8px;padding:4px 0;font-size:13px;line-height:1.45;align-items:flex-start}
+.obj input{width:15px;height:15px;accent-color:var(--acc)}
+.obj.done{color:var(--sub)}
+.uchip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);border-radius:16px;font-size:12.5px;font-weight:600;cursor:pointer;user-select:none}
+.uchip.on{background:var(--accSoft);border-color:var(--acc);color:var(--acc)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9999}
+.xtoast{position:fixed;z-index:10000;pointer-events:none;font-weight:800;font-size:14px;font-family:var(--mono);color:var(--grn);text-shadow:0 0 10px var(--grnGlow);animation:fly 1s ease-out forwards}
+.xtoast.big{font-size:18px;color:var(--gold);text-shadow:0 0 12px rgba(255,215,94,.5)}
+.xtoast.neg{color:var(--bad);text-shadow:0 0 10px rgba(255,107,107,.4)}
+@keyframes fly{0%{opacity:0;transform:translateY(4px) scale(.8)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}100%{opacity:0;transform:translateY(-42px) scale(1)}}
+.lvlrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-family:var(--mono)}
+/* boot splash */
+#splash{position:fixed;inset:0;z-index:10002;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:22px;transition:opacity .55s ease}
+#splash.gone{opacity:0;pointer-events:none}
+.wordmark{font-family:var(--mono);font-size:clamp(30px,9vw,52px);font-weight:800;letter-spacing:10px;
+  color:var(--grn);text-shadow:0 0 24px var(--grnGlow);padding-left:10px;animation:wmIn .8s ease both}
+.wmsub{font-family:var(--mono);font-size:11.5px;letter-spacing:5px;color:var(--sub);text-transform:uppercase;animation:wmIn .8s .15s ease both}
+@keyframes wmIn{0%{opacity:0;transform:translateY(8px);letter-spacing:22px}100%{opacity:1;transform:none}}
+.pulse{display:flex;align-items:flex-end;gap:5px;height:34px}
+.pulse i{width:5px;background:var(--grn);border-radius:2px;box-shadow:0 0 10px var(--grnGlow);animation:beat 1.05s infinite ease-in-out}
+.pulse i:nth-child(1){animation-delay:0s}.pulse i:nth-child(2){animation-delay:.13s}
+.pulse i:nth-child(3){animation-delay:.26s}.pulse i:nth-child(4){animation-delay:.39s}
+.pulse i:nth-child(5){animation-delay:.52s}
+@keyframes beat{0%,100%{height:9px;opacity:.45}45%{height:32px;opacity:1}}
+.bootline{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:var(--sub);min-height:14px}
+#popWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10001;pointer-events:none}
+.popbox{font-family:var(--mono);background:rgba(6,14,9,.94);border:2px solid var(--grn);border-radius:12px;padding:28px 46px;text-align:center;box-shadow:0 0 50px var(--grnGlow),inset 0 0 30px rgba(61,255,139,.07);animation:popin .45s cubic-bezier(.2,1.4,.4,1);transition:opacity .4s}
+.popbox.gold{border-color:var(--gold);box-shadow:0 0 50px rgba(255,215,94,.4),inset 0 0 30px rgba(255,215,94,.07)}
+.popbox .t1{font-size:30px;font-weight:800;color:var(--grn);letter-spacing:4px;text-shadow:0 0 16px var(--grnGlow)}
+.popbox.gold .t1{color:var(--gold);text-shadow:0 0 16px rgba(255,215,94,.5)}
+.popbox .t2{font-size:13px;color:var(--sub);margin-top:10px;letter-spacing:1.5px;text-transform:uppercase}
+.popbox.out{opacity:0}
+@keyframes popin{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.07)}100%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="wordmark">CADENCE</div>
+  <div class="wmsub">Discipline · Rhythm · License</div>
+  <div class="pulse"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="bootline" id="bootline">initializing…</div>
+</div>
+<canvas id="fx"></canvas>
+<div class="top">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <h1>CADENCE</h1>
+      <span class="pill b" style="font-size:12px">CPA · FAR TRACK</span>
+      <select id="secSel" title="Exam section">
+        <option value="FAR" selected>FAR — active</option>
+        <option disabled>AUD — coming soon</option>
+        <option disabled>REG — coming soon</option>
+        <option disabled>ISC / BAR / TCP — coming soon</option>
+      </select>
+    </div>
+    <div class="sub" id="subline"></div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:24px;font-weight:700" id="countdown"></div>
+    <div class="sub">until exam day</div>
+  </div>
+</div>
+
+<div id="exBanner"></div>
+
+<div class="tabs">
+  <div class="tab on" data-t="today">Today</div>
+  <div class="tab" data-t="plan">12-Week Plan</div>
+  <div class="tab" data-t="kb">Knowledge Base</div>
+  <div class="tab" data-t="coach">Coach</div>
+  <div class="tab" data-t="sched">My Schedule</div>
+  <div class="tab" data-t="scores">Scores</div>
+  <div class="tab" data-t="rules">The Rules</div>
+  <div class="tab" data-t="set">Settings</div>
+</div>
+
+<!-- TODAY -->
+<div class="pane" id="p-today">
+  <div class="card" style="padding:12px 16px">
+    <div class="lvlrow">
+      <span class="pill gold" id="lvlPill">Lv 1 · Intern</span>
+      <b id="xpNum">0 XP</b>
+      <span class="mut" id="xpNext"></span>
+    </div>
+    <div class="bar gold"><div id="xpBar" style="width:0%"></div></div>
+  </div>
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="stat"><div class="n" id="stStreak">0</div><div class="l">day streak 🔥</div></div>
+    <div class="stat"><div class="n" id="stHours">0</div><div class="l">hours logged</div></div>
+    <div class="stat"><div class="n" id="stWeek">–</div><div class="l">current week</div></div>
+    <div class="stat"><div class="n" id="stProg">0%</div><div class="l">plan complete</div></div>
+  </div>
+  <div class="card">
+    <h2 id="todayTitle"></h2>
+    <div class="big" id="todayBody"></div>
+    <h3>Start to finish</h3>
+    <div id="agenda"></div>
+    <div id="midBlock"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btnG" id="checkinBtn" onclick="checkin()">✓ I studied today</button>
+      <input type="number" id="minInput" placeholder="minutes" min="5" max="600" style="width:90px">
+      <button class="btn" onclick="startTodayQuiz()">⚡ 5-Q knowledge check</button>
+      <span class="mut" id="checkinNote"></span>
+    </div>
+  </div>
+  <div class="card" id="quizCard" style="display:none">
+    <h2>Knowledge check <span class="pill b" id="qScope"></span></h2>
+    <div class="mut" style="margin-bottom:8px" id="qScopeNote"></div>
+    <div id="qBody"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+      <button class="btn" id="qSubmit" onclick="gradeSet('q')">Submit</button>
+      <button class="btn2" id="qAgain" style="display:none" onclick="startTodayQuiz()">↻ New set — keep going</button>
+      <span id="qResult" style="font-weight:700"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>This week you're expected to learn</h2>
+    <div class="mut" id="twUnitLbl" style="margin-bottom:6px"></div>
+    <div id="twObjectives"></div>
+  </div>
+  <div class="card">
+    <h2>This week's tasks <span class="pill g" id="twCount"></span></h2>
+    <div class="mut" style="margin-bottom:6px">Auto-syncs: finishing a day's full agenda checks off the matching weekly task by itself.</div>
+    <div style="margin-bottom:8px"><div class="bar"><div id="twBar" style="width:0%"></div></div></div>
+    <div id="twTasks"></div>
+  </div>
+</div>
+
+<!-- PLAN -->
+<div class="pane" id="p-plan" style="display:none">
+  <div class="card mut" style="line-height:1.6">FAR section plan: one Becker unit per week for 10 weeks, then 2 weeks of final review with both simulated exams. Click a unit name to rename it to match your Becker course. Completing a full week turns it gold. When you move to AUD/REG/discipline, this same structure gets a new plan.</div>
+  <div id="weeks"></div>
+</div>
+
+<!-- KNOWLEDGE BASE -->
+<div class="pane" id="p-kb" style="display:none">
+  <div class="card">
+    <h2>Practice generator</h2>
+    <div class="mut" style="margin-bottom:10px">Build a custom MCQ set from the built-in FAR bank. Filter by module, set how many questions, and generate as many fresh sets as you want — questions don't repeat until you've cycled through the whole pool for that scope.</div>
+    <h3>Modules</h3>
+    <div id="kbUnits" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn2" onclick="kbQuick('week')">This week only</button>
+      <button class="btn2" onclick="kbQuick('sofar')">Everything studied so far</button>
+      <button class="btn2" onclick="kbQuick('all')">All modules</button>
+    </div>
+    <div class="frm">
+      <div><label># Questions</label><select id="kbN"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option><option>30</option></select></div>
+      <div><label style="visibility:hidden">.</label><label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:7px 0"><input type="checkbox" id="kbAdaptive" checked style="width:15px;height:15px"> Adaptive — bias toward my weak areas</label></div>
+      <div><button class="btn" onclick="startKb()">Generate set</button></div>
+      <div class="mut" id="kbPoolInfo" style="padding-bottom:8px"></div>
+    </div>
+    <h3>Weak areas <span class="mut" style="font-weight:400">— fed by the Coach, or add manually. Adaptive sets pull ~60% from these.</span></h3>
+    <div id="weakList" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div class="frm" style="margin-bottom:0">
+      <div><label>Module</label><select id="wkU"></select></div>
+      <div><label>Topic</label><select id="wkT"></select></div>
+      <div><button class="btn2" onclick="addWeak()">+ Add weak area</button></div>
+    </div>
+  </div>
+  <div class="card" id="kbCard" style="display:none">
+    <h2>Practice set <span class="pill b" id="kScope"></span></h2>
+    <div id="kBody"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+      <button class="btn" id="kSubmit" onclick="gradeSet('k')">Submit</button>
+      <button class="btn2" id="kAgain" style="display:none" onclick="startKb()">↻ New set — keep going</button>
+      <span id="kResult" style="font-weight:700"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Grow this bank with your Becker materials</h2>
+    <div class="mut" style="line-height:1.7">There's no direct Becker API, but you can make this bank match your course exactly: copy your Becker module outlines, notes, or missed-question topics into a chat with Claude and say <b>"add questions to my CPA dashboard bank for F5 based on this."</b> Claude will write new tagged questions into the app so your daily checks and this generator stay aligned with exactly what you're studying. Same path later for AUD, REG, and your discipline section.</div>
+  </div>
+</div>
+
+<!-- COACH -->
+<div class="pane" id="p-coach" style="display:none">
+  <div class="card">
+    <h2>Tell your coach what changed</h2>
+    <div class="mut" style="margin-bottom:10px">Dump anything — schedule changes, engagement news, how studying is going, goals. No forms. The coach reads your current plan and work schedule, replies, and proposes concrete changes: exceptions for busy stretches, moved study windows, day-type switches. You approve before anything is applied. Brain: built-in Claude inside Cowork, or your own Anthropic/OpenAI API key on phone/standalone copies — pick in Settings.<br><span style="color:var(--ink)">Examples: "I'm on-site in Grand Rapids Tue–Thu next week, nights are shot" · "inventory count moved to Friday" · "F5 bonds is destroying me, I need more time on it" · "slept badly all week, sessions are garbage"</span></div>
+    <textarea id="coachIn" rows="4" style="width:100%;font-family:inherit;font-size:13.5px;padding:10px;border:1px solid var(--line);border-radius:8px;resize:vertical" placeholder="What's going on this week?"></textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <button class="btn" id="coachBtn" onclick="askCoach()">Send to coach</button>
+      <span class="mut" id="coachStatus"></span>
+    </div>
+  </div>
+  <div class="card" id="coachOut" style="display:none">
+    <h2>Coach says</h2>
+    <div class="big" id="coachReply" style="white-space:pre-wrap"></div>
+    <div id="coachActions"></div>
+  </div>
+  <div class="card">
+    <h2>Recent updates</h2>
+    <div id="coachLog"></div>
+  </div>
+</div>
+
+<!-- MY SCHEDULE -->
+<div class="pane" id="p-sched" style="display:none">
+  <div class="card">
+    <h2>Your work week</h2>
+    <div class="mut" style="margin-bottom:10px">Describe each day the way it actually is. Pick the day type — office, light engagement, heavy engagement, travel, or off — set your hours, and flag days where the engagement has slack in the middle (waiting on client PBCs, downtime between sections). The dashboard turns that into a study window for each day, plus a <b>bonus midday sprint</b> on days with slack. Override any suggestion with your own time.</div>
+    <div id="workDays"></div>
+    <button class="btn" style="margin-top:10px" onclick="saveWork()">Save work schedule</button>
+  </div>
+  <div class="card">
+    <h2>Busy periods & exceptions</h2>
+    <div class="mut" style="margin-bottom:10px">Multi-day crunches, travel stints, PTO. During an exception the daily plan drops to a 20–45 min "protect the streak" minimum and flags makeup time.</div>
+    <div class="frm">
+      <div><label>From</label><input type="date" id="exFrom"></div>
+      <div><label>To</label><input type="date" id="exTo"></div>
+      <div><label>Type</label><select id="exType"><option>Engagement crunch</option><option>Travel / on-site</option><option>PTO / life</option></select></div>
+      <div><label>Note</label><input id="exNote" placeholder="e.g. inventory count, client X" style="width:180px"></div>
+      <div><button class="btn" onclick="addEx()">Add</button></div>
+    </div>
+    <div id="exList"></div>
+  </div>
+  <div class="card">
+    <h2>Personal calendar sync <span class="pill b">available when you're ready</span></h2>
+    <div class="mut" style="line-height:1.7">This dashboard can link to a <b>personal</b> Google, Outlook.com, or Apple calendar (work accounts with firm security policies won't connect). When you want it: connect the calendar's connector in Cowork settings, then tell Claude "wire my calendar into the CPA dashboard" — it will read your busy times and propose open study slots automatically. Until then, the manual schedule above drives everything.</div>
+  </div>
+</div>
+
+<!-- SCORES -->
+<div class="pane" id="p-scores" style="display:none">
+  <div class="card">
+    <h2>Log a score</h2>
+    <div class="frm">
+      <div><label>Date</label><input type="date" id="scDate"></div>
+      <div><label>What</label><select id="scUnit"></select></div>
+      <div><label>Type</label><select id="scType"><option>Module MCQs</option><option>Cumulative set</option><option>Unit exam</option><option>SIMs</option><option>Knowledge check</option><option>Knowledge base set</option><option>Simulated Exam 1</option><option>Simulated Exam 2</option></select></div>
+      <div><label># Questions</label><input type="number" id="scN" min="1" style="width:80px"></div>
+      <div><label>Score %</label><input type="number" id="scPct" min="0" max="100" style="width:80px"></div>
+      <div><button class="btn" onclick="addScore()">Add</button></div>
+    </div>
+    <div class="mut">Targets: 65–75% first-pass module MCQs is fine. Unit exams: 70%+. Simulated Exam 1: 50%+ usually means on track.</div>
+  </div>
+  <div class="card" style="height:260px"><canvas id="chart"></canvas></div>
+  <div class="card"><table><thead><tr><th>Date</th><th>Unit</th><th>Type</th><th>#Q</th><th>Score</th><th></th></tr></thead><tbody id="scRows"></tbody></table></div>
+</div>
+
+<!-- RULES -->
+<div class="pane" id="p-rules" style="display:none">
+  <div class="card">
+    <h2>The method <span class="pill b">Becker / Peter Olinto school</span> <span class="pill g">+ community-proven</span></h2>
+    <div class="mut" style="margin-bottom:6px">Built from Becker's own guidance (Peter Olinto, JD, CPA — Becker's longtime national lead instructor), plus the habits that show up over and over from working candidates who passed (r/CPA, Another71, CPA TikTok/IG).</div>
+    <div class="rule"><b>Questions are the curriculum — lectures are the preview.</b> The Olinto-school core: you learn by doing MCQs and reading every explanation, not by rewatching lectures. Lectures once at 1.5–2x, working the examples by hand, then straight into that module's questions. Never rewatch; requestion.</div>
+    <div class="rule"><b>Daily cumulative questions.</b> The single most repeated Becker-veteran tip: a 20–40 question set from PAST units, regularly, so nothing decays. That's your Wednesday block — and the mobile sprint set on engagement days.</div>
+    <div class="rule"><b>Do all the MCQs; SIMs at least once each.</b> Community consensus for FAR. SIMs are 50% of your score — Saturdays, from week 1, not saved for the end.</div>
+    <div class="rule"><b>Rework every miss.</b> Start each session by redoing yesterday's wrong answers. Highest-yield 15 minutes that exists.</div>
+    <div class="rule"><b>Don't chase perfection on first pass.</b> 65–75% and move on. Cumulative sets and final review handle retention. Stalling on F2 while F7 waits is how working candidates run out of runway.</div>
+    <div class="rule"><b>Working-candidate rhythm.</b> What passers report: consistent short weekday blocks (not hero 4-hour nights), protected weekend mornings, study something every single day even if it's 20 phone MCQs, and sit the exam soon after review ends — momentum decays fast.</div>
+    <div class="rule"><b>Hardest topics get extra reps:</b> leases, bonds, income taxes, governmental, not-for-profit.</div>
+  </div>
+  <div class="card">
+    <h2>Discipline rules</h2>
+    <div class="rule"><b>Schedule the exam first.</b> A paid-for date is the strongest forcing function. Book it this week.</div>
+    <div class="rule"><b>Nothing before the block.</b> No weed before or during study — it hits exactly the memory consolidation you're paying Becker for. After the block is checked off, or save it for Friday. Study first, always.</div>
+    <div class="rule"><b>Never miss twice.</b> Miss once, fine. Twice in a row is a decision. Friday is the makeup slot.</div>
+    <div class="rule"><b>Phone in another room.</b> Timer on, one tab open: Becker.</div>
+    <div class="rule"><b>Show up tired.</b> A bad 2-hour session beats a skipped one.</div>
+    <div class="rule"><b>Check in daily and take the knowledge check.</b> The streak is the habit; the quiz is the proof it stuck.</div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="pane" id="p-set" style="display:none">
+  <div class="card">
+    <h2>Dates</h2>
+    <div class="frm">
+      <div><label>Plan start</label><input type="date" id="setStart"></div>
+      <div><label>Exam date</label><input type="date" id="setExam"></div>
+      <div><button class="btn" onclick="saveDates()">Save</button></div>
+    </div>
+    <div class="mut">Changing the start date re-anchors all 12 weeks, the Today tab, and every week's date range immediately. If the start is in the future, the dashboard runs in <b>pre-season build mode</b> — a prep checklist instead of study blocks — until day 1. Weeks run 7 days from whatever start day you pick (a Friday start means weeks run Fri→Thu; daily session types still follow the weekday).</div>
+  </div>
+  <div class="card">
+    <h2>Coach AI provider</h2>
+    <div class="mut" style="margin-bottom:10px;line-height:1.6"><b>Built-in Claude</b> works automatically inside Cowork — no setup. To run the coach on a phone or standalone copy of this file, add your own API key: <b>Anthropic</b> (console.anthropic.com) or <b>OpenAI</b> (platform.openai.com). Note: these are pay-per-use developer keys, not your Claude Pro / ChatGPT Plus subscription — subscriptions can't be linked to outside apps. Coach messages cost fractions of a cent. Your key is stored only on this device. Inside Cowork's sandbox, outside API calls are blocked, so built-in Claude is always used there.</div>
+    <div class="frm">
+      <div><label>Provider</label><select id="aiProv"><option value="builtin">Built-in Claude (Cowork)</option><option value="anthropic">Anthropic API key</option><option value="openai">OpenAI API key</option></select></div>
+      <div><label>API key</label><input id="aiKey" type="password" placeholder="sk-..." style="width:220px"></div>
+      <div><label>Model (optional)</label><input id="aiModel" placeholder="auto" style="width:160px"></div>
+      <div><button class="btn" onclick="saveAi()">Save</button></div>
+    </div>
+    <div class="mut" id="aiStatus"></div>
+  </div>
+  <div class="card">
+    <h2>Effects</h2>
+    <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="setSound" onchange="S.sound=this.checked;save()"> Celebration sounds</label>
+  </div>
+  <div class="card">
+    <h2>Backup / transfer</h2>
+    <div class="mut" style="margin-bottom:8px">Data lives on this device only. Export here, then Import on your phone (or vice versa) to move your progress. Do this occasionally as a backup too.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="exportData()">⬇ Export data</button>
+      <button class="btn2" onclick="importData()">⬆ Import data</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Danger zone</h2>
+    <button class="btn2" style="color:var(--bad)" onclick="if(confirm('Wipe ALL progress, scores and settings?')){localStorage.removeItem(KEY);localStorage.removeItem('farStudy_v1');location.reload()}">Reset everything</button>
+  </div>
+</div>
+
+<script>
+const KEY='farStudy_v2';
+const DEF_WEEKS=[
+ {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
+ {unit:'F2 — Revenue recognition; cash; trade receivables'},
+ {unit:'F3 — Inventory; PP&E; depreciation'},
+ {unit:'F4 — Investments; intangibles; fair value'},
+ {unit:'F5 — Payables; long-term debt & BONDS (hard — extra reps)'},
+ {unit:'F6 — LEASES (hard — extra reps); equity'},
+ {unit:'F7 — INCOME TAXES (hard); accounting changes & errors'},
+ {unit:'F8 — Contingencies; subsequent events; statement of cash flows'},
+ {unit:'F9 — NOT-FOR-PROFIT accounting (do not skim)'},
+ {unit:'F10 — GOVERNMENTAL accounting (do not skim)'},
+ {unit:'Final Review 1 — Simulated Exam 1 + weakest-area MCQs'},
+ {unit:'Final Review 2 — Simulated Exam 2 + hardest topics + rest before exam'}
+];
+const OBJ=[
+ ['Explain relevance vs faithful representation (the two fundamental characteristics)','Prepare a multi-step income statement and know what goes where','Classify OCI items (AFS debt gains, translation, pension) vs net income items','Present discontinued operations net of tax below continuing ops','Know what the 10-K, 10-Q and 8-K are and who files them'],
+ ['Apply all 5 steps of the ASC 606 revenue model to a contract','Decide over-time vs point-in-time recognition and defend it','Define cash equivalents (≤3-month original maturity) and build a bank rec','Record CECL expected-credit-loss allowance entries and write-offs','Account for factoring with vs without recourse'],
+ ['Compute ending inventory & COGS under FIFO, LIFO and weighted average','Apply lower-of-cost-or-NRV (FIFO/avg) vs lower-of-cost-or-market (LIFO/retail)','Decide which costs capitalize into PP&E vs get expensed','Compute straight-line, DDB and units-of-production depreciation','Run the two-step held-for-use impairment test (undiscounted CF, then FV)'],
+ ['Classify debt securities as trading / AFS / HTM and apply the right FV treatment','Apply the equity method: share of income up, dividends down','Explain goodwill treatment: no amortization, annual impairment test','Expense R&D and know the few internally-developed intangible exceptions','Rank fair value inputs: Level 1, 2, 3'],
+ ['Explain why a bond prices at discount vs premium (stated vs market rate)','Build an effective-interest amortization table from scratch','Treat bond issue costs as a carrying-amount reduction','Classify current vs noncurrent debt incl. refinancing rules','Compute gain/loss on early extinguishment'],
+ ['Apply the finance-lease criteria (ownership, purchase option, 75% life, 90% PV, specialized)','Book lessee entries: operating (single expense) vs finance (interest + amortization)','Measure the ROU asset and lease liability at PV of payments','Record treasury stock under the cost method incl. reissuance','Handle cumulative preferred dividends in arrears (disclose, not accrue)'],
+ ['Identify temporary vs permanent differences on sight','Compute DTAs/DTLs using enacted future rates','Decide when a valuation allowance is required (more likely than not)','Apply the right treatment: principle change = retrospective, estimate = prospective, error = restate','Trace a depreciation timing difference through the deferred tax accounts'],
+ ['Accrue vs disclose loss contingencies (probable + estimable = accrue)','Never accrue gain contingencies','Distinguish recognized (Type 1) vs nonrecognized (Type 2) subsequent events','Build the operating section under the indirect method (AR up = subtract, etc.)','Classify every cash flow as operating / investing / financing'],
+ ['Name the two net asset classes and what moves between them','Recognize contributions vs exchange transactions correctly','Record releases from restriction as reclassifications, not revenue','Apply the contributed-services recognition test (specialized skills, etc.)','List the required NFP financial statements'],
+ ['Explain modified accrual + current financial resources focus','Apply "measurable and available" revenue recognition (60-day property tax rule)','Sort all fund types: governmental / proprietary / fiduciary','Contrast fund statements vs government-wide (full accrual) statements','Record expenditures (not expenses) and encumbrances in the general fund'],
+ ['Complete Simulated Exam 1 under real 4-hour conditions','Review and understand every single SE1 miss','Rebuild your weak-area list from the score log and drill the top 3','Refresh governmental + NFP with a mixed 30-Q set','Refresh leases, bonds and income taxes'],
+ ['Complete Simulated Exam 2 — target 60%+','Close every remaining weak area with targeted MCQs','Re-drill the classic killers one final time: leases, bonds, taxes, gov, NFP','Confirm logistics: NTS printed, ID matches, route to Prometric, sleep plan','Taper: nothing new after Thursday — rest is part of the plan']
+];
+const STD_TASKS=['Watch lectures / read modules (1.5–2x)','Module MCQs — first pass (65%+ then move on)','Wednesday cumulative 30-Q set','Saturday SIMs (2+)','Sunday unit exam — log score'];
+const REV_TASKS=['Take simulated exam (log score)','Review every miss in depth','Weakest-area MCQ drills (top 3 areas)','Governmental + NFP refresh set','Leases / bonds / income tax refresh set'];
+// Week 0 — pre-season. Order mirrors the pre-season daily agenda steps 1:1 (checking a step auto-checks the task).
+const PRE_TASKS=['Book the FAR exam date (or confirm NTS timeline)','Set your real work week in My Schedule','Dry-run one 30-min session: F1 M1 at 1.5x + 10 MCQs','Set phone alarms matching your study windows','Brief the Coach: goals, schedule quirks, weak spots from school'];
+const PRE_OBJ=['Have a paid-for (or firmly targeted) exam date on the calendar','Know exactly which hours on which days are yours to study','Prove the seat works: one full dry-run session completed without your phone','Becker login + mobile app installed and working on your phone','Day 1 needs zero decisions: schedule set, alarms set, desk ready'];
+const DAYS=['sun','mon','tue','wed','thu','fri','sat'];
+const LOADS={office:'Office / normal',['eng-light']:'Engagement — light',['eng-heavy']:'Engagement — heavy',travel:'Travel / on-site',off:'Off (no work)'};
+const DEF_WORK={};['mon','tue','wed','thu','fri'].forEach(d=>DEF_WORK[d]={ws:'08:30',we:'17:30',load:'office',midday:false,midTime:'12:00',ovr:''});
+['sat','sun'].forEach(d=>DEF_WORK[d]={ws:'',we:'',load:'off',midday:false,midTime:'12:00',ovr:''});
+
+const AGENDA={
+ lecture:['Lecture + MCQ block (2 hrs)',[[0,15,'Warm-up: redo yesterday’s missed MCQs. Read every explanation.'],[15,70,'New material: this unit’s next lectures at 1.5–2x. Pause and work every example with a pencil — watching is not learning.'],[70,110,'Module MCQs on exactly what you just covered. Target 65–75%. Flag anything you guessed on.'],[110,120,'Log your MCQ score in Scores, hit the check-in button, take the 5-Q knowledge check.']]],
+ wed:['Cumulative review (1 hr)',[[0,45,'30-question practice set drawing from ALL units covered so far (Becker practice test / Adapt2U). Timed — 90 sec/question.'],[45,60,'Rework every miss until you can explain WHY the right answer is right. Check in + knowledge check.']]],
+ fri:['OFF / makeup',[[0,0,'Planned rest. If you missed a block this week, tonight is the makeup — run that day’s agenda. Otherwise genuinely off (this is the guilt-free night).']]],
+ sat:['SIMs + cleanup (3 hrs)',[[0,20,'Redo this week’s missed MCQs.'],[20,110,'2+ task-based simulations from this unit, timed (~20 min each), then review solutions line by line.'],[110,170,'Finish all remaining module MCQs for the unit.'],[170,180,'Log scores, check in.']]],
+ sun:['Unit exam day (2 hrs)',[[0,75,'Becker unit exam under timed conditions. No notes, phone away.'],[75,105,'Review every miss. Add the topics you missed to a running weak-area note.'],[105,120,'20 min flashcards on misses. Log score, check in, knowledge check. Week closed.']]],
+ rev_wk:['Weak-area drills (2 hrs)',[[0,15,'Redo yesterday’s misses.'],[15,105,'MCQ drills on your top-3 weakest areas per the score log. 30–40 questions, explanations on all.'],[105,120,'Log score, check in, knowledge check.']]],
+ rev_sat:['SIMULATED EXAM (4 hrs)',[[0,240,'Full simulated exam under real conditions: 4 hours, timed, one 15-min break after testlet 3, phone in another room. Log the score immediately after.']]],
+ rev_sun:['Exam review (2 hrs)',[[0,90,'Go through every simulated-exam miss in depth — understand the why, not just the answer.'],[90,120,'Update your weak-area list. Check in.']]],
+ light:['Light day — protect the streak (20–45 min)',[[0,40,'Becker mobile app: 20–40 MCQs or flashcards from the current unit. On a plane, in a hotel, whatever — minimum effective dose.'],[40,45,'Check in. The streak survives; schedule makeup on the next open evening or Friday.']]],
+ pre:['PRE-SEASON — build mode',[[0,0,'Book the FAR exam date (or at least confirm your NTS timeline). This is the single biggest predictor of follow-through.'],[0,0,'Set your real work week in My Schedule — day types, hours, midday slack.'],[0,0,'Dry-run one 30-minute session: F1 M1 lecture at 1.5x + 10 MCQs. Prove the seat works before day 1.'],[0,0,'Set phone alarms matching your study windows (backup for the pings).'],[0,0,'Tell the Coach your goals and anything about your schedule it should know.']]],
+ free:['Free-day block (2 hrs)',[[0,15,'Redo yesterday’s missed MCQs.'],[15,70,'This unit’s next lectures at 1.5–2x with examples worked by hand.'],[70,110,'Module MCQs on what you just covered.'],[110,120,'Log score, check in, knowledge check.']]]
+};
+const MID_STEPS=[[0,20,'Midday sprint: 20–25 MCQs from the current unit on the Becker app while the engagement has slack (waiting on PBCs, between sections). Explanations on everything.'],[20,25,'Jot down misses to redo tonight. Back to work — nobody needs to know you just banked 25 questions.']];
+
+// Topic groups per unit — Mon covers group 0, Tue group 1, Thu group 2.
+const TOPICS={
+1:['Standards & framework','Income statement & OCI','SEC reporting; changes & estimates'],
+2:['Revenue (ASC 606)','Cash & bank recs','Receivables & CECL'],
+3:['Inventory','PP&E & depreciation','Impairment & special topics'],
+4:['Debt securities & equity method','Intangibles & goodwill','Fair value'],
+5:['Bond pricing','Effective interest & issue costs','Other liabilities & extinguishment'],
+6:['Lease classification','Lease accounting','Equity'],
+7:['Deferred tax concepts','Measurement & allowance','Changes & errors'],
+8:['Contingencies','Subsequent events','Statement of cash flows'],
+9:['Net assets & contributions','Recognition rules','NFP statements'],
+10:['Modified accrual & revenues','Fund types','Statements & budgetary accounts']};
+// Which topic groups each weekday tests (null = cumulative all-units-so-far)
+const DAY_TOPIC={mon:[0],tue:[1],wed:null,thu:[2],fri:[0,1,2],sat:[0,1,2],sun:[0,1,2]};
+
+// Question bank: QB[unit] = [ [question, [4 options], correctIdx, explanation, topicGroup], ... ]
+const QB={
+1:[['The two FUNDAMENTAL qualitative characteristics of useful financial information are:',['Relevance and faithful representation','Comparability and consistency','Timeliness and verifiability','Materiality and conservatism'],0,'Comparability, verifiability, timeliness and understandability are ENHANCING characteristics. Relevance + faithful representation are fundamental.',0],
+['The single source of authoritative nongovernmental U.S. GAAP is:',['The FASB Accounting Standards Codification','SEC Staff Accounting Bulletins','AICPA Audit Guides','FASB Concepts Statements'],0,'The Codification is THE source; Concepts Statements are non-authoritative framework guidance.',0],
+['Faithful representation requires information to be:',['Complete, neutral, and free from error','Comparable, consistent, and timely','Conservative and prudent','Relevant and material'],0,'The three ingredients of faithful representation: completeness, neutrality, freedom from error.',0],
+['Which item is reported in other comprehensive income (OCI)?',['Unrealized gain on an available-for-sale debt security','Gain on sale of equipment','Dividend income','Loss from discontinued operations'],0,'AFS debt security unrealized gains/losses go to OCI. The others hit net income.',1],
+['Discontinued operations are presented:',['Net of tax, below income from continuing operations','Gross of tax, within operating income','In OCI','As a prior-period adjustment'],0,'Discontinued ops = separate line, net of tax, after continuing operations.',1],
+['Comprehensive income equals:',['Net income + other comprehensive income','Net income + dividends','Revenues − expenses only','Net income + prior-period adjustments'],0,'CI = NI + OCI. It never includes owner transactions like dividends.',1],
+['In a multi-step income statement, interest expense for a typical merchandiser is:',['A non-operating item below operating income','Part of cost of goods sold','An operating expense','Reported in OCI'],0,'Operating income = gross profit − operating expenses; interest expense sits in the non-operating section.',1],
+['The Form 10-K is:',['The annual report filed with the SEC','The quarterly report','Filed only for major events','A registration statement for new securities'],0,'10-K annual, 10-Q quarterly, 8-K major events.',2],
+['A Form 8-K is filed to report:',['Major corporate events on a current basis (e.g., auditor change, acquisition)','Quarterly earnings','Annual audited statements','Insider stock trades'],0,'8-K = current report for major events. Insider trades are Forms 3/4/5.',2],
+['A change in accounting ESTIMATE (e.g., useful life) is handled:',['Prospectively','Retrospectively','By restating prior periods','Through OCI'],0,'Estimates = prospective. Principle changes = retrospective. Errors = restatement.',2]],
+2:[['Under ASC 606, revenue is recognized when:',['Control of the good/service transfers to the customer','Cash is collected','The contract is signed','Costs are incurred'],0,'Step 5: recognize revenue when (or as) each performance obligation is satisfied — i.e., control transfers.',0],
+['Which supports recognizing revenue OVER TIME?',['The customer simultaneously receives and consumes the benefits','The price is fixed','The contract is short-term','Payment is received upfront'],0,'Over-time criteria: simultaneous consumption, customer controls the WIP asset, or no alternative use + enforceable right to payment.',0],
+['When a contract has multiple performance obligations, the transaction price is allocated based on:',['Relative standalone selling prices','Cost plus a normal margin for each item','Equal amounts per obligation','Whatever the invoice says'],0,'Step 4: allocate on relative standalone selling prices, estimating them if not observable.',0],
+['A cash equivalent must have an original maturity (from purchase date) of:',['3 months or less','6 months or less','12 months or less','Any maturity if highly liquid'],0,'≤3 months from the date acquired — e.g., a 90-day T-bill.',1],
+['On a bank reconciliation, deposits in transit are:',['Added to the bank balance','Deducted from the bank balance','Added to the book balance','Deducted from the book balance'],0,'The bank hasn’t recorded them yet — add to bank side. Outstanding checks are deducted from bank side.',1],
+['An NSF check returned by the bank is handled on the reconciliation as:',['A deduction from the book balance','A deduction from the bank balance','An addition to the bank balance','Ignored'],0,'The books recorded cash that never cleared — reduce the book side (and reinstate the receivable).',1],
+['Under CECL, writing off a specific uncollectible account:',['Debits the allowance, credits AR — no income effect','Debits bad debt expense directly','Reduces net income','Increases the allowance'],0,'The expense was recognized when the allowance was established; the write-off just uses it.',2],
+['In factoring receivables WITHOUT recourse:',['The buyer (factor) assumes the credit risk','The seller keeps credit risk','It must be treated as a loan','No discount is charged'],0,'Without recourse = risk transfers to the factor; typically accounted for as a sale.',2],
+['The aging-of-receivables method computes:',['The required ENDING balance of the allowance account','Bad debt expense directly','Cash collections','The write-off amount'],0,'Balance-sheet approach: aging gives the target allowance; expense is the plug to get there.',2]],
+3:[['In a period of RISING prices, FIFO produces:',['Higher ending inventory and higher net income than LIFO','Lower ending inventory than LIFO','Higher COGS than LIFO','Lower net income than LIFO'],0,'FIFO sells the old cheap layers → lower COGS, higher income, higher (newer-cost) ending inventory.',0],
+['Inventory carried under FIFO or weighted average is measured at:',['Lower of cost or net realizable value','Lower of cost or market (with ceiling/floor)','Replacement cost','Selling price'],0,'FIFO/average → lower of cost or NRV. LIFO/retail → lower of cost or market.',0],
+['Goods held on consignment are included in the inventory of:',['The consignor (owner), not the consignee holding them','The consignee holding them','Both parties','Neither party'],0,'Consigned goods stay on the consignor’s books until sold to the end customer.',0],
+['Which cost is CAPITALIZED into equipment?',['Installation and testing costs','Routine annual maintenance','Training employees to use it','Repairs after the asset is in use'],0,'Capitalize everything needed to get the asset to its location and condition for intended use.',1],
+['Double-declining-balance depreciation:',['Ignores salvage value in the annual computation (but never depreciates below it)','Subtracts salvage value first','Is a straight-line method','Always equals 150% of straight line'],0,'DDB rate × beginning carrying value; salvage only acts as the floor.',1],
+['Units-of-production depreciation is based on:',['Actual usage or output during the period','The passage of time','A constant percentage of carrying value','Management’s choice each year'],0,'(Cost − salvage) ÷ total expected output × units produced this period.',1],
+['Step 1 of the held-for-use impairment test compares carrying amount to:',['Undiscounted future cash flows','Discounted future cash flows','Fair value','NRV'],0,'Recoverability test uses UNdiscounted cash flows; if it fails, the loss = carrying amount − fair value.',2],
+['Interest is capitalized on a self-constructed asset based on:',['Weighted-average accumulated expenditures','Total borrowings','The full construction cost','Ending construction balance'],0,'Capitalized interest = rate × weighted-average accumulated expenditures, capped at actual interest incurred.',2],
+['In a nonmonetary exchange WITH commercial substance, gains are:',['Recognized in full','Deferred entirely','Recognized only to the extent of boot received','Recorded in OCI'],0,'Commercial substance → account at fair value, recognize full gain/loss. No commercial substance → proportional/deferral rules.',2]],
+4:[['An investor with 30% ownership and significant influence uses:',['The equity method','Fair value through net income','Consolidation','Amortized cost'],0,'20–50% + significant influence → equity method: share of income increases the investment, dividends decrease it.',0],
+['Trading debt securities are reported at:',['Fair value, with changes in net income','Fair value, with changes in OCI','Amortized cost','Lower of cost or market'],0,'Trading → FV through NI. AFS → FV through OCI. HTM → amortized cost.',0],
+['Under the equity method, dividends received from the investee:',['Reduce the investment account','Are dividend income','Increase the investment account','Go to OCI'],0,'Dividends are a return OF investment — credit the investment, not income.',0],
+['Classifying a debt security as held-to-maturity requires:',['Positive intent AND ability to hold it to maturity','Only intent','A maturity under one year','SEC approval'],0,'Both intent and ability; sales before maturity can taint the whole HTM portfolio.',0],
+['Goodwill is:',['Not amortized; tested for impairment','Amortized over 10 years','Amortized over 40 years','Expensed at acquisition'],0,'Under GAAP goodwill is tested for impairment, not amortized (private-company election aside).',1],
+['Research and development costs are generally:',['Expensed as incurred','Capitalized and amortized','Recorded in OCI','Capitalized if successful'],0,'R&D is expensed. Key exception areas: certain software development costs after feasibility.',1],
+['A finite-life intangible (e.g., a patent) is amortized over:',['The shorter of its legal life or useful life','Its legal life always','40 years','It is never amortized'],0,'Amortize over the period of expected benefit, capped by legal life.',1],
+['Level 1 of the fair value hierarchy is:',['Quoted prices in active markets for identical assets','Quoted prices for similar assets','Unobservable inputs','Management estimates'],0,'Level 1 = identical + active market. Level 2 = observable similar. Level 3 = unobservable.',2],
+['Fair value is defined as:',['The EXIT price — received to sell an asset in an orderly transaction between market participants','The entry (purchase) price','Replacement cost','Value in use to the entity'],0,'FV = exit price at the measurement date, from a market participant perspective.',2]],
+5:[['A bond issues at a DISCOUNT when:',['The stated rate is below the market rate','The stated rate exceeds the market rate','Rates are equal','The bond is callable'],0,'Investors pay less to make up for below-market coupons.',0],
+['A bond’s issue price equals:',['PV of the face amount + PV of the interest payments, both at the MARKET rate','Face value always','PV of interest at the stated rate','Face plus total interest'],0,'Price = PV of both cash streams discounted at the market (yield) rate.',0],
+['For a bond issued at a PREMIUM, periodic interest expense is:',['Less than the cash interest paid','More than the cash interest paid','Equal to cash paid','Zero'],0,'Premium amortization reduces expense below the coupon payment; carrying value walks down to face.',0],
+['Under the effective interest method, interest expense equals:',['Carrying value × market (effective) rate','Face × stated rate','Face × market rate','Carrying value × stated rate'],0,'Expense = carrying value × effective rate; cash paid = face × stated rate; difference amortizes the discount/premium.',1],
+['As a bond discount is amortized, the carrying value:',['Increases toward face value','Decreases toward face value','Stays constant','Equals fair value'],0,'Discount bonds accrete up to face; premium bonds amortize down.',1],
+['Bond issue costs are:',['Deducted from the carrying amount and amortized via effective interest','Expensed immediately','A separate asset','Added to face value'],0,'Treated like additional discount — they reduce the carrying amount.',1],
+['Gain or loss on early extinguishment of debt equals:',['Carrying amount minus reacquisition price','Face minus reacquisition price','Always a loss','Recorded in OCI'],0,'Carrying > price paid → gain; carrying < price → loss. Reported in income.',2],
+['Short-term debt expected to be refinanced is classified long-term under U.S. GAAP if:',['The company demonstrates intent AND ability (e.g., completed financing) before statements are issued','Management merely intends to refinance','The lender is a bank','It is always current'],0,'Need both intent and demonstrated ability before the financial statements are issued.',2],
+['A liability for compensated absences (vacation pay) is accrued when the obligation:',['Relates to vested/accumulating rights, is probable, and is estimable','Is possible','Is paid','Exceeds one year'],0,'Accrue vacation that vests or accumulates; sick pay that doesn’t vest is typically not accrued.',2]],
+6:[['Which condition makes a lease a FINANCE lease for the lessee?',['PV of lease payments is substantially all (≈90%+) of the asset’s fair value','Lease term is 40% of economic life','No purchase option exists','Asset has alternative uses'],0,'OWNES: Ownership transfer, Written purchase option (reasonably certain), Ninety-percent PV test, Economic life ≥75%, Specialized asset.',0],
+['Under ASC 842, leases longer than 12 months put on the lessee’s balance sheet:',['A right-of-use asset and a lease liability — both operating and finance','Only finance leases','Only the liability','Only a disclosure'],0,'Both lease types are capitalized; the income statement treatment differs.',0],
+['A 9-month equipment lease (no purchase option) can be accounted for by:',['Straight-line expense with no ROU asset — the short-term lease election','Mandatory capitalization','Finance lease treatment only','Deferral until year-end'],0,'≤12-month leases qualify for the short-term policy election: no ROU asset/liability, just expense.',0],
+['A lessee’s income statement for an OPERATING lease shows:',['A single straight-line lease expense','Interest expense plus amortization','Only interest expense','Nothing — off balance sheet'],0,'Operating: one straight-line expense. Finance: interest + amortization, front-loaded.',1],
+['The initial lease liability is measured at:',['Present value of the lease payments','Sum of all payments','Fair value of the asset','Cost of the asset'],0,'PV using the rate implicit in the lease (or incremental borrowing rate).',1],
+['Total expense over a FINANCE lease’s life is:',['Front-loaded — higher in early years than an equivalent operating lease','Back-loaded','Perfectly straight-line','Zero until maturity'],0,'Interest on a bigger early liability + amortization = declining but front-loaded pattern.',1],
+['Under the cost method, reissuing treasury stock ABOVE its cost:',['Credits APIC — treasury stock','Creates a gain in income','Credits retained earnings','Reduces common stock'],0,'Never income — equity transactions with owners don’t create gains/losses.',2],
+['Cumulative preferred dividends in arrears are:',['Disclosed but not recorded as a liability until declared','A current liability','Accrued each period','Deducted from retained earnings automatically'],0,'No liability until declaration — disclose the arrearage.',2],
+['A small stock dividend (under ~20–25%) is recorded at:',['Fair value of the shares, reducing retained earnings','Par value only','No entry','Cost'],0,'Small stock dividend → FV from RE to stock/APIC. Large (>25%) → par value.',2]],
+7:[['Accelerated tax depreciation (book straight-line) creates:',['A deferred tax liability','A deferred tax asset','A permanent difference','A valuation allowance'],0,'Taxable income is lower now, higher later → future taxable amounts → DTL.',0],
+['Municipal bond interest income is:',['A permanent difference — no deferred tax','A temporary difference','A DTA source','Taxable when received'],0,'Never taxable → permanent difference → affects effective rate, no deferreds.',0],
+['Warranty expense accrued for books but deductible for tax only when paid creates:',['A deferred tax asset','A deferred tax liability','A permanent difference','No difference'],0,'Expense now for books, deduction later for tax → future deductible amounts → DTA.',0],
+['A valuation allowance against a DTA is required when:',['It is more likely than not that some portion will NOT be realized','Realization is certain','Any doubt exists','The DTA exceeds the DTL'],0,'More-likely-than-not (>50%) non-realization → allowance for that portion.',1],
+['Deferred taxes are measured using:',['Enacted tax rates for the years the differences reverse','Current rates always','Proposed future rates','Average historical rates'],0,'ENACTED rates only — never anticipated legislation.',1],
+['Total income tax expense equals:',['Current tax expense + deferred tax expense (or benefit)','Taxes paid in cash','Current expense only','Pretax income × statutory rate always'],0,'Provision = current portion (per the return) + deferred portion (change in DTAs/DTLs).',1],
+['A change in accounting PRINCIPLE (e.g., FIFO to average) is applied:',['Retrospectively, adjusting beginning retained earnings','Prospectively','As an error correction','Through OCI'],0,'Restate prior periods presented; cumulative effect to beginning RE. (Exception: changes to LIFO/depreciation treated prospectively when impracticable.)',2],
+['Correction of a prior-period ERROR requires:',['Restating prior statements and adjusting beginning RE net of tax','Prospective treatment','A cumulative catch-up in current income','Disclosure only'],0,'Errors = prior-period adjustment: restate and fix beginning retained earnings.',2],
+['A change in the REPORTING ENTITY (e.g., new consolidated group) is applied:',['Retrospectively to all periods presented','Prospectively','As an error','Through OCI'],0,'Entity changes restate all prior periods shown, for comparability.',2]],
+8:[['A loss contingency is ACCRUED when the loss is:',['Probable and reasonably estimable','Reasonably possible','Remote but large','Any lawsuit exists'],0,'Probable + estimable → accrue. Reasonably possible → disclose. Remote → nothing (usually).',0],
+['Gain contingencies are:',['Disclosed but never accrued before realization','Accrued when probable','Accrued when estimable','Recorded in OCI'],0,'Conservatism: no gain until realized.',0],
+['A probable loss is estimated as a RANGE with no best point. Under U.S. GAAP, accrue:',['The minimum of the range (and disclose the rest)','The maximum','The midpoint','Nothing'],0,'GAAP: accrue the low end when no amount in the range is better. (IFRS uses the midpoint.)',0],
+['A customer’s bankruptcy shortly after year-end, from conditions existing at year-end, is:',['A recognized (Type 1) subsequent event — adjust the statements','A nonrecognized (Type 2) event — disclose only','Ignored','A prior-period error'],0,'Condition existed at the balance sheet date → adjust. New conditions (fire, flood, stock issuance) → disclose.',1],
+['A non-SEC filer evaluates subsequent events through the date the statements are:',['Available to be issued','Audited','Filed with a regulator','Printed'],0,'Private companies: through "available to be issued." SEC filers: through issuance.',1],
+['Under U.S. GAAP, interest PAID is classified in the statement of cash flows as:',['Operating','Financing','Investing','Either operating or financing'],0,'GAAP: interest paid/received and dividends received = operating; dividends PAID = financing.',2],
+['Indirect method: an INCREASE in accounts receivable is:',['Subtracted from net income','Added to net income','Ignored','A financing item'],0,'Revenue was booked but cash not collected → subtract.',2],
+['Indirect method: depreciation expense is:',['Added back to net income','Subtracted','An investing inflow','Excluded entirely'],0,'Non-cash expense → add back in the operating section.',2],
+['Purchasing equipment for cash is a(n):',['Investing outflow','Operating outflow','Financing outflow','Noncash activity'],0,'Long-term productive assets → investing.',2]],
+9:[['NFP net assets are classified into:',['With donor restrictions and without donor restrictions','Restricted, temporarily restricted, unrestricted','Board-designated and other','Operating and non-operating'],0,'Two classes since ASU 2016-14 (the old three-class model is gone).',0],
+['A donor-restricted cash contribution is recognized:',['As revenue when received, increasing net assets with donor restrictions','When spent','As a liability','Only when the restriction lapses'],0,'Contribution revenue is recognized on receipt/unconditional promise — the restriction affects WHICH class, not WHEN.',0],
+['Board-designated endowment funds are classified as:',['Without donor restrictions','With donor restrictions','A liability','Permanently restricted'],0,'Only DONORS create restrictions. Board designations are self-imposed and reversible.',0],
+['A donor gift whose principal must be held in perpetuity is classified as:',['Net assets with donor restrictions','Without donor restrictions','A liability','Deferred revenue'],0,'Perpetual (endowment) restrictions live in "with donor restrictions" — the two-class model absorbed the old "permanently restricted."',0],
+['Satisfying a donor restriction is reported as:',['A reclassification (release) between net asset classes','New revenue','A gain','An expense reduction'],0,'Net assets released from restrictions — not revenue a second time.',1],
+['Contributed services are recognized when they:',['Create/enhance nonfinancial assets OR require specialized skills provided by specialists that would otherwise be purchased','Are provided by any volunteer','Exceed a dollar threshold','Are approved by the board'],0,'The SOS test — most routine volunteer time is NOT recognized.',1],
+['A CONDITIONAL promise to give is recognized:',['When the conditions are substantially met','Immediately','When the pledge card is signed','Never'],0,'Conditional = barrier + right of return; no revenue until conditions are met.',1],
+['Required NFP statements are:',['Financial position, activities, and cash flows (+ functional expense analysis)','Balance sheet and income statement only','Fund statements','Government-wide statements'],0,'NFPs also must present expenses by function AND nature.',2],
+['NFP expenses must be reported:',['By both function (program vs support) and natural classification','By function only','By nature only','However management prefers'],0,'The functional/natural expense analysis is required — one statement, schedule, or notes.',2]],
+10:[['Governmental funds use which basis and measurement focus?',['Modified accrual; current financial resources','Full accrual; economic resources','Cash basis; current resources','Modified accrual; economic resources'],0,'Governmental funds → modified accrual. Proprietary/fiduciary and government-wide → full accrual.',0],
+['Under modified accrual, revenue is recognized when:',['Measurable and available','Earned','Cash is received','Budgeted'],0,'"Available" = collectible within the period or soon enough to pay current liabilities (60 days for property taxes).',0],
+['Property taxes collectible more than 60 days after year-end are reported as:',['A deferred inflow of resources','Revenue now','A liability','Never recorded'],0,'Not "available" → deferred inflow until collectible within the window.',0],
+['An enterprise fund (e.g., a city water utility) is a:',['Proprietary fund','Governmental fund','Fiduciary fund','Permanent fund'],0,'Proprietary = enterprise + internal service. They use full accrual like a business.',1],
+['A pension trust fund is a:',['Fiduciary fund','Governmental fund','Proprietary fund','Special revenue fund'],0,'Fiduciary = held for others: pension trusts, investment trusts, private-purpose trusts, custodial funds.',1],
+['When the general fund buys a police car, it records:',['An expenditure','A capital asset','Depreciation','An expense'],0,'Governmental funds record expenditures, not assets/expenses — the asset shows up government-wide.',1],
+['Government-wide financial statements use:',['Full accrual and the economic resources focus','Modified accrual','Cash basis','Budgetary basis'],0,'Government-wide converts fund data to full accrual — capital assets and LT debt appear here.',2],
+['An encumbrance is recorded when:',['A purchase order is issued','Goods are received','The invoice is paid','The budget is adopted'],0,'Encumbrance reserves budget authority at commitment (PO); it reverses when goods arrive.',2],
+['When the annual budget is adopted, the general fund debits:',['Estimated Revenues','Appropriations','Fund Balance','Expenditures'],0,'Budget entry: DR Estimated Revenues, CR Appropriations, difference to Budgetary Fund Balance.',2]]
+};
+
+// Expansion pack — merged into QB below. Correct answer is index 0 here; options are shuffled at render time.
+const QB2={
+1:[['ENHANCING qualitative characteristics are:',['Comparability, verifiability, timeliness, understandability','Relevance and faithful representation','Neutrality and completeness','Prudence and conservatism'],0,'The four enhancers improve information that is already relevant and faithfully represented.',0],
+['Recognition in the financial statements requires that an item:',['Meets an element definition and is measurable with sufficient reliability','Is approved by the auditors','Has been realized in cash','Exceeds 5% of assets'],0,'Meet the definition of an element + measurable/relevant/faithfully representable.',0],
+['A material event that is unusual OR infrequent (but not both) is presented:',['As a separate line within income from continuing operations','Net of tax below continuing operations','In OCI','As a prior-period adjustment'],0,'Only discontinued ops go below the line. Unusual/infrequent items stay in continuing ops, separately shown.',1],
+['Foreign currency TRANSLATION adjustments are reported in:',['Other comprehensive income','Net income','Retained earnings directly','Deferred revenue'],0,'Translation (functional ≠ reporting currency) → OCI. Remeasurement/transaction gains → net income.',1],
+['The denominator of BASIC EPS is:',['Weighted-average common shares outstanding','Shares outstanding at year-end','Authorized shares','Common plus preferred shares'],0,'Time-weight all share changes; stock dividends/splits applied retroactively.',1],
+['The 10-Q differs from the 10-K in that the 10-Q is:',['Quarterly and unaudited (reviewed)','Audited','Filed only by private companies','Filed only for major events'],0,'Quarterly = reviewed, not audited; annual 10-K carries the audit opinion.',2],
+['Under U.S. GAAP, each interim period is treated as:',['An integral part of the annual period','A discrete standalone year','Optional disclosure','A cash-basis period'],0,'Integral view: annual costs (e.g., annual repairs, tax rate) get allocated across interim periods.',2],
+['An operating segment is separately reportable when it hits at least:',['10% of combined revenue, profit(loss), or assets','5% of revenue','20% of assets','50% of profit'],0,'The 10% tests — plus the 75% external revenue check on the total reported.',2]],
+2:[['A contract exists under ASC 606 only when:',['Approved, rights/terms identifiable, commercial substance, and collection probable','Cash has been received','It is in writing','A purchase order exists'],0,'All five contract-existence criteria must be met before revenue can be recognized.',0],
+['Variable consideration is included in the transaction price:',['Only to the extent a significant revenue reversal is not probable','Never','Always in full','Only when collected'],0,'The constraint: estimate (expected value or most likely amount), then cap where reversal risk is high.',0],
+['A PRINCIPAL recognizes revenue:',['Gross, because it controls the good/service before transfer','Net of costs','Only its commission','When the agent remits cash'],0,'Control before transfer = principal = gross. Agent = net commission.',0],
+['A bank overdraft at a bank where no other accounts offset it is reported as:',['A current liability','Negative cash','A contra receivable','OCI'],0,'No right of offset → liability, not negative cash.',1],
+['Bank service charges discovered on the bank statement are:',['Deducted from the BOOK balance','Deducted from the bank balance','Added to the bank balance','Ignored'],0,'The books have not recorded them yet — book-side adjustment.',1],
+['Expected sales returns require the seller to record:',['A refund liability and a return asset','Nothing until goods come back','A footnote only','Only an inventory reduction'],0,'Recognize revenue net of expected returns; book the refund liability + right-of-return asset.',2],
+['A long-term note received for goods with an unreasonably low stated rate is recorded at:',['Present value using an imputed market rate','Face value','The stated amount plus accrued interest','Zero until collected'],0,'Impute interest; the discount is amortized to interest income.',2],
+['When receivables are PLEDGED as collateral for a loan:',['They stay on the books; the arrangement is disclosed','They are derecognized','It is a sale','The allowance reverses'],0,'Pledging/assigning = secured borrowing, not a transfer of the receivables.',2]],
+3:[['The moving-average inventory method goes with:',['A perpetual system','A periodic system only','LIFO only','Specific identification only'],0,'Moving average recalculates after each purchase — inherently perpetual. Periodic uses weighted average.',0],
+['Freight-in on purchased inventory is:',['An inventoriable cost — expensed through COGS when sold','A selling expense','Always a period cost','Contra revenue'],0,'Cost to bring inventory to salable condition/location → capitalize into inventory.',0],
+['Dollar-value LIFO measures inventory layers using:',['Base-year costs adjusted by a price index','Physical unit counts','Replacement cost','FIFO layers'],0,'Convert ending inventory to base-year dollars, find the layer, price it with the index.',0],
+['A change in DEPRECIATION METHOD is accounted for as:',['A change in estimate — prospectively','Retrospective restatement','An error correction','An OCI adjustment'],0,'Method changes are estimate changes effected by a change in principle → prospective.',1],
+['Land improvements (parking lots, fencing, lighting) are:',['Depreciated over their useful lives','Never depreciated','Expensed immediately','Added to the land account'],0,'Unlike land itself, improvements wear out — depreciate them.',1],
+['Sum-of-the-years-digits produces:',['Declining expense applied to (cost − salvage)','Increasing annual expense','A straight-line pattern','Usage-based expense'],0,'Accelerated method; unlike DDB, SYD subtracts salvage first.',1],
+['An asset classified as HELD FOR SALE is:',['Measured at lower of carrying amount or FV less costs to sell, and not depreciated','Depreciated faster','Measured at undiscounted cash flows','Written up to fair value'],0,'Held-for-sale: stop depreciating, carry at lower of CV or FV − cost to sell.',2],
+['Reversing a prior impairment loss on a held-for-USE asset under GAAP is:',['Prohibited','Required when value recovers','Optional','Recorded in OCI'],0,'GAAP bans impairment reversals for held-for-use assets (IFRS allows them).',2]],
+4:[['Equity securities WITHOUT significant influence are generally measured at:',['Fair value through net income','Fair value through OCI','Amortized cost','Equity method'],0,'Post-ASU 2016-01: equity securities → FVTNI (limited practicability exception for non-marketable).',0],
+['A stock dividend received on an investment is:',['A memo entry — reallocate cost over more shares','Dividend income at FV','A reduction of the investment','A gain'],0,'No income; cost per share drops because share count rose.',0],
+['The investor’s share of investee OCI under the equity method:',['Increases the investment and the investor’s OCI','Hits net income','Is ignored','Reduces the investment'],0,'Mirror the investee: their OCI flows to your OCI, not your income.',0],
+['Under current GAAP, a goodwill impairment loss equals:',['The excess of a reporting unit’s carrying amount over its fair value, capped at goodwill','Implied goodwill shortfall from a hypothetical purchase','10% of goodwill','The undiscounted cash flow deficit'],0,'One-step test (ASU 2017-04): CV − FV of the unit, limited to recorded goodwill.',1],
+['Legal fees to SUCCESSFULLY defend a patent are:',['Capitalized to the patent','Expensed','Recorded in OCI','Deferred charges'],0,'Successful defense preserves the asset → capitalize. Unsuccessful → expense (and likely impair).',1],
+['Costs of software developed TO BE SOLD are capitalized:',['After technological feasibility, until release','From day one','Never','Only after release'],0,'Before feasibility = R&D expense; feasibility → release = capitalize; after release = inventory/COGS.',1],
+['Fair value of a LIABILITY assumes the liability is:',['Transferred to a market participant, not settled','Settled immediately at face','Measured at book value','Entity-specific'],0,'Transfer notion — includes nonperformance (own credit) risk.',2],
+['The "highest and best use" concept applies to fair value of:',['Nonfinancial assets','All liabilities','Financial assets','Cash'],0,'Nonfinancial assets are valued at their highest and best use by market participants.',2]],
+5:[['Serial bonds:',['Mature in installments over several dates','Mature all on one date','Pay no interest','Are always convertible'],0,'Serial = staggered maturities. Term bonds mature at once.',0],
+['When bonds are sold BETWEEN interest dates, accrued interest is:',['Collected from the buyer and repaid in the first full coupon','Ignored','Added to the face amount','Recognized as revenue'],0,'Buyer prepays accrued interest so the issuer can pay a full coupon later.',0],
+['Zero-coupon bonds are issued at:',['A deep discount, with all interest recognized through accretion','Face value','A premium','Par plus accrued interest'],0,'No coupons → the entire return is discount accretion via effective interest.',0],
+['Straight-line discount amortization is acceptable under GAAP only if:',['Results are not materially different from the effective interest method','It always is','It never is','The bonds are short-term'],0,'Effective interest is the GAAP method; straight-line is a materiality convenience.',1],
+['A bond’s carrying value at any date equals:',['PV of remaining cash flows discounted at the ORIGINAL effective rate','Its current market value','Face value','Face minus cash interest paid'],0,'The historical yield locks in at issuance — carrying value ignores later rate moves.',1],
+['A note payable issued solely for cash is initially recorded at:',['The cash proceeds (its present value)','Face value always','The fair value of goods','Stated amount plus premium'],0,'Cash received = PV = initial carrying amount; any difference from face is discount/premium.',2],
+['A year-end debt covenant violation that makes the debt callable requires:',['Current classification, unless a 12-month+ waiver is obtained before statements are issued','Automatic noncurrent treatment','Off-balance-sheet treatment','Only a contingency note'],0,'Callable by creditor → current, absent a qualifying waiver.',2],
+['In a troubled debt restructuring where total future payments are LESS than the carrying amount:',['The debtor recognizes a gain and no future interest expense','No gain is ever recognized','The debtor recognizes a loss','It is treated as a brand-new loan'],0,'Write carrying amount down to total future payments; every later payment is pure principal.',2]],
+6:[['A LESSOR classifies a lease as sales-type when:',['Any finance-lease (OWNES) criterion is met','Collection is uncertain','The term is under 12 months','It manufactures the asset'],0,'Same criteria list as the lessee finance test, applied by the lessor.',0],
+['Renewal option periods are included in the lease term when:',['Exercise is reasonably certain','Never','Always','The lessor insists'],0,'"Reasonably certain" — a high hurdle (economic incentive to renew).',0],
+['The initial ROU asset equals the lease liability PLUS:',['Prepaid payments and initial direct costs, MINUS incentives received','Nothing — always equal','Guaranteed residual value','Total undiscounted payments'],0,'ROU = liability + prepaids + IDC − lease incentives.',1],
+['In an operating lease, the lessee amortizes the ROU asset:',['As a plug so that total lease expense is straight-line','Straight-line separately from interest','Not at all','Using the interest method'],0,'Single lease expense: amortization = straight-line expense − interest accretion.',1],
+['Variable lease payments tied to an index (e.g., CPI) are:',['Measured using the index at commencement; later changes expensed as incurred','Excluded from the liability','Projected for all future increases','Recorded in OCI'],0,'Lock the current index into the liability; remeasure only on other triggers.',1],
+['Property dividends are recorded at:',['Fair value of the property, recognizing gain/loss on the asset first','Book value','Par value','Historical cost'],0,'Step 1: write asset to FV through income. Step 2: distribute at FV against RE.',2],
+['A stock SPLIT requires:',['No journal entry — just a memo (more shares, lower par)','A charge to retained earnings at fair value','Gain recognition','An entry at par'],0,'Splits change share count and par per share; total equity untouched.',2],
+['An appropriation of retained earnings:',['Reclassifies RE — no effect on total equity or cash','Sets cash aside','Reduces total equity','Creates a liability'],0,'Pure labeling within equity to signal intent; fully reversible.',2]],
+7:[['Installment-sale income recognized for books now but taxed later creates:',['A deferred tax liability','A deferred tax asset','A permanent difference','No difference'],0,'Book income first, taxable later → future taxable amounts → DTL.',0],
+['Officer life insurance premiums (company is beneficiary) are:',['A permanent difference — never deductible','A temporary difference','A DTA source','A DTL source'],0,'Nondeductible expense; proceeds also nontaxable. Permanent.',0],
+['A net operating loss carryforward gives rise to:',['A deferred tax asset','A deferred tax liability','A permanent difference','Nothing'],0,'Future deductions → DTA (watch for a valuation allowance).',0],
+['On a classified balance sheet, deferred tax assets and liabilities are presented as:',['Noncurrent (netted by jurisdiction)','Current','Split current/noncurrent per related asset','Off balance sheet'],0,'ASU 2015-17: all deferred taxes are noncurrent.',1],
+['An uncertain tax position is recognized when it is:',['More likely than not to be sustained, measured at the largest amount >50% likely on settlement','Certain','Probable and estimable','Always fully recognized'],0,'Two-step: recognition (MLTN) then measurement (largest cumulative-probability amount).',1],
+['The deferred-tax effect of a NEW enacted tax rate is recognized:',['In income from continuing operations in the enactment period','Retrospectively','In OCI','Spread over the reversal years'],0,'Remeasure all deferreds at enactment; hit continuing operations (even for OCI-origin items — the "backwards trace" is prohibited).',1],
+['Indirect effects of a change in accounting principle (e.g., recalculated bonuses) are:',['Recognized in the period of change','Applied retrospectively','Ignored','Recorded in OCI'],0,'Direct effects go retrospective; indirect effects are current-period.',2],
+['A change from cash basis to accrual basis is treated as:',['An error correction — prior-period restatement','A change in principle','A change in estimate','A prospective change'],0,'Cash basis is not GAAP, so adopting GAAP = correcting an error.',2]],
+8:[['A REMOTE loss contingency is generally:',['Neither accrued nor disclosed','Always accrued','Always disclosed','Recognized in OCI'],0,'Remote → nothing (exception: certain guarantees still get disclosed).',0],
+['Premium/coupon offers to customers require at year-end:',['Accrual of the estimated redemption liability','No entry','Disclosure only','Expense only when redeemed'],0,'Match the promotion cost to the sale period: accrue expected redemptions.',0],
+['Stock issued after year-end (new condition) but before statements are issued is:',['A nonrecognized (Type 2) event — disclose only','An adjustment to the statements','Ignored','Recorded retroactively'],0,'Condition arose after the balance sheet date → disclose, don’t adjust.',1],
+['A lawsuit pending at year-end settles before issuance for a different amount than accrued:',['Adjust the statements — the condition existed at year-end','Disclose only','Ignore','Treat as an error'],0,'Type 1 recognized event: better evidence about a year-end condition.',1],
+['Collecting principal on a loan made to another entity is a(n):',['Investing inflow','Operating inflow','Financing inflow','Noncash item'],0,'Making/collecting loans = investing. (Interest collected = operating.)',2],
+['Issuing common stock to retire debt is reported as:',['A noncash financing activity — disclosed, not in the statement body','A financing inflow and outflow','Operating','Investing'],0,'No cash moved → schedule of noncash investing/financing activities.',2],
+['Indirect method: a GAIN on sale of equipment is:',['Subtracted from net income in operating activities','Added to net income','Ignored','An investing outflow'],0,'Remove it from operating (full sale proceeds show up in investing).',2],
+['Dividends RECEIVED are classified under U.S. GAAP as:',['Operating inflows','Financing inflows','Investing inflows','OCI'],0,'GAAP quirk: dividends and interest received = operating. Dividends paid = financing.',2]],
+9:[['Unconditional promises to give (pledges) are recognized:',['As contribution revenue when promised, at present value if long-term','Only when cash arrives','Never','Only if in writing'],0,'Unconditional pledge = revenue now (net of estimated uncollectibles; PV if multi-year).',0],
+['Student tuition at an NFP university is accounted for as:',['An exchange transaction under ASC 606','A contribution','Cash-basis revenue','A restricted gift'],0,'Value given for value received = exchange → revenue rules, not contribution rules.',0],
+['A donor restriction satisfied in the SAME period the gift is received may be:',['Reported as support without donor restrictions under a consistent policy election','Deferred','Always shown as restricted','Recorded as a liability'],0,'Simultaneous-release election avoids the same-period in-and-out reclassification.',0],
+['An NFP may choose NOT to capitalize works of art if the collection is:',['Held for exhibition, preserved, and sale proceeds reinvested in collections','Old enough','Donor-requested','Fully insured'],0,'The three collection criteria permit non-capitalization.',1],
+['Donated materials (gifts in kind) used in operations are recorded at:',['Fair value — contribution revenue and expense/asset','Zero','The donor’s cost','A nominal amount'],0,'Measurable gifts in kind: FV revenue with matching expense or asset.',1],
+['NFP investment return is reported:',['Net of external and direct internal investment expenses','Always gross','In OCI','As deferred inflows'],0,'Net presentation is required; the netted expenses aren’t separately disclosed.',1],
+['The NFP statement of activities reports changes in:',['Each net asset class and in total','Total only','Fund balances','Retained earnings'],0,'Revenues, expenses, gains, losses and releases by class: with vs without donor restrictions.',2],
+['The NFP statement of cash flows:',['Uses the standard operating/investing/financing classifications','Uses fund accounting','Is optional','Uses modified accrual'],0,'Same three categories as a business; direct or indirect method allowed.',2]],
+10:[['Expenditures in governmental funds are generally recognized when:',['The related current liability is incurred','Cash is paid','The budget is adopted','A purchase order is issued'],0,'Modified accrual: expenditure when the fund liability is incurred (POs create encumbrances, not expenditures).',0],
+['Interest on general long-term debt is recorded in the debt service fund:',['When legally due — no year-end accrual','Fully accrued like a business','Never','At bond issuance'],0,'The "when due" rule: governmental funds don’t accrue unmatured interest.',0],
+['An internal service fund primarily provides services to:',['Other departments of the same government, on a cost-reimbursement basis','The general public','Bondholders','Other governments exclusively'],0,'Serving the public mainly → enterprise fund instead.',1],
+['How many General Funds does a government report?',['Exactly one','As many as needed','Zero if small','One per department'],0,'One and only one General Fund per government.',1],
+['Custodial funds hold resources for:',['Outside parties, e.g., taxes collected on behalf of other governments','The government’s own departments','The general public at large','Enterprise operations'],0,'Fiduciary custodial funds: purely holding/remitting for others.',1],
+['The two government-wide statements are:',['Statement of net position and statement of activities','Balance sheet and income statement','Fund statements','A cash flow statement and MD&A'],0,'Government-wide = net position + activities (full accrual, no fiduciary funds).',2],
+['Fiduciary funds appear in:',['Fund financial statements only — excluded from government-wide','All statements','Government-wide only','No statements'],0,'Fiduciary resources aren’t the government’s — excluded from government-wide.',2],
+['MD&A in governmental reporting is:',['Required supplementary information (RSI)','Optional','Part of the basic statements','A note disclosure'],0,'MD&A precedes the basic statements as RSI.',2]]
+};
+for(const u in QB2)QB[u].push(...QB2[u]);
+
+// ---------- state ----------
+let S=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.weeks)return fill(s)}catch(e){}
+  let v1=null; try{v1=JSON.parse(localStorage.getItem('farStudy_v1'))}catch(e){}
+  const base={start:'2026-08-03',exam:'2026-10-30',
+    weeks:DEF_WEEKS.map((w,i)=>({unit:w.unit,tasks:(i<10?STD_TASKS:REV_TASKS).map(t=>({t,done:false})),obj:OBJ[i].map(()=>false)})),
+    checkins:{},minutes:{},scores:[],work:JSON.parse(JSON.stringify(DEF_WORK)),exceptions:[],steps:{},quiz:[]};
+  if(v1){base.start=v1.start||base.start;base.exam=v1.exam||base.exam;base.checkins=v1.checkins||{};base.minutes=v1.minutes||{};base.scores=v1.scores||[];
+    if(v1.weeks)v1.weeks.forEach((w,i)=>{if(base.weeks[i]){base.weeks[i].unit=w.unit;w.tasks.forEach((t,j)=>{if(base.weeks[i].tasks[j])base.weeks[i].tasks[j].done=t.done})}});}
+  return fill(base);
+}
+function fill(s){
+  s.work=s.work||JSON.parse(JSON.stringify(DEF_WORK));s.exceptions=s.exceptions||[];s.steps=s.steps||{};s.quiz=s.quiz||[];
+  for(const d of ['mon','tue','wed','thu','fri','sat','sun']){
+    const w=s.work[d]||{};
+    if(!w.load)w.load=w.onsite?'travel':((d==='sat'||d==='sun')?'off':'office');
+    if(w.midday===undefined)w.midday=false;
+    if(!w.midTime)w.midTime='12:00';
+    if(w.ovr===undefined)w.ovr='';
+    delete w.onsite; s.work[d]=w;
+  }
+  s.weeks.forEach((w,i)=>{if(!w.obj)w.obj=(OBJ[i]||[]).map(()=>false)});
+  if(s.sound===undefined)s.sound=true;
+  if(s.usedQ===undefined)s.usedQ={};
+  if(s.section===undefined)s.section='FAR';
+  if(s.coachLog===undefined)s.coachLog=[];
+  if(s.ai===undefined)s.ai={provider:'builtin',key:'',model:''};
+  if(s.weak===undefined)s.weak=[];
+  if(s.dayDone===undefined)s.dayDone={};
+  if(s.quizXp===undefined)s.quizXp={};
+  if(s.preTasks===undefined)s.preTasks=PRE_TASKS.map(t=>({t,done:false}));
+  if(s.preObj===undefined)s.preObj=PRE_OBJ.map(()=>false);
+  if(s.xp===undefined){
+    let xp=0;
+    s.weeks.forEach(w=>{xp+=w.tasks.filter(t=>t.done).length*25+w.obj.filter(Boolean).length*20});
+    xp+=Object.keys(s.checkins).length*15;
+    for(const d in s.steps)xp+=Object.values(s.steps[d]).filter(Boolean).length*10;
+    s.xp=xp;
+  }
+  return s;
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseD(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}
+function curWeek(){const diff=Math.floor((parseD(today())-parseD(S.start))/864e5);return diff<0?0:Math.min(Math.floor(diff/7)+1,12)}
+function activeEx(dstr){return S.exceptions.find(e=>e.from<=dstr&&dstr<=e.to)}
+
+// ---------- fx ----------
+const cv=document.getElementById('fx'),cx=cv.getContext('2d');let P=[],raf=null,lastX=innerWidth/2,lastY=innerHeight/2;
+function rs(){cv.width=innerWidth;cv.height=innerHeight}addEventListener('resize',rs);rs();
+document.addEventListener('pointerdown',e=>{lastX=e.clientX;lastY=e.clientY},true);
+const COLS=['#1f5eff','#0f9d58','#f4b400','#d93025','#9c27b0','#00acc1'];
+function loop(){cx.clearRect(0,0,cv.width,cv.height);
+  for(const p of P){p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life--;p.rot+=p.vr;
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.globalAlpha=Math.max(p.life/p.max,0);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62);cx.restore();}
+  P=P.filter(p=>p.life>0&&p.y<cv.height+30);
+  if(P.length)raf=requestAnimationFrame(loop);else{raf=null;cx.clearRect(0,0,cv.width,cv.height)}}
+function kick(){if(!raf)raf=requestAnimationFrame(loop)}
+function burst(x,y,n){for(let i=0;i<n;i++){const a=Math.random()*6.283,v=2+Math.random()*3.5;
+  P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1.2,g:.13,s:5+Math.random()*4,c:COLS[i%6],life:38+Math.random()*20,max:58,rot:Math.random()*6,vr:.25*(Math.random()-.5)})}kick()}
+function confettiRain(n){for(let i=0;i<n;i++){
+  P.push({x:Math.random()*cv.width,y:-15-Math.random()*cv.height*.35,vx:(Math.random()-.5)*2.2,vy:2+Math.random()*3,g:.045,s:6+Math.random()*6,c:COLS[i%6],life:130+Math.random()*70,max:200,rot:Math.random()*6,vr:.3*(Math.random()-.5)})}kick()}
+function toast(txt,big,neg){const el=document.createElement('div');el.className='xtoast'+(big?' big':'')+(neg?' neg':'');el.textContent=txt;
+  el.style.left=Math.min(lastX,innerWidth-140)+'px';el.style.top=(lastY-10)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1000)}
+function popup(title,sub,gold){
+  let w=document.getElementById('popWrap');
+  if(!w){w=document.createElement('div');w.id='popWrap';document.body.appendChild(w)}
+  const b=document.createElement('div');b.className='popbox'+(gold?' gold':'');
+  b.innerHTML='<div class="t1">'+title+'</div>'+(sub?'<div class="t2">'+sub+'</div>':'');
+  w.appendChild(b);
+  setTimeout(()=>b.classList.add('out'),1900);setTimeout(()=>b.remove(),2350);
+}
+let AC=null;
+// Audio cue tiers — each completion class has its own signature so the ear learns the reward ladder:
+// one: soft tick (any checkbox) · ok: two-note "nice" · big: rising arpeggio (day complete, streaks, 100% sets)
+// fanfare: full six-note flourish + closing chord (LEVEL UP, WEEK COMPLETE, PRE-SEASON COMPLETE)
+const CUES={
+  one:{n:[880],step:.0,dur:.14,vol:.09,type:'triangle'},
+  ok:{n:[660,990],step:.09,dur:.22,vol:.11,type:'sine'},
+  big:{n:[523,659,784,1047],step:.09,dur:.28,vol:.12,type:'sine'},
+  fanfare:{n:[392,523,659,784,1046,1318],step:.11,dur:.34,vol:.13,type:'sine',chord:[784,988,1318]}
+};
+function ding(kind){if(!S.sound)return;try{
+  AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const c=CUES[kind]||CUES.one;
+  const play=(f,t0,dur,vol)=>{const o=AC.createOscillator(),g=AC.createGain();
+    o.type=c.type;o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+    o.connect(g);g.connect(AC.destination);o.start(t0);o.stop(t0+dur+.05)};
+  c.n.forEach((f,i)=>play(f,AC.currentTime+i*c.step,c.dur,c.vol));
+  if(c.chord){const t0=AC.currentTime+c.n.length*c.step+.05;c.chord.forEach(f=>play(f,t0,.7,.09))}
+}catch(e){}}
+const LVLS=['Intern','Staff I','Staff II','Senior I','Senior II','Supervisor','Manager','Senior Manager','Director','Partner','CPA Legend'];
+// XP is fully DERIVED from state — never incremented. Uncheck anything and the bar drains to match reality. No farming.
+function computeXp(){
+  let xp=0;
+  S.weeks.forEach(w=>{
+    const td=w.tasks.filter(t=>t.done).length;
+    xp+=td*25+w.obj.filter(Boolean).length*20;
+    if(w.tasks.length&&td===w.tasks.length)xp+=100;           // week complete bonus
+    if(w.obj.length&&w.obj.every(Boolean))xp+=50;             // objectives mastered bonus
+  });
+  xp+=Object.keys(S.checkins).length*15;
+  for(const d in S.steps){if(d<S.start)continue;              // pre-season dates: XP flows through preTasks instead
+    const st=S.steps[d];
+    for(const k in st)if(st[k])xp+=10;
+    if(st.m0&&st.m1)xp+=15;                                   // midday sprint pair bonus
+  }
+  for(const d in (S.dayDone||{}))if(d>=S.start)xp+=50;        // day complete bonus (set once per date)
+  for(const d in (S.quizXp||{}))xp+=S.quizXp[d];              // quiz XP (daily capped at 50)
+  const pt=(S.preTasks||[]);
+  xp+=pt.filter(x=>x.done).length*25+(S.preObj||[]).filter(Boolean).length*15;
+  if(pt.length&&pt.every(x=>x.done))xp+=50;                   // pre-season complete bonus
+  return xp;
+}
+function xpFx(pts){if(pts)toast((pts>0?'+':'')+pts+' XP',false,pts<0)}
+function renderXp(){
+  S.xp=computeXp();
+  const lv=Math.min(Math.floor(S.xp/600),LVLS.length-1);
+  if(S.lvlSeen===undefined)S.lvlSeen=lv;                      // first load: no popup storm
+  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv],true);confettiRain(200);ding('fanfare')}
+  S.lvlSeen=lv;save();
+  document.getElementById('lvlPill').textContent='Lv '+(lv+1)+' · '+LVLS[lv];
+  document.getElementById('xpNum').textContent=S.xp+' XP';
+  const into=S.xp-lv*600;
+  document.getElementById('xpNext').textContent=lv>=LVLS.length-1?'MAX RANK':(600-into)+' XP to '+LVLS[lv+1];
+  document.getElementById('xpBar').style.width=Math.min(into/600*100,100)+'%';
+}
+
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  document.querySelectorAll('.pane').forEach(p=>p.style.display='none');
+  document.getElementById('p-'+t.dataset.t).style.display='block';
+  if(t.dataset.t==='scores')drawChart();
+  if(t.dataset.t==='kb')renderKbUnits();
+  if(t.dataset.t==='coach')renderCoachLog();
+});
+
+function streak(){
+  let n=0,d=parseD(today());
+  const key=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+  if(!S.checkins[key(d)])d.setDate(d.getDate()-1);
+  while(true){const k=key(d);
+    if(S.checkins[k])n++;
+    else if(d.getDay()===5){}
+    else break;
+    d.setDate(d.getDate()-1);if(n>400)break;}
+  return n;
+}
+const MILES=[3,7,14,21,30,50,75,100];
+function checkin(){
+  const t=today();
+  const m=parseInt(document.getElementById('minInput').value)||0;
+  S.checkins[t]=true; if(m>0)S.minutes[t]=(S.minutes[t]||0)+m;
+  toast('+15 XP — checked in');
+  const st=streak();
+  if(MILES.includes(st)){popup(st+'-DAY STREAK','🔥 that is how CPAs are made',true);confettiRain(170);ding('big');document.getElementById('checkinNote').textContent='🔥 '+st+'-day streak!'}
+  else{ding('ok');document.getElementById('checkinNote').textContent='Logged. See you tomorrow.'}
+  save();render();
+}
+
+// ---------- schedule suggestion ----------
+function suggestFor(dn,dstr){
+  const ex=dstr!=='9999-01-01'&&activeEx(dstr);
+  if(ex)return{key:'light',time:'Any 20–45 min you can find',why:ex.type+(ex.note?' — '+ex.note:'')+': minimum-dose day',mid:false};
+  const w=S.work[dn], wknd=(dn==='sat'||dn==='sun');
+  const working=w.load!=='off';
+  const mid=working&&w.midday&&dn!=='fri'&&w.load!=='travel';
+  if(w.ovr)return{key:defKey(dn),time:w.ovr,why:'your custom time · '+LOADS[w.load],mid};
+  if(dn==='fri')return{key:'fri',time:working?'OFF (or makeup)':'OFF',why:'planned rest day',mid:false};
+  if(w.load==='travel')return{key:'light',time:'45 min — hotel/commute window',why:'travel day: mobile MCQs only',mid:false};
+  if(!working)return wknd?
+    {key:dn==='sat'?'sat':'sun',time:dn==='sat'?'9:00 AM–12:00 PM':'9:00–11:00 AM',why:dn==='sat'?'long block before the day gets away':'close the week out',mid:false}:
+    {key:'free',time:'10:00 AM–12:00 PM',why:'free day — bank a full block early',mid:false};
+  if(wknd)return{key:dn==='sat'?'sat':'sun',time:'Work day — fit 2 hrs after',why:'weekend work: shift block to evening',mid};
+  const end=w.we||'17:30';const [eh,em]=end.split(':').map(Number);
+  const dur=(dn==='wed')?60:120;
+  if(eh>=19)return{key:defKey(dn),time:'5:45–7:45 AM (before work)',why:'late night ('+LOADS[w.load]+') — morning block instead',mid};
+  let sh=eh+1,sm=em+15;if(sm>=60){sm-=60;sh++}
+  let fh=sh+Math.floor(dur/60),fm=sm+(dur%60);if(fm>=60){fm-=60;fh++}
+  const f=(h,m)=>{const ap=h>=12?'PM':'AM';const hh=h>12?h-12:h;return hh+':'+String(m).padStart(2,'0')+' '+ap};
+  const why=(w.load==='eng-heavy'?'heavy engagement — keep it tight, protect sleep':'~1 hr after you finish at '+end)+(mid?' · midday slack flagged':'');
+  return{key:defKey(dn),time:f(sh,sm)+'–'+f(fh,fm),why,mid};
+}
+function defKey(dn){
+  const w=curWeek();
+  if(w>=11){return dn==='sat'?'rev_sat':dn==='sun'?'rev_sun':dn==='fri'?'fri':dn==='wed'?'wed':'rev_wk'}
+  return dn==='wed'?'wed':dn==='fri'?'fri':dn==='sat'?'sat':dn==='sun'?'sun':'lecture';
+}
+
+// ---------- weekly auto-sync ----------
+// Finishing a full day agenda (dayDone) auto-checks the matching weekly task.
+function weekDates(i){ // {mon:'YYYY-MM-DD',...} for plan week i (0-based), anchored to S.start
+  const out={};const st=parseD(S.start);st.setDate(st.getDate()+i*7);
+  for(let d=0;d<7;d++){const x=new Date(st);x.setDate(x.getDate()+d);
+    out[DAYS[x.getDay()]]=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+  return out;
+}
+function autoSyncWeeks(){
+  S.weekPopped=S.weekPopped||{};
+  const dd=S.dayDone||{};
+  const done=day=>!!dd[day];
+  let changed=false;
+  // Pre-season agenda steps and Week 0 tasks are ONE state (S.preTasks) — no sync loop needed, they can never diverge.
+  const preFull=S.preTasks.length&&S.preTasks.every(x=>x.done);
+  if(preFull&&!S.weekPopped.pre){S.weekPopped.pre=1;changed=true;
+    popup('PRE-SEASON COMPLETE','+50 XP · day 1 needs zero decisions',true);confettiRain(160);ding('fanfare')}
+  else if(!preFull&&S.weekPopped.pre){delete S.weekPopped.pre;changed=true}
+  S.weeks.forEach((wk,i)=>{
+    const wd=weekDates(i);
+    // task idx → required completed days (standard weeks 0-9 / review weeks 10-11)
+    const map=i<10?
+      [[wd.mon,wd.tue,wd.thu],[wd.mon,wd.tue,wd.thu],[wd.wed],[wd.sat],[wd.sun]]:
+      [[wd.sat],[wd.sun],[wd.mon,wd.tue],[wd.wed],[wd.thu]];
+    map.forEach((reqs,ti)=>{
+      const tk=wk.tasks[ti];if(!tk)return;
+      const evid=reqs.every(done);
+      if(evid){
+        if(!tk.done&&!tk.noAuto){tk.done=true;tk.autoSet=true;changed=true}
+      }else{
+        if(tk.done&&tk.autoSet){tk.done=false;tk.autoSet=false;changed=true} // evidence revoked → uncheck with it
+        if(tk.noAuto){tk.noAuto=false;changed=true} // evidence reset clears the veto
+      }
+    });
+    const full=wk.tasks.length&&wk.tasks.every(x=>x.done);
+    if(full&&!S.weekPopped[i]){
+      S.weekPopped[i]=1;changed=true;
+      popup('WEEK '+(i+1)+' COMPLETE','+100 XP · '+wk.unit.split('—')[0].trim()+' in the books',true);
+      confettiRain(200);ding('fanfare');
+    }else if(!full&&S.weekPopped[i]){delete S.weekPopped[i];changed=true}
+  });
+  if(changed)save();
+}
+
+// Per-weekly-task partial progress, derived from related daily steps.
+function stepOn(dstr,idx){return (S.steps[dstr]&&S.steps[dstr][idx])?1:0}
+function dayFrac(dstr,key){const st=S.steps[dstr]||{};const total=AGENDA[key][1].length;let c=0;for(let j=0;j<total;j++)if(st[j])c++;return total?Math.min(c/total,1):0}
+function taskProg(wi,ti){
+  const wk=S.weeks[wi];if(!wk.tasks[ti])return 0;
+  if(wk.tasks[ti].done)return 1;
+  if(ti>4)return 0; // coach-added extras are manual
+  const wd=weekDates(wi);
+  if(wi<10){
+    if(ti===0)return (stepOn(wd.mon,1)+stepOn(wd.tue,1)+stepOn(wd.thu,1))/3;
+    if(ti===1)return (stepOn(wd.mon,2)+stepOn(wd.tue,2)+stepOn(wd.thu,2))/3;
+    if(ti===2)return dayFrac(wd.wed,'wed');
+    if(ti===3)return dayFrac(wd.sat,'sat');
+    return dayFrac(wd.sun,'sun');
+  }
+  if(ti===0)return dayFrac(wd.sat,'rev_sat');
+  if(ti===1)return dayFrac(wd.sun,'rev_sun');
+  if(ti===2)return (dayFrac(wd.mon,'rev_wk')+dayFrac(wd.tue,'rev_wk'))/2;
+  if(ti===3)return dayFrac(wd.wed,'wed');
+  return dayFrac(wd.thu,'rev_wk');
+}
+function taskRow(wi,ti,x){
+  const p=Math.round(taskProg(wi,ti)*100);
+  return '<div class="task'+(x.done?' done':'')+'"><input type="checkbox" '+(x.done?'checked':'')+' onchange="tog('+wi+','+ti+')"> '+x.t+
+    (p<100?' <span class="mut">'+p+'%</span>':'')+'</div>'+
+    '<div class="bar mini'+(p===100?' gold':'')+'"><div style="width:'+p+'%"></div></div>';
+}
+
+// ---------- render ----------
+function render(){
+  autoSyncWeeks();
+  const w=curWeek(), t=new Date(), dn=DAYS[t.getDay()], tstr=today();
+  const preStart=parseD(tstr)<parseD(S.start);
+  const ex=parseD(S.exam), days=Math.ceil((ex-parseD(tstr))/864e5);
+  document.getElementById('countdown').textContent=days>=0?days+' days':'—';
+  document.getElementById('subline').textContent='CPA · FAR track · '+S.start+' → exam '+S.exam+' · Becker · ~11 hrs/wk';
+  const exNow=activeEx(tstr);
+  document.getElementById('exBanner').innerHTML=exNow?'<div class="banner w">⚠ Exception active ('+exNow.type+(exNow.note?': '+exNow.note:'')+', through '+exNow.to+') — plan reduced to protect the streak. Schedule makeup blocks.</div>':'';
+  document.getElementById('stStreak').textContent=streak();
+  const totMin=Object.values(S.minutes).reduce((a,b)=>a+b,0);
+  document.getElementById('stHours').textContent=(totMin/60).toFixed(1);
+  document.getElementById('stWeek').textContent=w===0?'pre':w+'/12';
+  const all=S.weeks.flatMap(x=>x.tasks), done=all.filter(x=>x.done).length;
+  document.getElementById('stProg').textContent=Math.round(done/all.length*100)+'%';
+  renderXp();
+  const wk=S.weeks[Math.max(w-1,0)]||S.weeks[0];
+  const sug=preStart?{key:'pre',time:'',why:'',mid:false}:suggestFor(dn,tstr);
+  const ag=AGENDA[sug.key];
+  const daysToStart=Math.ceil((parseD(S.start)-parseD(tstr))/864e5);
+  document.getElementById('todayTitle').textContent=preStart?('PRE-SEASON — plan starts '+S.start):(t.toLocaleDateString(undefined,{weekday:'long'})+' — '+ag[0]);
+  document.getElementById('todayBody').innerHTML=preStart?
+    '<span class="pill w">T-minus '+daysToStart+' day'+(daysToStart===1?'':'s')+'</span> <span class="pill b">Week 1 will be: '+S.weeks[0].unit.split('—')[0].trim()+'</span> <span class="mut">(build mode — knock out the prep list below; the 12-week clock starts '+S.start+')</span>':
+    '<span class="pill b">'+sug.time+'</span> <span class="pill '+(w>=11?'w':'g')+'">Week '+(w||1)+': '+wk.unit.split('—')[0].trim()+'</span> <span class="mut">('+sug.why+')</span>';
+  const sd=S.steps[tstr]||{};
+  const mm=x=>{const h=Math.floor(x/60),m2=x%60;return (h?h+'h':'')+(m2?String(m2).padStart(h?2:1,'0')+'m':h?'':'0m')};
+  document.getElementById('agenda').innerHTML=ag[1].map((s,i)=>{
+    const tm=s[1]>s[0]?mm(s[0])+'–'+mm(s[1]):'';
+    // Pre-season: agenda checkboxes ARE the Week 0 tasks (same state, two-way by construction)
+    const on=preStart?(S.preTasks[i]&&S.preTasks[i].done):sd[i];
+    const handler=preStart?('togPre('+i+')'):('togStep(\''+tstr+'\','+i+','+ag[1].length+')');
+    return '<div class="step'+(on?' done':'')+'"><input type="checkbox" '+(on?'checked':'')+' onchange="'+handler+'"><span class="tm">'+tm+'</span><span class="tx">'+s[2]+'</span></div>';
+  }).join('');
+  document.getElementById('midBlock').innerHTML=sug.mid?
+    '<h3>⚡ Bonus midday sprint <span class="pill gold">'+(S.work[dn].midTime||'12:00')+' · engagement slack</span></h3>'+
+    MID_STEPS.map((s,i)=>{const k='m'+i;
+      return '<div class="step'+(sd[k]?' done':'')+'"><input type="checkbox" '+(sd[k]?'checked':'')+' onchange="togMid(\''+tstr+'\',\''+k+'\')"><span class="tm">'+mm(s[0])+'–'+mm(s[1])+'</span><span class="tx">'+s[2]+'</span></div>'}).join(''):'';
+  const ci=S.checkins[tstr];
+  document.getElementById('checkinBtn').textContent=ci?'✓ Done today':'✓ I studied today';
+  document.getElementById('checkinBtn').disabled=!!ci;
+  if(preStart){
+    document.getElementById('twUnitLbl').textContent='WEEK 0 — PRE-SEASON · what "ready" means before '+S.start;
+    document.getElementById('twObjectives').innerHTML=PRE_OBJ.map((o,i)=>
+      '<div class="obj'+(S.preObj[i]?' done':'')+'"><input type="checkbox" '+(S.preObj[i]?'checked':'')+' onchange="togPreObj('+i+')"> '+o+'</div>').join('');
+    const pd=S.preTasks.filter(x=>x.done).length;
+    document.getElementById('twCount').textContent=pd+'/'+S.preTasks.length+' · '+Math.round(pd/S.preTasks.length*100)+'%';
+    document.getElementById('twBar').style.width=Math.round(pd/S.preTasks.length*100)+'%';
+    document.getElementById('twTasks').innerHTML=S.preTasks.map((x,i)=>
+      '<div class="task'+(x.done?' done':'')+'"><input type="checkbox" '+(x.done?'checked':'')+' onchange="togPre('+i+')"> '+x.t+'</div>'+
+      '<div class="bar mini'+(x.done?' gold':'')+'"><div style="width:'+(x.done?100:0)+'%"></div></div>').join('');
+  }else{
+    document.getElementById('twUnitLbl').textContent=wk.unit;
+    const oi=Math.max(w-1,0);
+    document.getElementById('twObjectives').innerHTML=(OBJ[oi]||[]).map((o,i)=>
+      '<div class="obj'+(wk.obj[i]?' done':'')+'"><input type="checkbox" '+(wk.obj[i]?'checked':'')+' onchange="togObj('+oi+','+i+')"> '+o+'</div>').join('');
+    const wi0=Math.max(w-1,0);
+    const wdone=wk.tasks.filter(x=>x.done).length;
+    const avgP=wk.tasks.reduce((a,x,i)=>a+taskProg(wi0,i),0)/wk.tasks.length;
+    document.getElementById('twCount').textContent=wdone+'/'+wk.tasks.length+' · '+Math.round(avgP*100)+'%';
+    document.getElementById('twBar').style.width=Math.round(avgP*100)+'%';
+    document.getElementById('twTasks').innerHTML=wk.tasks.map((x,i)=>taskRow(wi0,i,x)).join('');
+  }
+  renderWeeks(w); renderWork(); renderExList(); renderSet(); renderScores();
+}
+function togStep(d,i,total){S.steps[d]=S.steps[d]||{};const on=!S.steps[d][i];S.steps[d][i]=on;
+  S.dayDone=S.dayDone||{};
+  let allDone=true;for(let j=0;j<total;j++)if(!S.steps[d][j])allDone=false;
+  if(on){burst(lastX,lastY,14);xpFx(10);ding('one');
+    if(allDone&&!S.dayDone[d]){S.dayDone[d]=1;popup('DAY COMPLETE','+50 XP · session banked');confettiRain(130);ding('big')}}
+  else{xpFx(-10);if(!allDone&&S.dayDone[d])delete S.dayDone[d]}
+  save();render()}
+function togMid(d,k){S.steps[d]=S.steps[d]||{};const on=!S.steps[d][k];S.steps[d][k]=on;
+  if(on){burst(lastX,lastY,14);xpFx(10);ding('one');
+    if(S.steps[d].m0&&S.steps[d].m1){toast('SPRINT BANKED +15 XP',true);burst(lastX,lastY,30);ding('ok')}}
+  else xpFx(-10);
+  save();render()}
+function tog(wi,ti){
+  const tk=S.weeks[wi].tasks[ti];
+  const on=!tk.done;tk.done=on;
+  if(on){tk.autoSet=false;tk.noAuto=false;burst(lastX,lastY,16);xpFx(25);ding('one')}
+  else{tk.autoSet=false;tk.noAuto=true;xpFx(-25)} // manual uncheck vetoes auto-recheck until evidence resets
+  save();render()} // week-complete popup handled centrally in autoSyncWeeks
+function togObj(wi,oi){
+  const was=S.weeks[wi].obj.every(Boolean);
+  const on=!S.weeks[wi].obj[oi];S.weeks[wi].obj[oi]=on;
+  const now=S.weeks[wi].obj.every(Boolean);
+  if(on){burst(lastX,lastY,12);xpFx(20);ding('one');
+    if(now&&!was){popup('OBJECTIVES MASTERED','+50 XP · you can DO this unit now');confettiRain(110);ding('big')}}
+  else xpFx(-20);
+  save();render()}
+
+function togPre(i){const on=!S.preTasks[i].done;S.preTasks[i].done=on;
+  if(on){burst(lastX,lastY,14);xpFx(25);ding('one')}else xpFx(-25);
+  save();render()} // PRE-SEASON COMPLETE popup handled in autoSyncWeeks
+function togPreObj(i){const on=!S.preObj[i];S.preObj[i]=on;
+  if(on){burst(lastX,lastY,10);xpFx(15);ding('one')}else xpFx(-15);
+  save();render()}
+function renderWeeks(cw){
+  const preStart=parseD(today())<parseD(S.start);
+  const pd=S.preTasks.filter(x=>x.done).length;
+  const preFull=pd===S.preTasks.length;
+  const preCard='<div class="week'+(preStart?' cur':'')+(preFull?' alldone':'')+'"><div class="hd">'+
+    '<span style="font-weight:700;font-family:var(--mono)">WEEK 0 — PRE-SEASON (build mode until '+S.start+')</span>'+
+    '<span class="pill '+(preFull?'gold':'w')+'">'+(preFull?'★ READY':'Wk 0 · '+pd+'/'+S.preTasks.length)+'</span></div>'+
+    '<h3>Readiness objectives</h3>'+PRE_OBJ.map((o,j)=>'<div class="obj'+(S.preObj[j]?' done':'')+'"><input type="checkbox" '+(S.preObj[j]?'checked':'')+' onchange="togPreObj('+j+')"> '+o+'</div>').join('')+
+    '<h3>Tasks</h3>'+S.preTasks.map((x,j)=>'<div class="task'+(x.done?' done':'')+'"><input type="checkbox" '+(x.done?'checked':'')+' onchange="togPre('+j+')"> '+x.t+'</div>').join('')+'</div>';
+  document.getElementById('weeks').innerHTML=preCard+S.weeks.map((wk,i)=>{
+    const st=parseD(S.start);st.setDate(st.getDate()+i*7);
+    const en=new Date(st);en.setDate(en.getDate()+6);
+    const f=d=>(d.getMonth()+1)+'/'+d.getDate();
+    const dn2=wk.tasks.filter(x=>x.done).length;
+    const allD=dn2===wk.tasks.length;
+    return '<div class="week'+(i+1===cw?' cur':'')+(allD?' alldone':'')+'"><div class="hd">'+
+      '<input class="wkname" value="'+wk.unit.replace(/"/g,'&quot;')+'" onchange="S.weeks['+i+'].unit=this.value;save()">'+
+      '<span class="pill '+(allD?'gold':'b')+'">'+(allD?'★ ':'')+'Wk '+(i+1)+' · '+f(st)+'–'+f(en)+' · '+dn2+'/'+wk.tasks.length+'</span></div>'+
+      '<h3>Learning objectives</h3>'+(OBJ[i]||[]).map((o,j)=>'<div class="obj'+(wk.obj[j]?' done':'')+'"><input type="checkbox" '+(wk.obj[j]?'checked':'')+' onchange="togObj('+i+','+j+')"> '+o+'</div>').join('')+
+      '<h3>Tasks</h3>'+wk.tasks.map((x,j)=>taskRow(i,j,x)).join('')+'</div>';
+  }).join('');
+}
+
+// work schedule editor
+function renderWork(){
+  const nm={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
+  document.getElementById('workDays').innerHTML=['mon','tue','wed','thu','fri','sat','sun'].map(d=>{
+    const w=S.work[d];const sug=suggestFor(d,'9999-01-01');
+    const loadSel='<select id="ld_'+d+'" onchange="document.getElementById(\'wt_'+d+'\').style.display=this.value===\'off\'?\'none\':\'inline\'">'+
+      Object.keys(LOADS).map(k=>'<option value="'+k+'"'+(w.load===k?' selected':'')+'>'+LOADS[k]+'</option>').join('')+'</select>';
+    return '<div class="schedday"><div class="rowtop"><b style="width:86px">'+nm[d]+'</b>'+loadSel+
+      '<span id="wt_'+d+'" style="display:'+(w.load==='off'?'none':'inline')+'"><span class="mut">work</span> <input type="time" id="ws_'+d+'" value="'+w.ws+'" style="width:105px"> <span class="mut">to</span> <input type="time" id="we_'+d+'" value="'+w.we+'" style="width:105px"></span>'+
+      '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--sub)"><input type="checkbox" id="md_'+d+'" '+(w.midday?'checked':'')+' style="width:15px;height:15px"> midday slack</label>'+
+      '<input type="time" id="mt_'+d+'" value="'+w.midTime+'" style="width:100px" title="when the slack usually falls">'+
+      '<input id="ovr_'+d+'" placeholder="override study time (optional)" value="'+(w.ovr||'')+'" style="width:190px"></div>'+
+      '<div class="suggest'+(sug.mid?' mid':'')+'">Study window: <b>'+sug.time+'</b> — '+AGENDA[sug.key][0]+' <span class="mut">('+sug.why+')</span>'+(sug.mid?'<br><b>+ Midday sprint</b> around '+w.midTime+' — 25 min of MCQs during engagement slack':'')+'</div></div>';
+  }).join('');
+}
+function saveWork(){
+  ['mon','tue','wed','thu','fri','sat','sun'].forEach(d=>{
+    S.work[d]={ws:document.getElementById('ws_'+d).value,we:document.getElementById('we_'+d).value,
+      load:document.getElementById('ld_'+d).value,
+      midday:document.getElementById('md_'+d).checked,midTime:document.getElementById('mt_'+d).value||'12:00',
+      ovr:document.getElementById('ovr_'+d).value.trim()};
+  });
+  save();render();toast('Schedule saved');
+}
+function addEx(){
+  const e={from:document.getElementById('exFrom').value,to:document.getElementById('exTo').value,
+    type:document.getElementById('exType').value,note:document.getElementById('exNote').value.trim()};
+  if(!e.from||!e.to||e.to<e.from)return alert('Enter a valid date range');
+  S.exceptions.push(e);S.exceptions.sort((a,b)=>a.from<b.from?-1:1);save();render();
+}
+function renderExList(){
+  document.getElementById('exList').innerHTML=S.exceptions.map((e,i)=>
+    '<div class="rule" style="display:flex;justify-content:space-between;gap:8px"><span><b>'+e.from+' → '+e.to+'</b> · '+e.type+(e.note?' — '+e.note:'')+'</span><button class="btn2" style="padding:2px 8px" onclick="S.exceptions.splice('+i+',1);save();render()">✕</button></div>').join('')||'<div class="mut">None. Nice.</div>';
+}
+function renderSet(){
+  document.getElementById('setStart').value=S.start;
+  document.getElementById('setExam').value=S.exam;
+  document.getElementById('setSound').checked=!!S.sound;
+  const ai=S.ai||{provider:'builtin'};
+  if(document.activeElement&&document.activeElement.id==='aiKey')return;
+  document.getElementById('aiProv').value=ai.provider||'builtin';
+  document.getElementById('aiKey').value=ai.key||'';
+  document.getElementById('aiModel').value=ai.model||'';
+}
+function pingPrompt(kind,start){
+  const head='You are Matthew’s CPA study drill sergeant (supportive but firm). ';
+  const pre='PLAN_START: '+start+'. If today is BEFORE PLAN_START: send a pre-season nudge instead — remind him to finish the build-mode prep list in Cadence, his CPA study app (book the exam date, set his work week, dry-run one 30-min session) and tell him how many days until day 1. Otherwise:\n\nCompute his plan week: week = floor((days since PLAN_START)/7) + 1, capped at 12. Unit by week: 1=F1 Financial reporting/standards, 2=F2 Revenue recognition/cash/receivables, 3=F3 Inventory/PP&E, 4=F4 Investments/intangibles/fair value, 5=F5 Payables/long-term debt/bonds, 6=F6 Leases/equity, 7=F7 Income taxes/changes&errors, 8=F8 Contingencies/subsequent events/cash flows, 9=F9 Not-for-profit, 10=F10 Governmental, 11-12=Final review (simulated exams + weakest areas).\n\n';
+  if(kind==='week')return head+'His FAR study block starts at 6:30 PM tonight. Produce ONE short notification-style message (under 120 words) telling him exactly what to do tonight. No preamble, no questions.\n\n'+pre+
+    'Assignment by weekday — Mon/Tue/Thu (6:30–8:30 PM): redo yesterday’s missed MCQs first, then this week’s Becker lectures at 1.5–2x with each module’s MCQs immediately after (weeks 11-12: weak-area MCQ drills instead). Wed (6:30–7:30 PM): one 30-question cumulative practice set covering ALL units so far; rework every miss.\n\nAlways end with a one-line reminder: phone in another room, nothing to smoke until the block is done and checked off in the dashboard.';
+  return head+'His weekend FAR study block starts at 9:00 AM. Produce ONE short notification-style message (under 120 words) with today’s exact assignment. No preamble, no questions.\n\n'+pre+
+    'Saturday (9 AM–12 PM): 2+ task-based simulations from this week’s unit, then finish remaining module MCQs. Weeks 11-12: full 4-hour simulated exam under real timed conditions instead. Sunday (9–11 AM): timed Becker unit exam, log the score in the dashboard Scores tab, then 20 min flashcards on misses. Weeks 11-12: deep review of every simulated-exam miss.\n\nEnd with: get it done before the day gets away — then the rest of the weekend is guilt-free.';
+}
+async function syncPings(){
+  if(!(window.cowork&&window.cowork.callMcpTool))return 'Pings not updated (works inside Cowork only) — tell Claude your new start date in chat.';
+  try{
+    const a=await window.cowork.callMcpTool('mcp__scheduled-tasks__update_scheduled_task',{taskId:'far-weeknight-study-ping',prompt:pingPrompt('week',S.start)});
+    const b=await window.cowork.callMcpTool('mcp__scheduled-tasks__update_scheduled_task',{taskId:'far-weekend-study-ping',prompt:pingPrompt('weekend',S.start)});
+    if((a&&a.isError)||(b&&b.isError))return 'Ping update hit an error — tell Claude your new start date in chat.';
+    return 'Notification pings re-synced to '+S.start+'.';
+  }catch(e){return 'Ping update failed — tell Claude your new start date in chat.'}
+}
+function exportData(){
+  const data=JSON.stringify(S);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='cpa-command-center-backup.json';a.click();
+  try{navigator.clipboard.writeText(data)}catch(e){}
+  toast('Backup downloaded + copied to clipboard',true);
+}
+function importData(){
+  const t=prompt('Paste your backup JSON here (from Export on your other device):');
+  if(!t)return;
+  try{const s=JSON.parse(t);if(!s.weeks||!s.start)throw 0;
+    localStorage.setItem(KEY,JSON.stringify(s));location.reload();
+  }catch(e){alert('That does not look like a valid backup. Copy the full Export output and try again.')}
+}
+function saveDates(){S.start=document.getElementById('setStart').value;S.exam=document.getElementById('setExam').value;save();render();
+  toast('Plan re-anchored to '+S.start,true);
+  if(parseD(today())<parseD(S.start))popup('PRE-SEASON','build mode until '+S.start);
+  const note=document.createElement('div');note.className='mut';note.textContent='Syncing notification pings…';
+  document.getElementById('setStart').closest('.card').appendChild(note);
+  syncPings().then(msg=>{note.textContent=msg;setTimeout(()=>note.remove(),8000)});
+}
+
+// scores
+function renderScores(){
+  const sel=document.getElementById('scUnit');
+  sel.innerHTML=S.weeks.map(w=>'<option>'+w.unit.split('—')[0].trim()+'</option>').join('')+'<option>Mixed</option>';
+  document.getElementById('scDate').value=today();
+  document.getElementById('scRows').innerHTML=S.scores.map((s,i)=>{
+    const c=s.pct>=75?'g':s.pct>=60?'w':'r';
+    return '<tr><td>'+s.date+'</td><td>'+s.unit+'</td><td>'+s.type+'</td><td>'+s.n+'</td><td><span class="pill '+c+'">'+s.pct+'%</span></td><td><button class="btn2" style="padding:2px 8px" onclick="S.scores.splice('+i+',1);save();render();drawChart()">✕</button></td></tr>';
+  }).join('')||'<tr><td colspan="6" class="mut">No scores yet.</td></tr>';
+}
+function addScore(){
+  const s={date:document.getElementById('scDate').value,unit:document.getElementById('scUnit').value,
+    type:document.getElementById('scType').value,n:+document.getElementById('scN').value||0,pct:+document.getElementById('scPct').value||0};
+  if(!s.n&&s.pct===0)return alert('Enter question count and score %');
+  S.scores.push(s);S.scores.sort((a,b)=>a.date<b.date?-1:1);save();
+  if(s.pct>=75){burst(lastX,lastY,24);ding('ok');toast(s.pct+'% — above the pass line!',true)}
+  render();drawChart();
+}
+let chart;
+function drawChart(){
+  const el=document.getElementById('chart'); if(!el.offsetParent&&!el.offsetWidth)return;
+  if(chart)chart.destroy();
+  chart=new Chart(el,{type:'line',data:{labels:S.scores.map(s=>s.date.slice(5)+' '+s.unit),
+    datasets:[{label:'Score %',data:S.scores.map(s=>s.pct),borderColor:'#3dff8b',backgroundColor:'rgba(61,255,139,.10)',pointBackgroundColor:'#3dff8b',tension:.3,fill:true},
+      {label:'Pass line (75)',data:S.scores.map(()=>75),borderColor:'#ffd75e',borderDash:[6,4],pointRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#7da489',font:{family:'Consolas,monospace'}}}},
+      scales:{y:{min:0,max:100,ticks:{color:'#7da489'},grid:{color:'#223425'}},x:{ticks:{color:'#7da489'},grid:{color:'#182619'}}}}});
+}
+
+// ---------- quiz engine (shared by Today + Knowledge Base) ----------
+let curSet={q:[],target:null,label:'',scoreType:'',unitLabel:''};
+function qid(u,i){return u*100+i}
+function poolFor(units,topics){ // units: array of 1..10; topics: array of group idx or null=all
+  const out=[];
+  for(const u of units){(QB[u]||[]).forEach((q,i)=>{
+    if(!topics||topics.includes(q[4]))out.push({id:qid(u,i),u,q});
+  })}
+  return out;
+}
+function pickSet(pool,n){
+  const t=today();S.usedQ[t]=S.usedQ[t]||[];
+  let fresh=pool.filter(x=>!S.usedQ[t].includes(x.id));
+  if(fresh.length<n){ // cycled through — reset used for this scope
+    const ids=pool.map(x=>x.id);
+    S.usedQ[t]=S.usedQ[t].filter(id=>!ids.includes(id));
+    fresh=pool;
+  }
+  const set=[...fresh].sort(()=>Math.random()-.5).slice(0,Math.min(n,fresh.length));
+  S.usedQ[t].push(...set.map(x=>x.id));save();
+  return set;
+}
+function renderQuiz(target,set){
+  const pfx=target;
+  set.forEach(x=>{x.perm=[0,1,2,3].sort(()=>Math.random()-.5)});
+  document.getElementById(pfx+'Body').innerHTML=set.map((x,i)=>{
+    const q=x.q;
+    return '<div class="qq"><div class="qt">'+(i+1)+'. '+q[0]+'</div>'+
+    x.perm.map((orig,j)=>'<label class="opt" id="'+pfx+'opt'+i+'_'+j+'"><input type="radio" name="'+pfx+'q'+i+'" value="'+orig+'"> <span>'+q[1][orig]+'</span></label>').join('')+
+    '<div class="expl" id="'+pfx+'ex'+i+'" style="display:none"></div></div>'}).join('');
+  document.getElementById(pfx+'Result').textContent='';
+  document.getElementById(pfx+'Submit').disabled=false;
+  document.getElementById(pfx+'Again').style.display='none';
+}
+function gradeSet(target){
+  const pfx=target,set=curSet.q;
+  if(!set.length)return;
+  let right=0;
+  set.forEach((x,i)=>{
+    const q=x.q,perm=x.perm||[0,1,2,3];
+    const sel=document.querySelector('input[name="'+pfx+'q'+i+'"]:checked');
+    const pick=sel?+sel.value:-1;
+    document.getElementById(pfx+'opt'+i+'_'+perm.indexOf(q[2])).classList.add('correct');
+    if(pick===q[2]){right++}else if(pick>=0){document.getElementById(pfx+'opt'+i+'_'+perm.indexOf(pick)).classList.add('wrong')}
+    const ex=document.getElementById(pfx+'ex'+i);ex.style.display='block';ex.textContent=q[3];
+  });
+  const pct=Math.round(right/set.length*100);
+  document.getElementById(pfx+'Result').textContent=right+'/'+set.length+' — '+pct+'%'+(pct===100?' 💯 PERFECT':pct>=80?' 🔥':pct>=60?' — solid, review the misses':' — reread those explanations, then hit ↻ for another set');
+  document.getElementById(pfx+'Submit').disabled=true;
+  document.getElementById(pfx+'Again').style.display='inline-block';
+  const t=today();S.quizXp=S.quizXp||{};S.quizXp[t]=(S.quizXp[t]||0);
+  if(S.quizXp[t]<50){const pts=Math.min(right*5,50-S.quizXp[t]);S.quizXp[t]+=pts;save();renderXp();if(pts)toast('+'+pts+' XP')}
+  else toast('Practice mode — XP capped for today');
+  if(pct===100){popup('PERFECT SET',set.length+'/'+set.length+' · 💯',true);confettiRain(150);ding('big')}else if(pct>=80){burst(lastX,lastY,26);ding('ok')}
+  S.scores.push({date:t,unit:curSet.unitLabel,type:curSet.scoreType,n:set.length,pct});
+  S.scores.sort((a,b)=>a.date<b.date?-1:1);save();renderScores();
+}
+
+// Today's knowledge check — scoped to what today's session covered
+function startTodayQuiz(){
+  const w=curWeek()||1, dn=DAYS[new Date().getDay()];
+  let units,topics,note;
+  if(w>=11){units=[1,2,3,4,5,6,7,8,9,10];topics=null;note='Final review — everything is fair game.'}
+  else if(dn==='wed'){units=[];for(let u=1;u<=Math.min(w,10);u++)units.push(u);topics=null;note='Wednesday cumulative — all units studied so far (F1–F'+Math.min(w,10)+').'}
+  else{const u=Math.min(w,10);units=[u];topics=DAY_TOPIC[dn];
+    const names=(topics||[]).map(t=>TOPICS[u][t]).join(' + ');
+    note=(dn==='mon'||dn==='tue'||dn==='thu')?
+      'Scoped to tonight’s material only: '+names+'.':
+      'Whole unit F'+u+' — weekend consolidation.';}
+  const pool=poolFor(units,topics);
+  curSet={q:pickSet(pool,5),target:'q',scoreType:'Knowledge check',
+    unitLabel:units.length===1?'F'+units[0]:'Mixed'};
+  document.getElementById('qScope').textContent=units.length===1?'F'+units[0]+(topics&&topics.length<3?' · today only':''):'F1–F'+Math.max(...units);
+  document.getElementById('qScopeNote').textContent=note;
+  renderQuiz('q',curSet.q);
+  document.getElementById('quizCard').style.display='block';
+  document.getElementById('quizCard').scrollIntoView({behavior:'smooth'});
+}
+
+// Knowledge Base generator
+let kbSel=new Set();
+function renderKbUnits(){
+  const el=document.getElementById('kbUnits');if(!el)return;
+  if(kbSel.size===0)kbQuick('sofar',true);
+  el.innerHTML=[1,2,3,4,5,6,7,8,9,10].map(u=>
+    '<span class="uchip'+(kbSel.has(u)?' on':'')+'" onclick="kbTog('+u+')">F'+u+' <span class="mut">('+QB[u].length+')</span></span>').join('');
+  updKbInfo();renderWeakUI();
+}
+function kbTog(u){if(kbSel.has(u))kbSel.delete(u);else kbSel.add(u);renderKbUnits()}
+function kbQuick(mode,silent){
+  const w=Math.min(curWeek()||1,10);
+  kbSel=new Set(mode==='week'?[w]:mode==='sofar'?Array.from({length:w},(_,i)=>i+1):[1,2,3,4,5,6,7,8,9,10]);
+  if(!silent)renderKbUnits();
+}
+function updKbInfo(){
+  const pool=poolFor([...kbSel],null);
+  document.getElementById('kbPoolInfo').textContent=pool.length+' questions in scope';
+}
+function isWeakQ(x){return S.weak.some(w=>w.u===x.u&&(w.t==null||w.t===x.q[4]))}
+function startKb(){
+  if(kbSel.size===0)return alert('Pick at least one module');
+  const units=[...kbSel].sort((a,b)=>a-b);
+  const n=+document.getElementById('kbN').value;
+  const pool=poolFor(units,null);
+  const adaptive=document.getElementById('kbAdaptive').checked&&S.weak.length>0;
+  let set;
+  if(adaptive){
+    const weakPool=pool.filter(isWeakQ),rest=pool.filter(x=>!isWeakQ(x));
+    const wantWeak=Math.min(Math.round(n*0.6),weakPool.length);
+    set=pickSet(weakPool,wantWeak).concat(pickSet(rest,n-wantWeak));
+    set.sort(()=>Math.random()-.5);
+  }else set=pickSet(pool,n);
+  curSet={q:set,target:'k',scoreType:'Knowledge base set',
+    unitLabel:units.length===1?'F'+units[0]:'Mixed'};
+  document.getElementById('kScope').textContent=units.map(u=>'F'+u).join(', ')+' · '+set.length+' Qs'+(adaptive?' · adaptive':'');
+  renderQuiz('k',curSet.q);
+  document.getElementById('kbCard').style.display='block';
+  document.getElementById('kbCard').scrollIntoView({behavior:'smooth'});
+}
+// weak areas
+function weakLabel(w){return 'F'+w.u+(w.t==null?' (all)':' · '+TOPICS[w.u][w.t])+(w.note?' — '+w.note:'')}
+function renderWeakUI(){
+  const el=document.getElementById('weakList');if(!el)return;
+  el.innerHTML=S.weak.length?S.weak.map((w,i)=>
+    '<span class="uchip on" style="background:var(--warnSoft);border-color:var(--warn);color:var(--warn)">'+weakLabel(w)+' <b style="cursor:pointer" onclick="S.weak.splice('+i+',1);save();renderWeakUI();updKbInfo()">✕</b></span>').join('')
+    :'<span class="mut">None yet — tell the Coach what you’re stuck on, or add one below.</span>';
+  const uSel=document.getElementById('wkU');
+  uSel.innerHTML=[1,2,3,4,5,6,7,8,9,10].map(u=>'<option value="'+u+'">F'+u+'</option>').join('');
+  uSel.onchange=fillWkT;fillWkT();
+}
+function fillWkT(){
+  const u=+document.getElementById('wkU').value||1;
+  document.getElementById('wkT').innerHTML='<option value="">Whole module</option>'+TOPICS[u].map((t,i)=>'<option value="'+i+'">'+t+'</option>').join('');
+}
+function addWeak(){
+  const u=+document.getElementById('wkU').value;
+  const tv=document.getElementById('wkT').value;
+  const t=tv===''?null:+tv;
+  if(!S.weak.some(w=>w.u===u&&w.t===t)){S.weak.push({u,t,note:''});save();renderWeakUI();toast('Weak area added')}
+}
+
+// ---------- Coach (built-in Claude) ----------
+let coachActs=[];
+function coachCtx(){
+  const w=curWeek(),wk=S.weeks[Math.max(w-1,0)];
+  return JSON.stringify({today:today(),weekday:DAYS[new Date().getDay()],examDate:S.exam,
+    currentWeek:w,currentUnit:wk.unit,streak:streak(),
+    workSchedule:S.work,exceptions:S.exceptions,
+    weakAreas:S.weak.map(x=>({unit:'F'+x.u,topic:x.t==null?'all':TOPICS[x.u][x.t]})),
+    farTopicGroups:TOPICS,
+    recentScores:S.scores.slice(-6)});
+}
+async function coachSend(prompt){
+  const ai=S.ai||{provider:'builtin'};
+  const inCowork=!!(window.cowork&&window.cowork.askClaude);
+  if(ai.provider==='anthropic'&&ai.key&&!inCowork){
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'content-type':'application/json','x-api-key':ai.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:ai.model||'claude-sonnet-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    if(!r.ok)throw new Error('Anthropic API error '+r.status+' — check your key/model in Settings');
+    const j=await r.json();return j.content[0].text;
+  }
+  if(ai.provider==='openai'&&ai.key&&!inCowork){
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+ai.key},
+      body:JSON.stringify({model:ai.model||'gpt-4o-mini',messages:[{role:'user',content:prompt}]})});
+    if(!r.ok)throw new Error('OpenAI API error '+r.status+' — check your key/model in Settings');
+    const j=await r.json();return j.choices[0].message.content;
+  }
+  if(inCowork){
+    const r=await window.cowork.askClaude(prompt,[]);
+    return typeof r==='string'?r:(r&&(r.text||r.reply||(r.content&&(typeof r.content==='string'?r.content:(r.content[0]&&r.content[0].text)))))||JSON.stringify(r);
+  }
+  throw new Error('nobackend');
+}
+function saveAi(){
+  S.ai={provider:document.getElementById('aiProv').value,key:document.getElementById('aiKey').value.trim(),model:document.getElementById('aiModel').value.trim()};
+  save();
+  document.getElementById('aiStatus').textContent=S.ai.provider==='builtin'?'Using built-in Claude.':(S.ai.key?'Saved — the coach will use your '+(S.ai.provider==='anthropic'?'Anthropic':'OpenAI')+' key on standalone/phone copies (built-in Claude still handles it inside Cowork).':'Provider set but no key entered yet.');
+  toast('Coach provider saved');
+}
+async function askCoach(){
+  const txt=document.getElementById('coachIn').value.trim();
+  if(!txt)return;
+  const st=document.getElementById('coachStatus');
+  document.getElementById('coachBtn').disabled=true;st.textContent='Thinking…';
+  const prompt='You are a supportive but firm CPA-exam study coach inside a study dashboard for an audit staff working full time. Method: Becker/Peter Olinto school — MCQs are the curriculum, daily cumulative questions, SIMs weekly, protect the streak, never miss twice, exam date is sacred.\n'+
+  'Current state JSON: '+coachCtx()+'\n'+
+  'The user update: "'+txt.replace(/"/g,"'")+'"\n'+
+  'Respond with ONLY valid JSON, no markdown fences, in this exact shape:\n'+
+  '{"reply":"2-5 sentences: acknowledge, coach, state what you suggest changing and why","actions":[]}\n'+
+  'Allowed action objects for the actions array (include only what the update justifies, usually 0-3):\n'+
+  '{"type":"exception","from":"YYYY-MM-DD","to":"YYYY-MM-DD","extype":"Engagement crunch"|"Travel / on-site"|"PTO / life","note":"short label"} — for multi-day disruptions; the plan auto-drops to a protect-the-streak minimum on those dates.\n'+
+  '{"type":"day","day":"mon"|"tue"|"wed"|"thu"|"fri"|"sat"|"sun","load":"office"|"eng-light"|"eng-heavy"|"travel"|"off","ovr":"e.g. 5:45-7:45 AM","midday":true,"midTime":"12:30"} — permanently reshapes a weekday (all fields except day optional; ovr overrides the study window).\n'+
+  '{"type":"focus","note":"short task text"} — adds an extra task to the current week (e.g. extra reps on a topic that is hurting).\n'+
+  '{"type":"weak","unit":1-10,"topic":0|1|2|null,"note":"why"} — registers a weak area (use farTopicGroups in the state JSON to pick the right topic index, null = whole module). The practice generator then biases 60% of adaptive question sets toward these. Use this whenever the user says they are struggling with, stuck on, or scoring badly in something.\n'+
+  '{"type":"unweak","unit":1-10,"topic":0|1|2|null} — removes a weak area the user says is now fixed.\n'+
+  'Dates: resolve relative dates ("next week Tue-Thu") against today. Never invent problems the user did not mention.';
+  try{
+    let raw=await coachSend(prompt);
+    raw=String(raw).replace(/```json|```/g,'');
+    const a=raw.indexOf('{'),b=raw.lastIndexOf('}');
+    let parsed=null;
+    try{parsed=JSON.parse(raw.slice(a,b+1))}catch(e){}
+    const reply=parsed&&parsed.reply?parsed.reply:raw.trim();
+    coachActs=(parsed&&Array.isArray(parsed.actions)?parsed.actions:[]).filter(x=>x&&x.type);
+    document.getElementById('coachReply').textContent=reply;
+    document.getElementById('coachActions').innerHTML=coachActs.length?
+      '<h3>Proposed changes — uncheck any you don’t want</h3>'+coachActs.map((x,i)=>
+        '<div class="task"><input type="checkbox" checked id="ca'+i+'"> '+coachDesc(x)+'</div>').join('')+
+      '<button class="btn" style="margin-top:8px" onclick="applyCoach()">Apply selected changes</button>':
+      '<div class="mut" style="margin-top:8px">No schedule changes needed — logged as a check-in note.</div>';
+    document.getElementById('coachOut').style.display='block';
+    S.coachLog.unshift({d:today(),txt,reply:reply.slice(0,200),applied:0});
+    S.coachLog=S.coachLog.slice(0,12);save();renderCoachLog();
+    st.textContent='';
+  }catch(e){
+    st.textContent=e.message==='nobackend'?
+      'No coach brain available here. Open this dashboard inside Cowork (built-in Claude), or add an Anthropic/OpenAI API key in Settings for standalone/phone use.':
+      (e instanceof TypeError?
+        'Network blocked or offline. Inside Cowork, switch provider to Built-in Claude — outside API calls are sandboxed. On a phone copy, check your connection.':
+        'Coach error: '+e.message);
+  }
+  document.getElementById('coachBtn').disabled=false;
+}
+function coachDesc(x){
+  if(x.type==='exception')return '<b>Exception</b> '+x.from+' → '+x.to+' · '+(x.extype||'Engagement crunch')+(x.note?' — '+x.note:'')+' (light-plan days)';
+  if(x.type==='day'){const bits=[];if(x.load)bits.push('type → '+(LOADS[x.load]||x.load));if(x.ovr)bits.push('study window → '+x.ovr);if(x.midday!==undefined)bits.push(x.midday?'midday sprint ON'+(x.midTime?' @ '+x.midTime:''):'midday sprint off');
+    return '<b>'+({mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'}[x.day]||x.day)+'</b>: '+bits.join(' · ')}
+  if(x.type==='focus')return '<b>Add task this week:</b> '+x.note;
+  if(x.type==='weak')return '<b>Weak area:</b> F'+x.unit+(x.topic==null?' (whole module)':' · '+((TOPICS[x.unit]||[])[x.topic]||'topic '+x.topic))+(x.note?' — '+x.note:'')+' → adaptive practice sets will target this';
+  if(x.type==='unweak')return '<b>Cleared weak area:</b> F'+x.unit+(x.topic==null?'':' · '+((TOPICS[x.unit]||[])[x.topic]||''));
+  return JSON.stringify(x);
+}
+function applyCoach(){
+  let n=0;
+  coachActs.forEach((x,i)=>{
+    const cb=document.getElementById('ca'+i);if(!cb||!cb.checked)return;
+    if(x.type==='exception'&&x.from&&x.to&&x.to>=x.from){S.exceptions.push({from:x.from,to:x.to,type:x.extype||'Engagement crunch',note:x.note||'via coach'});n++}
+    else if(x.type==='day'&&S.work[x.day]){const w=S.work[x.day];
+      if(x.load&&LOADS[x.load])w.load=x.load;
+      if(x.ovr!==undefined)w.ovr=String(x.ovr||'');
+      if(x.midday!==undefined)w.midday=!!x.midday;
+      if(x.midTime)w.midTime=x.midTime;n++}
+    else if(x.type==='focus'&&x.note){const wk=S.weeks[Math.max(curWeek()-1,0)];wk.tasks.push({t:'⚡ '+x.note,done:false});n++}
+    else if(x.type==='weak'&&x.unit>=1&&x.unit<=10){const t=(x.topic===0||x.topic===1||x.topic===2)?x.topic:null;
+      if(!S.weak.some(w=>w.u===x.unit&&w.t===t)){S.weak.push({u:x.unit,t,note:x.note||''});n++}}
+    else if(x.type==='unweak'&&x.unit){const t=(x.topic===0||x.topic===1||x.topic===2)?x.topic:null;
+      const bi=S.weak.findIndex(w=>w.u===x.unit&&(t==null||w.t===t));if(bi>=0){S.weak.splice(bi,1);n++}}
+  });
+  S.exceptions.sort((a,b)=>a.from<b.from?-1:1);
+  if(S.coachLog[0])S.coachLog[0].applied=n;
+  save();render();renderCoachLog();
+  document.getElementById('coachActions').innerHTML='<div class="pill g" style="margin-top:8px">✓ '+n+' change'+(n===1?'':'s')+' applied — schedule readapted</div>';
+  if(n){burst(lastX,lastY,24);ding('ok');toast('Schedule readapted')}
+  document.getElementById('coachIn').value='';
+}
+function renderCoachLog(){
+  const el=document.getElementById('coachLog');if(!el)return;
+  el.innerHTML=S.coachLog.length?S.coachLog.map(l=>
+    '<div class="rule"><b>'+l.d+'</b> — “'+l.txt.slice(0,120)+(l.txt.length>120?'…':'')+'”'+(l.applied?' <span class="pill g">'+l.applied+' applied</span>':'')+'<br><span class="mut">'+l.reply+'</span></div>').join('')
+    :'<div class="mut">Nothing yet. First time something shifts at work, tell the coach instead of suffering in silence.</div>';
+}
+render();
+
+// ---------- boot splash ----------
+(function(){
+  const lines=['loading plan · 12 weeks + pre-season','restoring progress · '+(S.xp||0)+' XP','arming streak engine · day '+streak(),'cadence locked. go.'];
+  const bl=document.getElementById('bootline');let i=0;
+  const tick=setInterval(()=>{if(i<lines.length){bl.textContent=lines[i++]}else{clearInterval(tick);
+    const sp=document.getElementById('splash');sp.classList.add('gone');setTimeout(()=>sp.remove(),650)}},340);
+})();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
+</body>
+</html>
