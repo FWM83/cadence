@@ -562,7 +562,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 <!-- COACH -->
 <div class="pane" id="p-coach" style="display:none">
   <div class="card">
-    <h2>Tell your coach what changed</h2>
+    <h2>Tell your coach what changed <span class="pill b" id="brainPill"></span></h2>
     <div class="mut" style="margin-bottom:10px">Dump anything — schedule changes, engagement news, how studying is going, goals. No forms. The coach reads your current plan and work schedule, replies, and proposes concrete changes: exceptions for busy stretches, moved study windows, day-type switches. You approve before anything is applied. Brain: built-in Claude inside Cowork, or your own Anthropic/OpenAI API key on phone/standalone copies — pick in Settings.<br><span style="color:var(--ink)">Examples: "I'm on-site in Grand Rapids Tue–Thu next week, nights are shot" · "inventory count moved to Friday" · "F5 bonds is destroying me, I need more time on it" · "slept badly all week, sessions are garbage"</span></div>
     <textarea id="coachIn" rows="4" style="width:100%;font-family:inherit;font-size:13.5px;padding:10px;border:1px solid var(--line);border-radius:8px;resize:vertical" placeholder="What's going on this week?"></textarea>
     <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
@@ -748,7 +748,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="frm">
       <div><label>Provider</label><select id="aiProv"><option value="builtin">Built-in Claude (Cowork)</option><option value="anthropic">Anthropic API key</option><option value="openai">OpenAI API key</option></select></div>
       <div><label>API key</label><input id="aiKey" type="password" placeholder="sk-..." style="width:220px"></div>
-      <div><label>Model (optional)</label><input id="aiModel" placeholder="auto" style="width:160px"></div>
+      <div><label>Model</label><select id="aiModel" style="width:210px">
+        <option value="">Auto (recommended)</option>
+        <option value="claude-opus-5">Claude Opus 5 — most capable</option>
+        <option value="claude-sonnet-5">Claude Sonnet 5 — balanced</option>
+        <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — fastest</option>
+        <option value="gpt-4o">GPT-4o (OpenAI)</option>
+        <option value="gpt-4o-mini">GPT-4o mini (OpenAI)</option>
+      </select></div>
       <div><button class="btn" onclick="saveAi()">Save</button></div>
     </div>
     <div class="mut" id="aiStatus"></div>
@@ -777,7 +784,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v6.7';
+const BUILD='v7.0';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -2032,7 +2039,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.getElementById('p-'+t.dataset.t).style.display='block';
   if(t.dataset.t==='scores')drawChart();
   if(t.dataset.t==='kb')renderKbUnits();
-  if(t.dataset.t==='coach'){renderCoachLog();renderSvLog();const d=surveyDue();if(d)openSurvey(d);}
+  if(t.dataset.t==='coach'){renderCoachLog();renderBrain();renderSvLog();const d=surveyDue();if(d)openSurvey(d);}
 });
 
 function streak(){
@@ -2770,7 +2777,7 @@ async function coachSend(prompt){
   if(ai.provider==='anthropic'&&ai.key&&!inCowork){
     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'content-type':'application/json','x-api-key':ai.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:ai.model||'claude-sonnet-5',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+      body:JSON.stringify({model:ai.model||'claude-opus-5',max_tokens:1400,messages:[{role:'user',content:prompt}]})});
     if(!r.ok)throw new Error('Anthropic API error '+r.status+' — check your key/model in Settings');
     const j=await r.json();return j.content[0].text;
   }
@@ -2926,9 +2933,25 @@ function addDays(d,n){const x=parseD(d);x.setDate(x.getDate()+n);
   return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
 function localCoach(txt){
   const acts=[],t=txt.toLowerCase();
-  const daysIn=s=>{const o=[];Object.keys(DAYWORDS).forEach(w=>{if(new RegExp('\\b'+w+'\\b').test(s)){const k=DAYWORDS[w];if(!o.includes(k))o.push(k)}});return o};
+  const ORD=['sun','mon','tue','wed','thu','fri','sat'];
+  const daysIn=s=>{
+    const o=[];
+    // expand ranges first: "Monday through Thursday", "Mon-Thu", "Tue to Fri"
+    const rangeRe=new RegExp('\\b('+Object.keys(DAYWORDS).join('|')+')\\b\\s*(?:-|–|—|through|thru|to|till|until)\\s*\\b('+Object.keys(DAYWORDS).join('|')+')\\b','g');
+    let m;
+    while((m=rangeRe.exec(s))){
+      let a=ORD.indexOf(DAYWORDS[m[1]]),b=ORD.indexOf(DAYWORDS[m[2]]);
+      if(a>=0&&b>=0){let i=a,guard=0;
+        while(guard++<8){if(!o.includes(ORD[i]))o.push(ORD[i]);if(i===b)break;i=(i+1)%7}}
+    }
+    Object.keys(DAYWORDS).forEach(w=>{if(new RegExp('\\b'+w+'\\b').test(s)){const k=DAYWORDS[w];if(!o.includes(k))o.push(k)}});
+    return o;
+  };
   // split into sentences/lines so "Tue/Wed on-site" and "Mon/Thu/Fri normal" stay separate facts
-  const segs=txt.split(/(?:[.!?\n]+)/).map(s=>s.trim()).filter(Boolean);
+  // split on sentence enders AND clause boundaries (commas, semicolons, 'but', 'while'),
+  // because people write these updates as one long run-on line
+  const segs=txt.split(/[.!?;\n]+|,\s+|\s+but\s+|\s+while\s+|\s+whereas\s+/i)
+    .map(s=>s.trim()).filter(Boolean);
   const heavySeg=[],normSeg=[];
   segs.forEach(s=>{const ls=s.toLowerCase();
     const isHard=/on.?site|onsite|client site|travel|in the field|out of town|late|heavy|crunch|slammed|swamped|long hours|not home|won.t be home/.test(ls);
@@ -2938,8 +2961,22 @@ function localCoach(txt){
     if(isHard)heavySeg.push({days:d,seg:s});
     else if(isNorm)normSeg.push({days:d,seg:s});
   });
-  const hardDays=[...new Set(heavySeg.flatMap(x=>x.days))].filter(d=>d!=='sat'&&d!=='sun');
-  const normDays=[...new Set(normSeg.flatMap(x=>x.days))].filter(d=>d!=='sat'&&d!=='sun'&&!hardDays.includes(d));
+  // --- polarity pass: "only Tue and Wed" is definitive, and days after a negation
+  // ("I'm NOT travelling Thu Fri") are explicitly normal. Run-on sentences with no
+  // punctuation broke the segment splitter, so scan phrase windows instead.
+  const onlyDays=new Set(),negDays=new Set();
+  (t.match(/\bonly\b[^.!?\n]{0,70}|\bjust\b[^.!?\n]{0,70}/g)||[])
+    .forEach(w=>daysIn(w).forEach(d=>onlyDays.add(d)));
+  (t.match(/\b(?:not|isn'?t|aren'?t|won'?t|ain'?t|no longer|nothing on|free on|off on)\b[^.!?\n]{0,90}/g)||[])
+    .forEach(w=>daysIn(w).forEach(d=>negDays.add(d)));
+  // a day named as "only" wins over the same day appearing in a negation window
+  negDays.forEach(d=>{if(onlyDays.has(d))negDays.delete(d)});
+
+  let hardDays=[...new Set(heavySeg.flatMap(x=>x.days))].filter(d=>d!=='sat'&&d!=='sun');
+  if(onlyDays.size)hardDays=[...onlyDays].filter(d=>d!=='sat'&&d!=='sun');   // exclusive list
+  hardDays=hardDays.filter(d=>!negDays.has(d));                              // drop negated days
+  const normDays=[...new Set([...normSeg.flatMap(x=>x.days),...negDays])]
+    .filter(d=>d!=='sat'&&d!=='sun'&&!hardDays.includes(d));
   const onsite=/on.?site|onsite|client site|travel|in the field|out of town/.test(t);
   const heavy=/heavy|crunch|slammed|busy|long hours|late night|swamped|deadline/.test(t);
   const engage=/engagement|audit|client|inventory count|fieldwork|busy season/.test(t);
@@ -3004,6 +3041,7 @@ function localCoach(txt){
   if(/sunday|unit exam|protect/.test(t))R.push('Sunday stays sacred — unit exam, the one block I will not move. Lose a weeknight and Friday is your makeup; take it Friday rather than stacking onto Saturday, which is already SIMs.');
   if(/behind|catch up|don.t want to start|already behind/.test(t))R.push('On not starting behind: you are still in pre-season, so bank F1 lectures on the open weekend BEFORE this engagement peaks. Front-load while you have energy — that is the whole game.');
   if(!R.length)R.push('Logged. Nothing in that update changes your schedule — keep the blocks as they are.');
+  if(onlyDays.size)R.push('You said only '+[...onlyDays].map(d=>DN[d]||d).join(' and ')+' — I have restricted it to exactly those days and left everything else untouched.');
   R.push('Uncheck anything you do not want, then apply.');
   return {reply:R.join('\n\n'),actions:acts};
 }
@@ -3160,7 +3198,17 @@ function applyCoach(){
   if(n){burst(lastX,lastY,24);ding('ok');toast('Schedule readapted')}
   document.getElementById('coachIn').value='';
 }
+function brainStatus(){
+  const ai=S.ai||{},inCowork=!!(window.cowork&&window.cowork.askClaude);
+  if(ai.key&&(ai.provider==='anthropic'||ai.provider==='openai'))
+    return {t:(ai.provider==='anthropic'?'Claude':'OpenAI')+' · '+(ai.model||'auto'),c:'g'};
+  if(inCowork)return {t:'built-in Claude',c:'g'};
+  return {t:'local reasoner — add an API key in Settings for a full AI coach',c:'w'};
+}
+function renderBrain(){const el=document.getElementById('brainPill');if(!el)return;
+  const b=brainStatus();el.textContent=b.t;el.className='pill '+b.c}
 function renderCoachLog(){
+  renderBrain();
   const el=document.getElementById('coachLog');if(!el)return;
   el.innerHTML=S.coachLog.length?S.coachLog.map(l=>
     '<div class="rule"><b>'+l.d+'</b> — “'+l.txt.slice(0,120)+(l.txt.length>120?'…':'')+'”'+(l.applied?' <span class="pill g">'+l.applied+' applied</span>':'')+'<br><span class="mut">'+l.reply+'</span></div>').join('')
