@@ -149,12 +149,6 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
   100%{opacity:1;transform:translateZ(0) scale(1)}}
 .popbox.out{opacity:0;transform:translateZ(-260px) scale(.88);filter:blur(10px)}
 .popbox.out .popAura{opacity:0;transition:opacity .5s ease}
-/* light sheen — lives inside the clipped layer so it can never escape the card */
-.popSheen{position:absolute;top:0;bottom:0;left:-60%;width:55%;pointer-events:none;
-  background:linear-gradient(105deg,transparent,rgba(255,255,255,.18),transparent);
-  opacity:0;animation:sheen 1.25s .32s cubic-bezier(.3,.6,.3,1) both}
-@keyframes sheen{0%{opacity:0;transform:translateX(0)}
-  14%{opacity:1}82%{opacity:1}100%{opacity:0;transform:translateX(330%)}}
 /* static edge glow — no rotation */
 .popbox::after{content:'';position:absolute;inset:-1px;border-radius:23px;pointer-events:none;
   box-shadow:0 0 0 1px var(--popBorder),0 0 26px var(--popGlow) inset;opacity:0;
@@ -183,9 +177,9 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
   animation:stackIn .6s .1s cubic-bezier(.2,1,.3,1) both}
 @keyframes stackIn{0%{opacity:0;transform:translate(-18px,-18px) scale(.96)}100%{opacity:.5;transform:none}}
 /* accent bar that fills along the bottom edge */
-.popEdge{position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:0 0 22px 22px;pointer-events:none;
-  background:linear-gradient(90deg,var(--acc),var(--gold),var(--acc));
-  transform:scaleX(0);transform-origin:0 50%;animation:edgeIn .95s .60s cubic-bezier(.2,.9,.3,1) both}
+.popEdge{position:absolute;left:14%;right:14%;bottom:0;height:1.5px;border-radius:2px;pointer-events:none;opacity:.5;
+  background:linear-gradient(90deg,transparent,var(--acc),transparent);
+  transform:scaleX(0);animation:edgeIn .95s .60s cubic-bezier(.2,.9,.3,1) both}
 @keyframes edgeIn{to{transform:scaleX(1)}}
 /* rim light along the top edge — gives the card a physical, lit-from-above feel */
 .popRim{position:absolute;left:12%;right:12%;top:0;height:1px;pointer-events:none;
@@ -280,7 +274,7 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 .popbox.perf .t1{background:linear-gradient(92deg,var(--gold),#fff 42%,var(--acc));-webkit-background-clip:text;background-clip:text}
 .popbox.gold .popIcon{background:radial-gradient(circle at 35% 30%,#fff7,transparent 55%),linear-gradient(150deg,var(--gold),#ffb347)}
 body.lightmode .popbox{background:#ffffff;background:linear-gradient(180deg,#ffffff,var(--popBg2));box-shadow:0 24px 70px rgba(0,0,0,.18),0 0 60px var(--popGlow)}
-body.lightmode .popSheen{background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent)}
+
 #xpBar.drain{animation:xpDrain .62s ease}
 @keyframes xpDrain{0%{filter:none}18%{filter:brightness(.55) saturate(2.4) hue-rotate(-55deg)}55%{filter:brightness(.7) saturate(2) hue-rotate(-55deg)}100%{filter:none}}
 .bar.drainw{animation:xpDrainW .62s ease}
@@ -783,7 +777,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v6.5';
+const BUILD='v6.6';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1638,7 +1632,7 @@ function pumpPop(){
   b.innerHTML='<div class="popStack"></div><div class="popAura"></div><div class="popFloor"></div>'+
     '<div class="popFrame"></div><div class="popFrame f2"></div>'+
     '<div class="popVig"></div><div class="popRim"></div>'+
-    '<div class="popSnow">'+snow+'<div class="popSheen"></div></div>'+
+    '<div class="popSnow">'+snow+'</div>'+
     '<div class="popBadge">'+
       '<svg class="popRing" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>'+
       '<div class="popWave"></div><div class="popWave w2"></div>'+
@@ -1765,6 +1759,13 @@ function tone(f,t0,dur,v,o){
   note(f*1.001,t0,dur,{vol:v*.35,detune:6,type:opt.type});   // chorus body
 }
 function ratioHz(r){return snd().root*r}
+// A clean 3-voice chime: fundamental + octave + twelfth. Bright and clearly pitched —
+// far fewer voices than tone(), so melodies stay legible instead of turning to mush.
+function chime(f,t0,dur,v){
+  note(f,t0,dur,{vol:v});
+  note(f*2,t0,dur*.62,{vol:v*.30});
+  note(f*3,t0,dur*.34,{vol:v*.11});
+}
 let pipStep=0;
 const PENTA=[IV.u,IV.M2,IV.M3,IV.P5,IV.M6];   // no wrong notes
 function ding(kind){
@@ -1861,34 +1862,18 @@ function ding(kind){
         .forEach((r,i)=>note(R(r),t2+.26+i*.14,1.0*D,{vol:.018,verb:.6}));
     }
     else if(kind==='levelup'||kind==='fanfare'){
-      // ===== THE JINGLE — longest, widest and richest cue in the app =====
-      // anticipation → two-octave ascent → impact → IV–V–I cadence → long shimmering tail.
-      // Structurally unlike every other cue: nothing else has a riser, a cadence, or a 3s tail.
-      const B=R(IV.u);
-      // 1 · anticipation — sub swell under a rising sweep
-      note(B*.25,t,.9*D,{vol:.045});      // sub: felt, not heard
-      note(B*.5,t+.04,.72*D,{vol:.032});
-      sweep(B*.5,B*4,t,.44,{type:'triangle',vol:.030});
-      // 2 · the ascent — eight notes climbing two full octaves
-      const asc=[IV.u,IV.M3,IV.P5,IV.P8,IV.M9,IV.P8M3,IV.P8P5,IV.P15];
-      const t1=t+.30*SP,step=.064*SP;
-      asc.forEach((r,i)=>tone(R(r),t1+i*step,.42*D,.105));   // the melody leads
-      // 3 · arrival — a stacked power hit with sub underneath
-      const t2=t1+asc.length*step;
-      note(B*.25,t2,1.25*D,{vol:.05});
-      [IV.P5,IV.P8,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t2,.60*D,.10));
-      // 4 · IV – V – I : the cadence that actually says 'arrived'
-      const t3=t2+.44*SP;
-      [IV.P4,IV.M6,IV.P8].forEach(r=>tone(R(r*IV.P8),t3,.54*D,.085));      // IV
-      const t4=t3+.31*SP;
-      [IV.P5,IV.M7,IV.M9].forEach(r=>tone(R(r*IV.P8),t4,.54*D,.090));      // V
-      const t5=t4+.33*SP;
-      [IV.P8,IV.P8M3,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t5,3.1*D,.078)); // I — held
-      note(B*.5,t5,2.5*D,{vol:.034});
-      // 5 · shimmer tail — stardust drifting over the held chord
-      [IV.P15*IV.M3,IV.P15*IV.P5,IV.P15*IV.P8].forEach((r,i)=>
-        note(R(r),t5+.22+i*.17,1.5*D,{vol:.030,verb:.68}));
-      tone(R(IV.P15),t5+1.05,1.7*D,.042);
+      // ===== THE JINGLE — deliberately sparse so every note is audible =====
+      // A rising major line that lifts, dips, and resolves an octave up. No sub-bass:
+      // low energy was masking the melody and reading as 'just a kick'.
+      const mel=[IV.P5,IV.P8,IV.P8M3,IV.P8P5,IV.P15,IV.P8P5,IV.P15,IV.P15*IV.M3];
+      const st=.115*SP;
+      mel.forEach((r,i)=>chime(R(r),t+i*st,.46*D,.115));
+      const t2=t+mel.length*st+.04;
+      // resolution: a bright major triad an octave up, held and ringing
+      [IV.P8,IV.P8M3,IV.P8P5,IV.P15].forEach((r,i)=>chime(R(r),t2+i*.03,2.3*D,.085));
+      note(R(IV.u),t2,1.1*D,{vol:.028});                       // gentle root, felt not heard
+      chime(R(IV.P15*IV.M3),t2+.34,1.5*D,.05);                 // sparkle above the chord
+      chime(R(IV.P15*IV.P5),t2+.62,1.4*D,.038);
     }
   }catch(e){}
 }
