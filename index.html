@@ -777,7 +777,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v6.6';
+const BUILD='v6.7';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -2732,14 +2732,37 @@ function addWeak(){
 
 // ---------- Coach (built-in Claude) ----------
 let coachActs=[];
+// Everything the coach should know, in one payload — plan position, what is actually
+// done, how scores are trending, what has been flagged, and what is already on the calendar.
 function coachCtx(){
-  const w=curWeek(),wk=S.weeks[Math.max(w-1,0)];
-  return JSON.stringify({today:today(),weekday:DAYS[new Date().getDay()],examDate:S.exam,
-    currentWeek:w,currentUnit:wk.unit,streak:streak(),
+  const w=curWeek(),wk=S.weeks[Math.max(w-1,0)]||S.weeks[0];
+  const allT=S.weeks.flatMap(x=>x.tasks),doneT=allT.filter(x=>x.done).length;
+  const byType={};
+  (S.scores||[]).forEach(s=>{(byType[s.type]=byType[s.type]||[]).push(s.pct)});
+  const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null;
+  const last10=(S.scores||[]).slice(-10);
+  const upcoming={};
+  Object.keys(S.events||{}).filter(d=>d>=today()).sort().slice(0,12).forEach(d=>upcoming[d]=S.events[d]);
+  const daysToExam=Math.ceil((parseD(S.exam)-parseD(today()))/864e5);
+  return JSON.stringify({
+    today:today(),weekday:DAYS[new Date().getDay()],
+    planStart:S.start,examDate:S.exam,daysToExam,
+    currentWeek:w,currentUnit:wk.unit,
+    weekTasks:wk.tasks.map(t=>({task:t.t,done:!!t.done})),
+    weekObjectives:(OBJ[Math.max(w-1,0)]||[]).map((o,i)=>({objective:o,mastered:!!wk.obj[i]})),
+    planProgress:{tasksDone:doneT,tasksTotal:allT.length,pct:Math.round(doneT/allT.length*100)},
+    xp:S.xp,level:Math.min(Math.floor(S.xp/600),10)+1,streak:streak(),
+    hoursLogged:+(Object.values(S.minutes||{}).reduce((a,b)=>a+b,0)/60).toFixed(1),
+    perfectSets:S.perfects||0,
+    scoreAverages:Object.fromEntries(Object.entries(byType).map(([k,v])=>[k,avg(v)])),
+    recentScores:last10,
+    weakAreas:(S.weak||[]).map(x=>({unit:'F'+x.u,topic:x.t==null?'whole unit':TOPICS[x.u][x.t],why:x.note||''})),
     workSchedule:S.work,exceptions:S.exceptions,
-    weakAreas:S.weak.map(x=>({unit:'F'+x.u,topic:x.t==null?'all':TOPICS[x.u][x.t]})),
+    upcomingEvents:upcoming,
+    pastCheckIns:S.surveys||{},
     farTopicGroups:TOPICS,
-    recentScores:S.scores.slice(-6)});
+    unitNames:S.weeks.map(x=>x.unit)
+  });
 }
 async function coachSend(prompt){
   const ai=S.ai||{provider:'builtin'};
@@ -2960,6 +2983,12 @@ function localCoach(txt){
     acts.push(a)});
   if(exFrom&&exTo&&(onsite||heavy||engage))
     acts.push({type:'exception',from:exFrom,to:exTo,extype:onsite?'Travel / on-site':'Engagement crunch',note:label||'engagement'});
+  // put it on the actual calendar, not just in the schedule settings
+  if(exFrom&&exTo&&hardDays.length){
+    const what=(label?label+' — ':'')+(onsite?'on-site':'heavy day');
+    acts.push({type:'event',from:exFrom,to:exTo,days:hardDays,
+      tm:start?fmt12(start.h,start.min):'',txt:what});
+  }
   if(/struggl|stuck|killing me|destroy|lost on|bad at|don.t get|confus|tank|bomb/.test(t))
     TOPIC_HINTS.forEach(([re,u])=>{if(re.test(txt))acts.push({type:'weak',unit:u,topic:null,note:'flagged in coach update'})});
   const R=[];
@@ -2969,6 +2998,8 @@ function localCoach(txt){
   else if(hardDays.length)R.push('Flagged '+hardDays.map(d=>DN[d]).join('/')+' as your heavy days.');
   if(normDays.length)R.push(normDays.map(d=>DN[d]).join('/')+' stay normal — those are your best sessions of the week, so that is where new material should land.');
   if(slack)R.push('That downtime is real study time. Midday sprint on around '+midTime+' for the hard days: 20–25 MCQs on the Becker app while you wait on PBCs. Two of those a week is a full extra session you never had to find at night.');
+  if(exFrom&&hardDays.length)R.push('Also writing "'+((label?label+' — ':'')+(onsite?'on-site':'heavy day'))+
+    '" onto '+hardDays.map(d=>DN[d]).join('/')+' in your calendar for that stretch, so it shows up on the day itself.');
   if(exFrom)R.push('Marked '+exFrom+' → '+exTo+' as an exception'+(label?' ('+label+')':'')+'. If a weeknight dies, the plan drops to a protect-the-streak minimum instead of showing you a session you were never going to do.');
   if(/sunday|unit exam|protect/.test(t))R.push('Sunday stays sacred — unit exam, the one block I will not move. Lose a weeknight and Friday is your makeup; take it Friday rather than stacking onto Saturday, which is already SIMs.');
   if(/behind|catch up|don.t want to start|already behind/.test(t))R.push('On not starting behind: you are still in pre-season, so bank F1 lectures on the open weekend BEFORE this engagement peaks. Front-load while you have energy — that is the whole game.');
@@ -3016,6 +3047,9 @@ async function askCoach(){
   '{"type":"focus","note":"short task text"} — adds an extra task to the current week (e.g. extra reps on a topic that is hurting).\n'+
   '{"type":"weak","unit":1-10,"topic":0|1|2|null,"note":"why"} — registers a weak area (use farTopicGroups in the state JSON to pick the right topic index, null = whole module). The practice generator then biases 60% of adaptive question sets toward these. Use this whenever the user says they are struggling with, stuck on, or scoring badly in something.\n'+
   '{"type":"unweak","unit":1-10,"topic":0|1|2|null} — removes a weak area the user says is now fixed.\n'+
+  '{"type":"event","from":"YYYY-MM-DD","to":"YYYY-MM-DD","days":["tue","wed"],"tm":"8:30 AM","txt":"Lakeside on-site"} '+
+  '— writes real entries onto those weekdays in the calendar. ALWAYS emit this when the user mentions being '+
+  'somewhere (on-site, travelling, a meeting, an exam, time off) so it actually appears on their calendar.\n'+
   '{"type":"extend","unit":1-10,"days":1-7,"note":"why"} — the user needs longer on a unit; flags it for extra time.\n'+
   '{"type":"focus","note":"..."} — adds a specific extra task to this week (use for "spend an extra night on leases").\n'+
   '{"type":"quizbias","unit":1-10,"topic":0|1|2|null} — makes daily knowledge checks pull harder from this material.\n'+
@@ -3075,6 +3109,9 @@ function coachDesc(x){
   if(x.type==='focus')return '<b>Add task this week:</b> '+x.note;
   if(x.type==='weak')return '<b>Weak area:</b> F'+x.unit+(x.topic==null?' (whole module)':' · '+((TOPICS[x.unit]||[])[x.topic]||'topic '+x.topic))+(x.note?' — '+x.note:'')+' → adaptive practice sets will target this';
   if(x.type==='unweak')return '<b>Cleared weak area:</b> F'+x.unit+(x.topic==null?'':' · '+((TOPICS[x.unit]||[])[x.topic]||''));
+  if(x.type==='event'){const dn={mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
+    return '<b>Calendar:</b> "'+x.txt+'"'+(x.tm?' at '+x.tm:'')+' on '+
+      ((x.days&&x.days.length)?x.days.map(d=>dn[d]||d).join('/'):'every day')+', '+x.from+' → '+x.to;}
   if(x.type==='extend')return '<b>More time on F'+x.unit+':</b> +'+x.days+' day'+(x.days>1?'s':'')+(x.note?' — '+x.note:'')+' (adds a catch-up task)';
   if(x.type==='quizbias')return '<b>Bias knowledge checks toward</b> F'+x.unit+(x.topic==null?'':' · '+((TOPICS[x.unit]||[])[x.topic]||''));
   return JSON.stringify(x);
@@ -3094,6 +3131,20 @@ function applyCoach(){
       if(!S.weak.some(w=>w.u===x.unit&&w.t===t)){S.weak.push({u:x.unit,t,note:x.note||''});n++}}
     else if(x.type==='unweak'&&x.unit){const t=(x.topic===0||x.topic===1||x.topic===2)?x.topic:null;
       const bi=S.weak.findIndex(w=>w.u===x.unit&&(t==null||w.t===t));if(bi>=0){S.weak.splice(bi,1);n++}}
+    else if(x.type==='event'&&x.from&&x.to&&x.txt){
+      S.events=S.events||{};
+      let cur=parseD(x.from);const end=parseD(x.to);let added=0,guard=0;
+      while(cur<=end&&guard++<400){
+        const ds=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+        const dn2=DAYS[cur.getDay()];
+        if(!x.days||!x.days.length||x.days.includes(dn2)){
+          const list=(S.events[ds]=S.events[ds]||[]);
+          if(!list.some(e=>e.txt===x.txt)){list.push({tm:x.tm||'',txt:x.txt});added++}
+        }
+        cur.setDate(cur.getDate()+1);
+      }
+      if(added)n++;
+    }
     else if(x.type==='extend'&&x.unit>=1&&x.unit<=10){
       const wk=S.weeks[Math.max(curWeek()-1,0)];
       wk.tasks.push({t:'⏱ Extra '+x.days+'d on F'+x.unit+(x.note?' — '+x.note:''),done:false});
