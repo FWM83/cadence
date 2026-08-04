@@ -152,8 +152,9 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 /* light sheen crossing the card */
 .popbox::before{content:'';position:absolute;top:0;bottom:0;left:0;width:55%;pointer-events:none;border-radius:20px;overflow:hidden;
   background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);
-  transform:translateX(-200%);animation:sheen 1.5s .25s cubic-bezier(.3,.6,.3,1)}
-@keyframes sheen{to{transform:translateX(360%)}}
+  opacity:0;animation:sheen 1.4s .30s cubic-bezier(.3,.6,.3,1) both}
+@keyframes sheen{0%{opacity:0;transform:translateX(-200%)}
+  12%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateX(340%)}}
 /* static edge glow — no rotation */
 .popbox::after{content:'';position:absolute;inset:-1px;border-radius:23px;pointer-events:none;
   box-shadow:0 0 0 1px var(--popBorder),0 0 26px var(--popGlow) inset;opacity:0;
@@ -279,7 +280,7 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 .popbox.perf .t1{background:linear-gradient(92deg,var(--gold),#fff 42%,var(--acc));-webkit-background-clip:text;background-clip:text}
 .popbox.gold .popIcon{background:radial-gradient(circle at 35% 30%,#fff7,transparent 55%),linear-gradient(150deg,var(--gold),#ffb347)}
 body.lightmode .popbox{background:#ffffff;background:linear-gradient(180deg,#ffffff,var(--popBg2));box-shadow:0 24px 70px rgba(0,0,0,.18),0 0 60px var(--popGlow)}
-body.lightmode .popbox::before{background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent)}
+body.lightmode .popbox::before{background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent)}
 #xpBar.drain{animation:xpDrain .62s ease}
 @keyframes xpDrain{0%{filter:none}18%{filter:brightness(.55) saturate(2.4) hue-rotate(-55deg)}55%{filter:brightness(.7) saturate(2) hue-rotate(-55deg)}100%{filter:none}}
 .bar.drainw{animation:xpDrainW .62s ease}
@@ -766,7 +767,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v6.2';
+const BUILD='v6.3';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1685,9 +1686,9 @@ let AC=null,MASTER=null,VERB=null;
 function actx(){
   if(!AC){
     AC=new (window.AudioContext||window.webkitAudioContext)();
-    MASTER=AC.createGain();MASTER.gain.value=.8;
+    MASTER=AC.createGain();MASTER.gain.value=.72;
     const comp=AC.createDynamicsCompressor();      // limiter: dense cues can't clip into mush
-    comp.threshold.value=-14;comp.knee.value=16;comp.ratio.value=8;
+    comp.threshold.value=-7;comp.knee.value=20;comp.ratio.value=3.2;
     comp.attack.value=.004;comp.release.value=.22;
     MASTER.connect(comp);comp.connect(AC.destination);
     // small algorithmic space so cues bloom instead of sounding dry and cheap
@@ -1833,30 +1834,29 @@ function ding(kind){
       // Structurally unlike every other cue: nothing else has a riser, a cadence, or a 3s tail.
       const B=R(IV.u);
       // 1 · anticipation — sub swell under a rising sweep
-      note(B*.25,t,.9*D,{vol:.115});
-      note(B*.5,t+.04,.72*D,{vol:.06});
-      sweep(B*.5,B*4,t,.44,{type:'triangle',vol:.05});
+      note(B*.25,t,.9*D,{vol:.045});      // sub: felt, not heard
+      note(B*.5,t+.04,.72*D,{vol:.032});
+      sweep(B*.5,B*4,t,.44,{type:'triangle',vol:.030});
       // 2 · the ascent — eight notes climbing two full octaves
       const asc=[IV.u,IV.M3,IV.P5,IV.P8,IV.M9,IV.P8M3,IV.P8P5,IV.P15];
       const t1=t+.30*SP,step=.064*SP;
-      asc.forEach((r,i)=>tone(R(r),t1+i*step,.40*D,.076));
+      asc.forEach((r,i)=>tone(R(r),t1+i*step,.42*D,.105));   // the melody leads
       // 3 · arrival — a stacked power hit with sub underneath
       const t2=t1+asc.length*step;
-      note(B*.25,t2,1.25*D,{vol:.125});
-      [IV.u,IV.P5,IV.P8,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t2,.58*D,.072));
+      note(B*.25,t2,1.25*D,{vol:.05});
+      [IV.P5,IV.P8,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t2,.60*D,.10));
       // 4 · IV – V – I : the cadence that actually says 'arrived'
       const t3=t2+.44*SP;
-      [IV.P4,IV.M6,IV.P8].forEach(r=>tone(R(r*IV.P8),t3,.52*D,.056));      // IV
+      [IV.P4,IV.M6,IV.P8].forEach(r=>tone(R(r*IV.P8),t3,.54*D,.085));      // IV
       const t4=t3+.31*SP;
-      [IV.P5,IV.M7,IV.M9].forEach(r=>tone(R(r*IV.P8),t4,.52*D,.060));      // V
+      [IV.P5,IV.M7,IV.M9].forEach(r=>tone(R(r*IV.P8),t4,.54*D,.090));      // V
       const t5=t4+.33*SP;
-      [IV.P8,IV.P8M3,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t5,3.1*D,.053)); // I — held
-      note(B*.5,t5,2.5*D,{vol:.062});
-      note(B*.25,t5,2.0*D,{vol:.05});
+      [IV.P8,IV.P8M3,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t5,3.1*D,.078)); // I — held
+      note(B*.5,t5,2.5*D,{vol:.034});
       // 5 · shimmer tail — stardust drifting over the held chord
       [IV.P15*IV.M3,IV.P15*IV.P5,IV.P15*IV.P8].forEach((r,i)=>
-        note(R(r),t5+.22+i*.17,1.5*D,{vol:.017,verb:.68}));
-      tone(R(IV.P15),t5+1.05,1.7*D,.027);
+        note(R(r),t5+.22+i*.17,1.5*D,{vol:.030,verb:.68}));
+      tone(R(IV.P15),t5+1.05,1.7*D,.042);
     }
   }catch(e){}
 }
