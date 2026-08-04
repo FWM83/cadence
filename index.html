@@ -15,48 +15,48 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 :root { color-scheme: dark;
-  --bg:#0a0e0c; --card:#101711; --ink:#d2e8d6; --sub:#7da489; --line:#223425;
-  --grn:#3dff8b; --grnGlow:rgba(61,255,139,.35);
-  --acc:#3dff8b; --accSoft:rgba(61,255,139,.12);
-  --good:#3dff8b; --goodSoft:rgba(61,255,139,.14);
-  --warn:#ffc14d; --warnSoft:rgba(255,193,77,.12);
-  --bad:#ff6b6b; --badSoft:rgba(255,107,107,.14);
-  --gold:#ffd75e; --goldSoft:rgba(255,215,94,.12);
-  --paper:#f6f7f4; --paperInk:#1c2620; --paperLine:#e2e6e0;
+  --bg:#0a0e0c; --bgGrad:radial-gradient(1100px 700px at 15% -8%,#101c13,#0a0e0c);
+  --card:linear-gradient(180deg,#131b14,#0e150f); --ink:#d2e8d6; --sub:#7da489; --line:#233827;
+  --grn:#3dff8b; --grnGlow:rgba(61,255,139,.35); --acc:#3dff8b; --accSoft:rgba(61,255,139,.12);
+  --good:#3dff8b; --goodSoft:rgba(61,255,139,.14); --warn:#ffc14d; --warnSoft:rgba(255,193,77,.12);
+  --bad:#ff6b6b; --badSoft:rgba(255,107,107,.14); --gold:#ffd75e; --goldSoft:rgba(255,215,94,.12);
+  --paper:#f6f7f4; --paperInk:#1c2620; --rad:10px; --btnInk:#06220f;
   --mono:ui-monospace,'Cascadia Mono','SF Mono',Consolas,'Courier New',monospace;
+  --headFont:var(--mono);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding:18px;font-size:14px}
+body{font-family:-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);background-image:var(--bgGrad);background-attachment:fixed;color:var(--ink);padding:18px;font-size:14px;transition:background-color .35s,color .35s}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);opacity:.35}
-h1{font-size:20px;letter-spacing:1px;font-family:var(--mono);color:var(--grn);text-shadow:0 0 12px var(--grnGlow)}
-h2{font-size:14px;margin-bottom:10px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;color:var(--ink)}
+html[data-scan='off'] body::after{display:none}
+h1{font-size:20px;letter-spacing:1px;font-family:var(--headFont);color:var(--grn);text-shadow:0 0 12px var(--grnGlow)}
+h2{font-size:14px;margin-bottom:10px;font-family:var(--headFont);letter-spacing:.5px;text-transform:uppercase;color:var(--ink)}
 h3{font-size:12.5px;margin:12px 0 6px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;color:var(--sub)}
 .sub{color:var(--sub);font-size:12.5px;font-family:var(--mono)}
 .top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 .tab{padding:7px 14px;border-radius:4px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:12px;font-weight:700;color:var(--sub);font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase}
-.tab.on{background:var(--grn);color:#06220f;border-color:var(--grn);box-shadow:0 0 14px var(--grnGlow)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px}
+.tab.on{background:var(--acc);color:var(--btnInk);border-color:var(--acc);box-shadow:0 0 14px var(--grnGlow)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);padding:16px;margin-bottom:14px}
 .grid{display:grid;gap:12px}
 .g4{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
-.stat .n{font-size:26px;font-weight:700;letter-spacing:0;font-family:var(--mono);color:var(--grn);text-shadow:0 0 10px var(--grnGlow)}
+.stat .n{font-size:26px;font-weight:700;letter-spacing:0;font-family:var(--headFont);color:var(--grn);text-shadow:0 0 10px var(--grnGlow)}
 .stat .l{color:var(--sub);font-size:11.5px;margin-top:2px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
 .pill{display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:700;font-family:var(--mono);letter-spacing:.3px}
 .pill.b{background:var(--accSoft);color:var(--acc)} .pill.g{background:var(--goodSoft);color:var(--good)}
 .pill.w{background:var(--warnSoft);color:var(--warn)} .pill.r{background:var(--badSoft);color:var(--bad)}
 .pill.gold{background:var(--goldSoft);color:var(--gold)}
 button{font-family:var(--mono);cursor:pointer;border:none;border-radius:6px;padding:8px 14px;font-size:12.5px;font-weight:700;letter-spacing:.4px}
-.btn{background:var(--grn);color:#06220f;box-shadow:0 0 12px rgba(61,255,139,.25)}
+.btn{background:var(--acc);color:var(--btnInk);box-shadow:0 0 12px var(--accSoft)}
 .btn:hover{box-shadow:0 0 20px var(--grnGlow)}
 .btn2{background:transparent;border:1px solid var(--line);color:var(--ink)}
-.btnG{background:var(--grn);color:#06220f;box-shadow:0 0 12px rgba(61,255,139,.25)}
+.btnG{background:var(--good);color:var(--btnInk);box-shadow:0 0 12px var(--goodSoft)}
 button:disabled{opacity:.45;cursor:default;box-shadow:none}
-input,select,textarea{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#0d130e;color:var(--ink)}
+input,select,textarea{font-family:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--sub);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:6px 8px;border-bottom:1px solid var(--line)}
 td{padding:8px;border-bottom:1px solid var(--line)}
-.bar{height:10px;background:#15211a;border-radius:2px;overflow:hidden;border:1px solid var(--line)}
+.bar{height:10px;background:var(--accSoft);border-radius:2px;overflow:hidden;border:1px solid var(--line)}
 .bar>div{height:100%;background:var(--grn);border-radius:0;transition:width .35s;box-shadow:0 0 10px var(--grnGlow)}
 .bar.gold>div{background:linear-gradient(90deg,var(--gold),#ffe9a3);box-shadow:0 0 10px rgba(255,215,94,.4)}
 .bar.mini{height:4px;margin:1px 0 7px 24px;max-width:420px}
@@ -102,7 +102,9 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 .xtoast.big{font-size:18px;color:var(--gold);text-shadow:0 0 12px rgba(255,215,94,.5)}
 .xtoast.neg{color:var(--bad);text-shadow:0 0 10px rgba(255,107,107,.4)}
 @keyframes fly{0%{opacity:0;transform:translateY(4px) scale(.8)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}100%{opacity:0;transform:translateY(-42px) scale(1)}}
-.lvlrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-family:var(--mono)}
+.lvlrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-family:var(--headFont)}
+/* XP card sticks to the top: the reward always has a visible destination to fly into */
+.xpCard{position:sticky;top:8px;z-index:40;backdrop-filter:blur(8px)}
 /* boot splash */
 #splash{position:fixed;inset:0;z-index:10002;background:var(--bg);display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:22px;transition:opacity .55s ease}
@@ -118,67 +120,290 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 .pulse i:nth-child(5){animation-delay:.52s}
 @keyframes beat{0%,100%{height:9px;opacity:.45}45%{height:32px;opacity:1}}
 .bootline{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;color:var(--sub);min-height:14px}
-#popWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10001;pointer-events:none}
-.popbox{position:relative;overflow:hidden;font-family:var(--mono);background:rgba(6,14,9,.95);border:2px solid var(--grn);border-radius:14px;padding:30px 50px;text-align:center;
-  box-shadow:0 0 60px var(--grnGlow),inset 0 0 34px rgba(61,255,139,.08);animation:popin .5s cubic-bezier(.16,1.5,.4,1);transition:opacity .45s,transform .45s}
-.popbox.gold{border-color:var(--gold);box-shadow:0 0 60px rgba(255,215,94,.45),inset 0 0 34px rgba(255,215,94,.08)}
-/* light sweep across the card */
-.popbox::before{content:'';position:absolute;top:0;bottom:0;left:0;width:60%;
-  background:linear-gradient(105deg,transparent,rgba(255,255,255,.14),transparent);transform:translateX(-180%);animation:sweep 1.15s .18s ease-out}
-@keyframes sweep{to{transform:translateX(320%)}}
-/* corner brackets — HUD framing */
-.popbox::after{content:'';position:absolute;inset:7px;border-radius:8px;pointer-events:none;
+#popWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10001;pointer-events:none;perspective:1100px;perspective-origin:50% 50%}
+#popWrap.slam{animation:slamShake .3s cubic-bezier(.3,.72,.4,1)}
+@keyframes slamShake{0%{transform:scale(1)}16%{transform:scale(.974)}
+  44%{transform:scale(1.010)}70%{transform:scale(.996)}100%{transform:scale(1)}}
+.popbox{position:relative;overflow:visible;max-width:min(94vw,620px);min-width:min(88vw,340px);font-family:var(--headFont);
+  padding:38px clamp(28px,7vw,64px) 34px;text-align:center;border-radius:22px;
+  background:#0c0f12;border:1px solid #3a4a40;box-shadow:0 24px 70px rgba(0,0,0,.6);
   background:
-   linear-gradient(var(--grn),var(--grn)) left top/14px 2px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) left top/2px 14px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) right top/14px 2px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) right top/2px 14px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) left bottom/14px 2px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) left bottom/2px 14px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) right bottom/14px 2px no-repeat,
-   linear-gradient(var(--grn),var(--grn)) right bottom/2px 14px no-repeat;
-  opacity:.75;animation:brIn .5s .1s both}
-.popbox.gold::after{background-image:linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold)),linear-gradient(var(--gold),var(--gold))}
-@keyframes brIn{0%{inset:20px;opacity:0}100%{inset:7px;opacity:.75}}
-.popbox .t1{position:relative;font-size:clamp(26px,7vw,34px);font-weight:800;color:var(--grn);letter-spacing:5px;text-shadow:0 0 18px var(--grnGlow);animation:t1in .55s cubic-bezier(.2,1.3,.3,1) both}
-@keyframes t1in{0%{opacity:0;letter-spacing:26px;filter:blur(6px)}100%{opacity:1;letter-spacing:5px;filter:none}}
-.popbox.gold .t1{color:var(--gold);text-shadow:0 0 20px rgba(255,215,94,.55)}
-.popbox .t2{position:relative;font-size:12.5px;color:var(--sub);margin-top:12px;letter-spacing:2px;text-transform:uppercase;animation:t2in .5s .22s both}
-@keyframes t2in{0%{opacity:0;transform:translateY(7px)}100%{opacity:1;transform:none}}
-.popbox.out{opacity:0;transform:scale(1.06)}
-@keyframes popin{0%{transform:scale(.35) rotate(-3deg);opacity:0}55%{transform:scale(1.09) rotate(1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+    radial-gradient(120% 90% at 50% 0%,var(--popTint),transparent 62%),
+    linear-gradient(180deg,var(--popBg),var(--popBg2));
+  border:1px solid var(--popBorder);
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 30px 80px rgba(0,0,0,.55),
+             0 0 70px var(--popGlow);
+  animation:popIn .80s linear both;transform-style:preserve-3d;
+  transition:opacity .58s cubic-bezier(.4,0,.6,1),transform .58s cubic-bezier(.4,0,.7,1),filter .58s ease;
+  will-change:transform,opacity,filter}
+@keyframes popIn{
+  /* 1 · appears at the plane and swells slowly OUT of the screen toward the viewer */
+  0%{opacity:0;transform:translateZ(0) scale(.92);animation-timing-function:cubic-bezier(.22,.62,.38,1)}
+  8%{opacity:1}
+  58%{transform:translateZ(198px) scale(1.28);animation-timing-function:cubic-bezier(.92,0,.98,.45)}
+  /* 2 · SLAMS back through the plane — quick and hard */
+  70%{transform:translateZ(-44px) scale(.915);animation-timing-function:cubic-bezier(.18,1.7,.32,1)}
+  /* 3 · surface throws it back, then it settles flat */
+  81%{transform:translateZ(9px) scale(1.03)}
+  91%{transform:translateZ(0) scale(.995)}
+  100%{opacity:1;transform:translateZ(0) scale(1)}}
+.popbox.out{opacity:0;transform:translateZ(-260px) scale(.88);filter:blur(10px)}
+.popbox.out .popAura{opacity:0;transition:opacity .5s ease}
+/* light sheen crossing the card */
+.popbox::before{content:'';position:absolute;top:0;bottom:0;left:0;width:55%;pointer-events:none;border-radius:20px;overflow:hidden;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);
+  transform:translateX(-200%);animation:sheen 1.5s .25s cubic-bezier(.3,.6,.3,1)}
+@keyframes sheen{to{transform:translateX(360%)}}
+/* static edge glow — no rotation */
+.popbox::after{content:'';position:absolute;inset:-1px;border-radius:23px;pointer-events:none;
+  box-shadow:0 0 0 1px var(--popBorder),0 0 26px var(--popGlow) inset;opacity:0;
+  animation:edgeGlow .65s .56s ease-out both}
+@keyframes edgeGlow{0%{opacity:0}100%{opacity:.8}}
+/* achievement ring that draws itself around the badge */
+.popRing{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;pointer-events:none;overflow:visible}
+.popRing circle{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:283;stroke-dashoffset:283;transform:rotate(-90deg);transform-origin:50% 50%;
+  filter:drop-shadow(0 0 6px var(--gold));animation:ringDraw .85s .60s cubic-bezier(.3,.9,.3,1) both}
+@keyframes ringDraw{to{stroke-dashoffset:0}}
+/* ambient drift inside the card — thin, slow, deliberately understated */
+.popSnow{position:absolute;inset:0;border-radius:22px;overflow:hidden;pointer-events:none;z-index:0;
+  animation:snowLift 1.1s .56s ease-out both}
+@keyframes snowLift{0%{filter:brightness(1)}22%{filter:brightness(1.9)}100%{filter:brightness(1)}}
+.popSnow i{position:absolute;border-radius:50%;background:var(--acc);opacity:0;will-change:transform,opacity;
+  animation:snowDrift linear infinite}
+@keyframes snowDrift{
+  0%{opacity:0;transform:translate3d(0,-12px,0)}
+  14%{opacity:var(--o)}
+  86%{opacity:var(--o)}
+  100%{opacity:0;transform:translate3d(var(--dx),var(--dy),0)}}
+/* stacked panel behind the card for real depth */
+.popStack{position:absolute;inset:14px -14px -14px 14px;border-radius:22px;pointer-events:none;z-index:-2;
+  background:var(--popBg);border:1px solid var(--popBorder);opacity:0;
+  animation:stackIn .6s .1s cubic-bezier(.2,1,.3,1) both}
+@keyframes stackIn{0%{opacity:0;transform:translate(-18px,-18px) scale(.96)}100%{opacity:.5;transform:none}}
+/* accent bar that fills along the bottom edge */
+.popEdge{position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:0 0 22px 22px;pointer-events:none;
+  background:linear-gradient(90deg,var(--acc),var(--gold),var(--acc));
+  transform:scaleX(0);transform-origin:0 50%;animation:edgeIn .95s .60s cubic-bezier(.2,.9,.3,1) both}
+@keyframes edgeIn{to{transform:scaleX(1)}}
+/* rim light along the top edge — gives the card a physical, lit-from-above feel */
+.popRim{position:absolute;left:12%;right:12%;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  opacity:0;animation:rimIn .7s .58s ease-out both}
+@keyframes rimIn{0%{opacity:0;transform:scaleX(.3)}100%{opacity:.9;transform:scaleX(1)}}
+/* soft reflection pooling under the card */
+.popFloor{position:absolute;left:18%;right:18%;bottom:-26px;height:34px;pointer-events:none;z-index:-1;
+  background:radial-gradient(50% 100% at 50% 0%,var(--acc),transparent 72%);
+  filter:blur(16px);opacity:0;animation:floorIn .85s .56s ease-out both}
+@keyframes floorIn{0%{opacity:0;transform:scaleX(.5)}100%{opacity:.30;transform:scaleX(1)}}
+/* inner vignette for depth */
+.popVig{position:absolute;inset:0;pointer-events:none;border-radius:20px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 -30px 60px rgba(0,0,0,.35)}
+/* aurora light pooling behind the card */
+.popAura{position:absolute;inset:-40% -20%;pointer-events:none;z-index:-1;opacity:0;
+  background:radial-gradient(38% 46% at 26% 30%,var(--acc),transparent 68%),
+             radial-gradient(34% 42% at 76% 26%,var(--gold),transparent 66%),
+             radial-gradient(46% 40% at 50% 84%,var(--acc),transparent 70%);
+  filter:blur(46px);animation:auraIn .8s .1s ease-out both,auraDrift 7s 1.2s ease-in-out infinite}
+@keyframes auraIn{0%{opacity:0;transform:scale(.7)}100%{opacity:.34;transform:scale(1)}}
+@keyframes auraDrift{0%,100%{transform:scale(1) translate(0,0)}50%{transform:scale(1.08) translate(2%,-2%)}}
+/* — two ripple systems, deliberately separated in size and time so they never collide — */
+/* 1. tight circular pulse off the badge, stays contained in the upper area */
+.popWave{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;
+  border:2px solid var(--acc);pointer-events:none;opacity:0;
+  animation:rippleIcon .72s .56s cubic-bezier(.14,.66,.26,1) both}
+.popWave.w2{animation-delay:.68s;border-color:var(--gold);border-width:1.5px}
+@keyframes rippleIcon{0%{opacity:0;transform:scale(.3)}
+  14%{opacity:.85}100%{opacity:0;transform:scale(2.3)}}
+/* 2. card-shaped halo echoing the whole box, launched after the badge pulse clears */
+.popFrame{position:absolute;inset:0;border-radius:22px;pointer-events:none;opacity:0;
+  border:1.5px solid var(--acc);
+  animation:rippleFrame 1.15s .56s cubic-bezier(.16,.68,.24,1) both}
+.popFrame.f2{animation-delay:.74s;border-color:var(--gold);border-width:1px}
+@keyframes rippleFrame{0%{opacity:0;transform:scale(1)}
+  16%{opacity:.7}100%{opacity:0;transform:scale(1.26)}}
+/* achievement badge */
+.popBadge{position:relative;width:62px;height:62px;margin:0 auto 18px}
+.popIcon{width:62px;height:62px;margin:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:26px;line-height:1;color:var(--btnInk);
+  background:radial-gradient(circle at 35% 30%,#fff6,transparent 55%),linear-gradient(150deg,var(--acc),var(--gold));
+  box-shadow:0 0 0 6px var(--accSoft),0 10px 26px rgba(0,0,0,.45);
+  animation:badgeIn .55s .10s cubic-bezier(.2,1.7,.35,1) both,badgeBreathe 2.6s 1s ease-in-out infinite}
+@keyframes badgeBreathe{0%,100%{box-shadow:0 0 0 6px var(--accSoft),0 10px 26px rgba(0,0,0,.45)}
+  50%{box-shadow:0 0 0 13px transparent,0 0 30px var(--popGlow),0 10px 26px rgba(0,0,0,.45)}}
+@keyframes badgeIn{0%{opacity:0;transform:scale(.2) rotate(-140deg)}70%{transform:scale(1.14) rotate(8deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+/* rule that draws outward */
+.popRule{height:2px;width:140px;margin:0 auto 18px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--acc),var(--gold),transparent);
+  transform:scaleX(0);animation:ruleIn .6s .12s cubic-bezier(.2,1,.3,1) both}
+@keyframes ruleIn{to{transform:scaleX(1)}}
+/* title — transform-only entrance so the card never reflows */
+.popbox .t1{position:relative;font-size:clamp(26px,6.8vw,44px);font-weight:900;letter-spacing:3px;white-space:nowrap;
+  background:linear-gradient(92deg,var(--ink),var(--acc) 45%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 16px var(--popGlow));
+  background-size:220% 100%;
+  animation:titleWipe .65s .16s cubic-bezier(.22,.9,.24,1) both,titleShine 3.4s 1.1s linear infinite}
+@keyframes titleWipe{
+  0%{opacity:0;clip-path:inset(0 100% 0 0);transform:translateY(10px)}
+  35%{opacity:1}
+  100%{opacity:1;clip-path:inset(0 0 0 0);transform:none}}
+@keyframes titleShine{0%{background-position:0% 0}100%{background-position:220% 0}}
+@keyframes titleIn{0%{opacity:0;transform:translateY(14px) scale(.92);filter:blur(7px)}100%{opacity:1;transform:none;filter:drop-shadow(0 0 16px var(--popGlow))}}
+.popbox .t2{position:relative;font-size:12.5px;color:var(--sub);margin-top:12px;letter-spacing:2.4px;text-transform:uppercase;
+  white-space:normal;animation:subIn .42s .32s both}
+@keyframes subIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+/* XP chip */
+.popXp{display:inline-flex;align-items:center;gap:7px;margin-top:18px;padding:7px 17px;border-radius:999px;
+  font-size:14px;font-weight:800;letter-spacing:1.4px;color:var(--gold);
+  background:var(--goldSoft);
+  border:1px solid var(--gold);
+  animation:chipIn .46s .44s cubic-bezier(.2,1.5,.35,1) both,chipGlow 1.9s 1.2s ease-in-out infinite}
+@keyframes chipIn{0%{opacity:0;transform:scale(.6) translateY(10px)}100%{opacity:1;transform:none}}
+@keyframes chipGlow{0%,100%{box-shadow:0 0 0 0 var(--goldSoft)}50%{box-shadow:0 0 22px 3px var(--goldSoft)}}
+/* LEVEL UP keeps its prismatic identity */
+.popbox.lvl{border-color:transparent;
+  background:
+    radial-gradient(120% 90% at 50% 0%,rgba(125,249,255,.20),transparent 62%),
+    linear-gradient(180deg,rgba(10,14,24,.96),rgba(8,10,20,.97));
+  box-shadow:0 0 90px rgba(125,249,255,.45),0 0 140px rgba(179,136,255,.25),0 30px 80px rgba(0,0,0,.6)}
+.popbox.lvl::after{box-shadow:0 0 0 1px rgba(125,249,255,.7),0 0 40px rgba(125,249,255,.25) inset}
+.popbox.lvl .popIcon{background:radial-gradient(circle at 35% 30%,#fff8,transparent 55%),linear-gradient(150deg,#7df9ff,#b388ff);color:#08121e;
+  box-shadow:0 0 0 7px rgba(125,249,255,.16),0 10px 30px rgba(0,0,0,.5)}
+.popbox.lvl .t1{background:linear-gradient(92deg,#7df9ff,#ffffff 40%,#b388ff);-webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(0 0 20px rgba(125,249,255,.65))}
+.popbox.lvl .popRule{background:linear-gradient(90deg,transparent,#7df9ff,#b388ff,transparent)}
+.popbox.lvl .popXp{color:#9fe9ff;background:rgba(125,249,255,.10);border-color:rgba(125,249,255,.45)}
+.popbox.perf .popIcon{font-size:24px;background:radial-gradient(circle at 35% 30%,#fff8,transparent 55%),
+  conic-gradient(from 210deg,var(--gold),#ff9f43,var(--acc),var(--gold))}
+
+.popbox.perf .t1{background:linear-gradient(92deg,var(--gold),#fff 42%,var(--acc));-webkit-background-clip:text;background-clip:text}
+.popbox.gold .popIcon{background:radial-gradient(circle at 35% 30%,#fff7,transparent 55%),linear-gradient(150deg,var(--gold),#ffb347)}
+body.lightmode .popbox{background:#ffffff;background:linear-gradient(180deg,#ffffff,var(--popBg2));box-shadow:0 24px 70px rgba(0,0,0,.18),0 0 60px var(--popGlow)}
+body.lightmode .popbox::before{background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent)}
+#xpBar.drain{animation:xpDrain .62s ease}
+@keyframes xpDrain{0%{filter:none}18%{filter:brightness(.55) saturate(2.4) hue-rotate(-55deg)}55%{filter:brightness(.7) saturate(2) hue-rotate(-55deg)}100%{filter:none}}
+.bar.drainw{animation:xpDrainW .62s ease}
+@keyframes xpDrainW{0%{box-shadow:none}25%{box-shadow:0 0 0 2px var(--badSoft),0 0 18px var(--badSoft)}100%{box-shadow:none}}
+#xpBar{transition:width .45s cubic-bezier(.3,.9,.3,1)}
+.xpdot{position:fixed;width:9px;height:9px;border-radius:50%;z-index:10002;pointer-events:none;opacity:0;will-change:transform,opacity}
+#xpBar.pulse{animation:barPulse .3s ease}
+@keyframes barPulse{0%{filter:brightness(1)}45%{filter:brightness(1.85)}100%{filter:brightness(1)}}
+/* ===== per-theme popup personalities (entrance only — layout never shifts) ===== */
+html[data-pop='glass'] .popbox{backdrop-filter:blur(16px);animation:popGlass .6s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes popGlass{0%{opacity:0;transform:translateY(30px) scale(.95);filter:blur(9px)}100%{opacity:1;transform:none;filter:none}}
+html[data-pop='card'] .popbox{animation:popCard .55s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes popCard{0%{opacity:0;transform:translateY(46px) rotate(-2.5deg) scale(.94)}100%{opacity:1;transform:none}}
+html[data-pop='sweep'] .popbox{animation:popSweep .6s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes popSweep{0%{opacity:0;transform:translateX(-70px) skewX(-9deg) scale(.95)}100%{opacity:1;transform:none}}
+html[data-pop='frost'] .popbox{animation:popFrost .65s ease both}
+@keyframes popFrost{0%{opacity:0;transform:scale(1.14);filter:blur(12px)}100%{opacity:1;transform:none;filter:none}}
+html[data-pop='seal'] .popbox{animation:popSeal .7s cubic-bezier(.2,1.7,.35,1) both}
+@keyframes popSeal{0%{opacity:0;transform:scale(2.1) rotate(-13deg)}60%{transform:scale(.95) rotate(2deg)}100%{opacity:1;transform:none}}
+html[data-pop='glitch'] .popbox{animation:popGlitch .5s steps(3,end) both}
+@keyframes popGlitch{0%{opacity:0;transform:translate(-9px,5px) scale(1.05)}35%{opacity:1;transform:translate(8px,-4px)}70%{transform:translate(-4px,2px)}100%{opacity:1;transform:none}}
+html[data-pop='glitch'] .popbox .t1{animation:titleIn .6s .08s cubic-bezier(.2,1.2,.3,1) both,glitchShift 1.7s 1s infinite steps(2,end)}
+@keyframes glitchShift{0%,92%{filter:drop-shadow(0 0 16px var(--grnGlow))}94%{filter:drop-shadow(-3px 0 var(--good)) drop-shadow(3px 0 var(--acc))}100%{filter:drop-shadow(0 0 16px var(--grnGlow))}}
+html[data-pop='grow'] .popbox{animation:popGrow .75s cubic-bezier(.16,1.1,.3,1) both}
+@keyframes popGrow{0%{opacity:0;transform:scale(.68) translateY(22px)}100%{opacity:1;transform:none}}
+html[data-pop='snap'] .popbox{border-width:2px;animation:popSnap .3s steps(2,end) both}
+@keyframes popSnap{0%{opacity:0;transform:scale(.86)}50%{opacity:1;transform:scale(1.05)}100%{transform:none}}
+html[data-pop='petal'] .popbox{animation:popPetal .85s cubic-bezier(.2,1,.3,1) both}
+@keyframes popPetal{0%{opacity:0;transform:translateY(-34px) rotate(7deg) scale(.9)}100%{opacity:1;transform:none}}
+/* ===== calendar ===== */
+.calHead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.calNav{width:34px;height:32px;padding:0;font-size:16px;line-height:1}
+.calTitle{font-family:var(--headFont);font-weight:800;letter-spacing:1px;font-size:14px;flex:1;text-align:center;text-transform:uppercase}
+.calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.calDows{margin-bottom:5px}
+.calDows span{text-align:center;font-size:10.5px;font-family:var(--headFont);color:var(--sub);letter-spacing:.6px;padding:2px 0}
+.calCell{position:relative;min-height:62px;border:1px solid var(--line);border-radius:9px;padding:5px 6px;cursor:pointer;
+  background:var(--bg);transition:border-color .14s,transform .12s,box-shadow .14s;overflow:hidden}
+.calCell:hover{border-color:var(--acc);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.calCell.pad{opacity:.32;cursor:default}
+.calCell.pad:hover{border-color:var(--line);transform:none;box-shadow:none}
+.calCell.today{border-color:var(--acc);box-shadow:0 0 0 2px var(--accSoft)}
+.calCell.exam{border-color:var(--gold);box-shadow:0 0 0 2px var(--goldSoft)}
+.calN{font-family:var(--headFont);font-size:12.5px;font-weight:700;line-height:1}
+.calCell.today .calN{color:var(--acc)}
+.calCell.exam .calN{color:var(--gold)}
+.calTag{margin-top:3px;font-size:9px;letter-spacing:.3px;color:var(--sub);line-height:1.25;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.calDots{position:absolute;left:6px;bottom:5px;display:flex;gap:3px}
+.calDots i{width:6px;height:6px;border-radius:50%;display:block}
+.calBar{position:absolute;left:0;right:0;top:0;height:3px}
+.lg{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.lg.done{background:var(--good)}.lg.part{background:var(--warn)}.lg.miss{background:var(--bad)}
+.lg.off{background:var(--sub)}.lg.exc{background:var(--gold)}.lg.ev{background:var(--acc)}
+.calLegend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:10.5px;color:var(--sub)}
+/* day detail modal */
+#dayModal{position:fixed;inset:0;z-index:9990;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(3px);padding:18px}
+#dayModal.open{display:flex;animation:dmIn .22s ease}
+@keyframes dmIn{0%{opacity:0}100%{opacity:1}}
+.dmCard{position:relative;width:min(560px,94vw);max-height:86vh;overflow-y:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 30px 80px rgba(0,0,0,.55);
+  animation:dmUp .28s cubic-bezier(.2,1.1,.3,1)}
+@keyframes dmUp{0%{opacity:0;transform:translateY(18px) scale(.97)}100%{opacity:1;transform:none}}
+.dmX{position:absolute;right:12px;top:12px;width:30px;height:30px;padding:0;border-radius:50%;
+  background:var(--accSoft);border:1px solid var(--line);color:var(--ink);font-size:13px;cursor:pointer}
+.dmDate{font-family:var(--headFont);font-size:17px;font-weight:800;letter-spacing:.6px;color:var(--acc)}
+.dmSub{font-size:11.5px;color:var(--sub);margin-top:3px;letter-spacing:.4px;text-transform:uppercase}
+.dmSec{margin-top:16px}
+.dmSec h4{font-family:var(--headFont);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--sub);margin-bottom:7px}
+.dmRow{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.45;align-items:flex-start}
+.dmRow:last-child{border-bottom:none}
+.dmRow .ok{color:var(--good);flex-shrink:0}.dmRow .no{color:var(--sub);flex-shrink:0}
+.dmEv{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.dmEv button{margin-left:auto;padding:2px 8px;font-size:11px}
+/* theme picker — dropdown */
+.themeSel{position:relative;max-width:520px}
+.themeBtn{width:100%;display:flex;align-items:center;gap:12px;padding:11px 13px;cursor:pointer;
+  border:1px solid var(--line);border-radius:var(--rad);background:var(--card);transition:border-color .15s,box-shadow .15s}
+.themeBtn:hover{border-color:var(--acc);box-shadow:0 0 0 3px var(--accSoft)}
+.themeBtn .caret{margin-left:auto;color:var(--sub);font-size:12px;transition:transform .2s}
+.themeSel.open .themeBtn .caret{transform:rotate(180deg)}
+.themeList{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;max-height:420px;overflow-y:auto;
+  border:1px solid var(--line);border-radius:var(--rad);background:var(--card);
+  box-shadow:0 18px 44px rgba(0,0,0,.45);display:none}
+.themeSel.open .themeList{display:block}
+.tOpt{display:flex;align-items:center;gap:12px;padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s}
+.tOpt:last-child{border-bottom:none}
+.tOpt:hover,.tOpt.on{background:var(--accSoft)}
+.tPrev{width:64px;height:42px;border-radius:8px;flex-shrink:0;position:relative;overflow:hidden;border:1px solid rgba(128,128,128,.28)}
+.tPrev .pAcc{position:absolute;left:7px;top:8px;height:5px;width:34px;border-radius:3px}
+.tPrev .pTxt{position:absolute;left:7px;top:18px;height:4px;width:44px;border-radius:2px;opacity:.65}
+.tPrev .pTxt2{position:absolute;left:7px;top:26px;height:4px;width:26px;border-radius:2px;opacity:.4}
+.tPrev .pDots{position:absolute;right:6px;bottom:6px;display:flex;gap:3px}
+.tPrev .pDots i{width:7px;height:7px;border-radius:50%;display:block}
+.tMeta{min-width:0;flex:1}
+.tMeta .tN{font-weight:700;font-size:13.5px;letter-spacing:.4px;line-height:1.25}
+.tMeta .tB{font-size:11.5px;color:var(--sub);line-height:1.4;margin-top:2px}
+.tMeta .tTags{font-size:10.5px;color:var(--sub);margin-top:3px;opacity:.85;letter-spacing:.3px;text-transform:uppercase}
+.tCheck{color:var(--acc);font-weight:800;font-size:15px;flex-shrink:0}
+.pkIcon{width:44px;height:44px;flex-shrink:0;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;color:var(--acc);background:var(--accSoft);border:1px solid var(--line)}
+.pkPlay{flex-shrink:0;width:36px;height:36px;padding:0;border-radius:50%;font-size:15px;line-height:1;
+  background:var(--accSoft);border:1px solid var(--line);color:var(--ink);cursor:pointer;transition:transform .14s,border-color .14s}
+.pkPlay:hover{transform:scale(1.12);border-color:var(--acc)}
+.pkPlay:active{transform:scale(.94)}
 /* full-screen flash for the biggest moments */
 #flash{position:fixed;inset:0;z-index:10000;pointer-events:none;opacity:0}
 #flash.go{animation:fl2 .6s ease-out}
 @keyframes fl2{0%{opacity:.55}100%{opacity:0}}
-/* LEVEL UP — prismatic ascension card, unlike any other popup */
-.popbox.lvl{border:2px solid transparent;
-  background:linear-gradient(rgba(8,12,18,.92),rgba(8,12,18,.92)) padding-box,
-    linear-gradient(120deg,#7df9ff,#b388ff,#5dffd6,#e0b3ff,#7df9ff) border-box;
-  background-size:100% 100%,300% 300%;
-  box-shadow:0 0 70px rgba(125,249,255,.45),0 0 120px rgba(179,136,255,.25),inset 0 0 40px rgba(125,249,255,.06);
-  animation:popin .5s cubic-bezier(.16,1.5,.4,1),lvlBorder 2.6s linear infinite}
-@keyframes lvlBorder{0%{background-position:0 0,0% 50%}100%{background-position:0 0,300% 50%}}
-.popbox.lvl::after{opacity:0;animation:none}
-.popbox.lvl .t1{background:linear-gradient(90deg,#7df9ff,#ffffff,#b388ff,#5dffd6);background-size:250% 100%;
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 14px rgba(125,249,255,.6));animation:t1in .55s cubic-bezier(.2,1.3,.3,1) both,lvlText 2.2s linear infinite}
-@keyframes lvlText{0%{background-position:0% 0}100%{background-position:250% 0}}
-.popbox.lvl .t2{color:#9fd8e8;letter-spacing:3px}
 /* modern pass: depth, gradients, focus states, motion */
-body{background:radial-gradient(1100px 700px at 15% -8%,#101c13,var(--bg)) fixed}
-.card,.stat{background:linear-gradient(180deg,#131b14,#0e150f);border-color:#233827;border-radius:14px;
-  box-shadow:0 10px 26px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.03)}
+
+.card,.stat{background:var(--card);border-color:var(--line);border-radius:var(--rad);
+  box-shadow:0 10px 26px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.03)}
 .tab{border-radius:10px;transition:all .18s ease}
 .tab:hover{border-color:var(--grn);color:var(--ink);transform:translateY(-1px)}
-.btn,.btnG{background:linear-gradient(180deg,#5cffa4,#2be878);border-radius:10px;transition:all .16s ease}
+.btn,.btnG{background:var(--acc);color:var(--btnInk);border-radius:calc(var(--rad) - 2px);transition:all .16s ease}
 .btn:hover,.btnG:hover{transform:translateY(-1px);box-shadow:0 4px 22px var(--grnGlow)}
 .btn2{border-radius:10px;transition:all .16s ease}
 .btn2:hover{border-color:var(--grn);color:var(--grn)}
 input,select,textarea{border-radius:9px;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box-shadow:0 0 0 3px rgba(61,255,139,.14)}
 .bar,.bar>div{border-radius:6px}
-.week,.schedday{border-radius:13px;transition:border-color .2s,box-shadow .2s}
+.week,.schedday{border-radius:var(--rad);transition:border-color .2s,box-shadow .2s}
 .qq{border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
 .task,.step,.obj{transition:background .15s;border-radius:8px}
 .task:hover,.step:hover,.obj:hover{background:rgba(61,255,139,.045)}
@@ -220,6 +445,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <div id="exBanner"></div>
+<div id="dayModal" onclick="if(event.target===this)closeDay()">
+  <div class="dmCard">
+    <button class="dmX" onclick="closeDay()">✕</button>
+    <div id="dmBody"></div>
+  </div>
+</div>
 
 <div class="tabs">
   <div class="tab on" data-t="today">Today</div>
@@ -232,9 +463,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
   <div class="tab" data-t="set">Settings</div>
 </div>
 
-<!-- TODAY -->
-<div class="pane" id="p-today">
-  <div class="card" style="padding:12px 16px">
+  <div class="card xpCard" style="padding:12px 16px">
     <div class="lvlrow">
       <span class="pill gold" id="lvlPill">Lv 1 · Intern</span>
       <b id="xpNum">0 XP</b>
@@ -242,6 +471,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     </div>
     <div class="bar gold"><div id="xpBar" style="width:0%"></div></div>
   </div>
+
+<!-- TODAY -->
+<div class="pane" id="p-today">
   <div class="grid g4" style="margin-bottom:14px">
     <div class="stat"><div class="n" id="stStreak">0</div><div class="l">day streak 🔥</div></div>
     <div class="stat"><div class="n" id="stHours">0</div><div class="l">hours logged</div></div>
@@ -356,6 +588,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 <!-- MY SCHEDULE -->
 <div class="pane" id="p-sched" style="display:none">
   <div class="card">
+    <h2>Calendar <span class="pill b" id="calPill"></span></h2>
+    <div class="calHead">
+      <button class="btn2 calNav" onclick="calShift(-1)">‹</button>
+      <div class="calTitle" id="calTitle"></div>
+      <button class="btn2 calNav" onclick="calShift(1)">›</button>
+      <button class="btn2" onclick="calToday()">Today</button>
+    </div>
+    <div class="calGrid calDows" id="calDows"></div>
+    <div class="calGrid" id="calGrid"></div>
+    <div class="calLegend">
+      <span><i class="lg done"></i>completed</span><span><i class="lg part"></i>partial</span>
+      <span><i class="lg miss"></i>missed</span><span><i class="lg off"></i>rest / off</span>
+      <span><i class="lg exc"></i>exception</span><span><i class="lg ev"></i>personal event</span>
+    </div>
+    <div class="mut" style="margin-top:8px">Tap any day for its full agenda, what you completed, and to add your own events — no work calendar link required.</div>
+  </div>
+  <div class="card">
     <h2>Your work week</h2>
     <div class="mut" style="margin-bottom:10px">Describe each day the way it actually is. Pick the day type — office, light engagement, heavy engagement, travel, or off — set your hours, and flag days where the engagement has slack in the middle (waiting on client PBCs, downtime between sections). The dashboard turns that into a study window for each day, plus a <b>bonus midday sprint</b> on days with slack. Override any suggestion with your own time.</div>
     <div id="workDays"></div>
@@ -424,6 +673,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 <!-- SETTINGS -->
 <div class="pane" id="p-set" style="display:none">
   <div class="card">
+    <h2>Appearance <span class="pill b" id="themePill"></span></h2>
+    <div class="mut" style="margin-bottom:10px">Ten complete looks — each with its own palette, popup style and sound character. Tap one to switch instantly; it syncs with your profile.</div>
+    <div class="themeSel" id="themeSel"></div>
+    <h3 style="margin-top:16px">Sound pack</h3>
+    <div class="mut" style="margin-bottom:8px">Independent of the look. Tap 🔊 on any row to hear its completion chime and level-up jingle before choosing.</div>
+    <div class="themeSel" id="packSel"></div>
+  </div>
+  <div class="card">
     <h2>About this build</h2>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span class="pill gold" id="verPill">build</span>
@@ -441,8 +698,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="mut">Changing the start date re-anchors all 12 weeks, the Today tab, and every week's date range immediately. If the start is in the future, the dashboard runs in <b>pre-season build mode</b> — a prep checklist instead of study blocks — until day 1. Weeks run 7 days from whatever start day you pick (a Friday start means weeks run Fri→Thu; daily session types still follow the weekday).</div>
   </div>
   <div class="card">
-    <h2>Cloud sync &amp; profile <span class="pill b" id="syncPill2">setup</span></h2>
-    <div class="mut" style="margin-bottom:10px">Sign in and your progress follows you across phone and desktop automatically. Each person gets their own login and their own private profile.</div>
+    <h2>Cloud sync &amp; profile <span class="pill b" id="syncPill2">ready</span></h2>
+    <div class="mut" style="margin-bottom:10px">Already connected to Cadence's cloud — <b>nothing to configure</b>. Pick an ID and password, hit Create account, and your progress follows you across every device. Anyone you share the app link with does the same; each person gets their own private profile.<br><span style="opacity:.75">Note: sign-in only works on the deployed app, not inside a preview window — previews block outside network calls.</span></div>
     <div id="cloudCfgBox" style="display:none">
       <h3>Advanced · point at a different backend</h3>
       <div class="mut" style="margin-bottom:8px">Cadence ships pointed at its own Supabase project — you should not need to touch this. Only fill these in if you are self-hosting your own backend.</div>
@@ -509,7 +766,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v2.3';
+const BUILD='v6.2';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -759,6 +1016,208 @@ const QB2={
 };
 for(const u in QB2)QB[u].push(...QB2[u]);
 
+// ================= THEMES =================
+// Ten complete identities: palette + typography + popup behaviour + sound character.
+// v = CSS custom properties · snd = audio palette key · pop = popup animation class
+const SANS="-apple-system,'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif";
+const MONO="ui-monospace,'Cascadia Mono','SF Mono',Consolas,'Courier New',monospace";
+const THEMES=[
+{id:'terminal',name:'Terminal',blurb:'Phosphor green on black. CRT scanlines, monospace, hacker-console.',dark:1,scan:1,snd:'bell',pop:'hud',head:MONO,
+ v:{bg:'#0a0e0c',bgGrad:'radial-gradient(1100px 700px at 15% -8%,#101c13,#0a0e0c)',card:'linear-gradient(180deg,#131b14,#0e150f)',ink:'#d2e8d6',sub:'#7da489',line:'#233827',
+    acc:'#3dff8b',accSoft:'rgba(61,255,139,.12)',glow:'rgba(61,255,139,.35)',good:'#3dff8b',goodSoft:'rgba(61,255,139,.14)',
+    warn:'#ffc14d',warnSoft:'rgba(255,193,77,.12)',bad:'#ff6b6b',badSoft:'rgba(255,107,107,.14)',gold:'#ffd75e',goldSoft:'rgba(255,215,94,.12)',rad:'10px',btnInk:'#06220f'}},
+{id:'midnight',name:'Midnight',blurb:'Deep indigo with electric blue. Calm, glassy, late-night focus.',dark:1,scan:0,snd:'pad',pop:'glass',head:SANS,
+ v:{bg:'#0b1020',bgGrad:'radial-gradient(1200px 800px at 80% -10%,#161f3d,#0b1020)',card:'linear-gradient(180deg,#151c33,#111729)',ink:'#dfe6f5',sub:'#8b97b8',line:'#242d4a',
+    acc:'#5b8cff',accSoft:'rgba(91,140,255,.14)',glow:'rgba(91,140,255,.4)',good:'#4ad9a4',goodSoft:'rgba(74,217,164,.14)',
+    warn:'#ffc978',warnSoft:'rgba(255,201,120,.12)',bad:'#ff7a90',badSoft:'rgba(255,122,144,.14)',gold:'#c9a6ff',goldSoft:'rgba(201,166,255,.14)',rad:'16px',btnInk:'#07102a'}},
+{id:'paper',name:'Paper',blurb:'Light warm off-white with ink and a red pen. Notebook clarity.',dark:0,scan:0,snd:'wood',pop:'card',head:SANS,
+ v:{bg:'#f7f5ef',bgGrad:'none',card:'#fffdf8',ink:'#22201c',sub:'#6f6a60',line:'#e2ded2',
+    acc:'#c0392b',accSoft:'rgba(192,57,43,.10)',glow:'rgba(192,57,43,.25)',good:'#2f7d4f',goodSoft:'rgba(47,125,79,.12)',
+    warn:'#b5820a',warnSoft:'rgba(181,130,10,.12)',bad:'#c0392b',badSoft:'rgba(192,57,43,.12)',gold:'#b5820a',goldSoft:'rgba(181,130,10,.14)',rad:'10px',btnInk:'#fffdf8'}},
+{id:'sunset',name:'Sunset',blurb:'Warm charcoal with coral and amber. Energetic without shouting.',dark:1,scan:0,snd:'marimba',pop:'sweep',head:SANS,
+ v:{bg:'#17110f',bgGrad:'radial-gradient(1000px 700px at 20% -10%,#2a1a16,#17110f)',card:'linear-gradient(180deg,#231a17,#1b1412)',ink:'#f3e3da',sub:'#b0938a',line:'#3a2823',
+    acc:'#ff7a59',accSoft:'rgba(255,122,89,.14)',glow:'rgba(255,122,89,.4)',good:'#ffb057',goodSoft:'rgba(255,176,87,.14)',
+    warn:'#ffd166',warnSoft:'rgba(255,209,102,.12)',bad:'#ff5d6c',badSoft:'rgba(255,93,108,.14)',gold:'#ffd166',goldSoft:'rgba(255,209,102,.14)',rad:'14px',btnInk:'#2a1410'}},
+{id:'arctic',name:'Arctic',blurb:'Crisp white and ice blue. Maximum readability, zero noise.',dark:0,scan:0,snd:'glass',pop:'frost',head:SANS,
+ v:{bg:'#f2f6fa',bgGrad:'none',card:'#ffffff',ink:'#16212e',sub:'#63768c',line:'#dce5ee',
+    acc:'#0d7ee0',accSoft:'rgba(13,126,224,.10)',glow:'rgba(13,126,224,.28)',good:'#0e9f6e',goodSoft:'rgba(14,159,110,.12)',
+    warn:'#b7791f',warnSoft:'rgba(183,121,31,.12)',bad:'#dc2626',badSoft:'rgba(220,38,38,.10)',gold:'#0d7ee0',goldSoft:'rgba(13,126,224,.12)',rad:'14px',btnInk:'#ffffff'}},
+{id:'vault',name:'Vault',blurb:'Near-black and brushed gold. Private-bank restraint, serif headers.',dark:1,scan:0,snd:'deep',pop:'seal',head:"Georgia,'Times New Roman',serif",
+ v:{bg:'#0d0c0a',bgGrad:'radial-gradient(1000px 700px at 50% -15%,#1a1712,#0d0c0a)',card:'linear-gradient(180deg,#17150f,#100e0b)',ink:'#eee6d2',sub:'#a4977a',line:'#2e2818',
+    acc:'#d4af37',accSoft:'rgba(212,175,55,.13)',glow:'rgba(212,175,55,.38)',good:'#c8a951',goodSoft:'rgba(200,169,81,.14)',
+    warn:'#e0b64a',warnSoft:'rgba(224,182,74,.12)',bad:'#c2543d',badSoft:'rgba(194,84,61,.14)',gold:'#f0d98c',goldSoft:'rgba(240,217,140,.14)',rad:'8px',btnInk:'#100e0b'}},
+{id:'neon',name:'Neon',blurb:'Pure black, hot magenta and cyan. Synthwave arcade energy.',dark:1,scan:1,snd:'arcade',pop:'glitch',head:MONO,
+ v:{bg:'#05040a',bgGrad:'radial-gradient(900px 600px at 70% -10%,#160b27,#05040a)',card:'linear-gradient(180deg,#120c1e,#0a0714)',ink:'#f0e6ff',sub:'#9a86bd',line:'#2c1d45',
+    acc:'#ff2fb9',accSoft:'rgba(255,47,185,.14)',glow:'rgba(255,47,185,.45)',good:'#22e8ff',goodSoft:'rgba(34,232,255,.14)',
+    warn:'#ffe14d',warnSoft:'rgba(255,225,77,.12)',bad:'#ff4d6d',badSoft:'rgba(255,77,109,.14)',gold:'#22e8ff',goldSoft:'rgba(34,232,255,.14)',rad:'6px',btnInk:'#12001a'}},
+{id:'forest',name:'Forest',blurb:'Deep pine and sage on cream. Quiet, grounded, easy on the eyes.',dark:1,scan:0,snd:'kalimba',pop:'grow',head:SANS,
+ v:{bg:'#0c1310',bgGrad:'radial-gradient(1000px 700px at 25% -10%,#14201a,#0c1310)',card:'linear-gradient(180deg,#141d18,#101712)',ink:'#e6ecdf',sub:'#93a68f',line:'#26332a',
+    acc:'#8fc98a',accSoft:'rgba(143,201,138,.13)',glow:'rgba(143,201,138,.32)',good:'#a8d5a2',goodSoft:'rgba(168,213,162,.14)',
+    warn:'#e3c37a',warnSoft:'rgba(227,195,122,.12)',bad:'#d98b7a',badSoft:'rgba(217,139,122,.14)',gold:'#e3c37a',goldSoft:'rgba(227,195,122,.14)',rad:'16px',btnInk:'#0d1a12'}},
+{id:'mono',name:'Mono',blurb:'Pure greyscale, Swiss grid, brutal clarity. Nothing decorative.',dark:1,scan:0,snd:'click',pop:'snap',head:SANS,
+ v:{bg:'#0f0f0f',bgGrad:'none',card:'#171717',ink:'#f2f2f2',sub:'#8f8f8f',line:'#2b2b2b',
+    acc:'#ffffff',accSoft:'rgba(255,255,255,.10)',glow:'rgba(255,255,255,.25)',good:'#e6e6e6',goodSoft:'rgba(255,255,255,.12)',
+    warn:'#bdbdbd',warnSoft:'rgba(255,255,255,.08)',bad:'#9e9e9e',badSoft:'rgba(255,255,255,.07)',gold:'#ffffff',goldSoft:'rgba(255,255,255,.12)',rad:'4px',btnInk:'#0f0f0f'}},
+{id:'sakura',name:'Sakura',blurb:'Soft plum and blossom pink on warm white. Gentle and precise.',dark:0,scan:0,snd:'koto',pop:'petal',head:SANS,
+ v:{bg:'#fdf6f7',bgGrad:'none',card:'#fffbfc',ink:'#2b1f27',sub:'#7d6572',line:'#f0dfe4',
+    acc:'#d4577e',accSoft:'rgba(212,87,126,.10)',glow:'rgba(212,87,126,.28)',good:'#4f9d7a',goodSoft:'rgba(79,157,122,.12)',
+    warn:'#c08a2e',warnSoft:'rgba(192,138,46,.12)',bad:'#cc4b5e',badSoft:'rgba(204,75,94,.10)',gold:'#c98bb0',goldSoft:'rgba(201,139,176,.14)',rad:'18px',btnInk:'#fffbfc'}}
+];
+// ===== AUDIO =====
+// Built on interval ratios rather than fixed frequencies, so every cue is musically
+// correct in any theme's key. Research-backed choices:
+//   · perfect fifth (3:2) and major third (5:4) = consonant "approved" intervals
+//   · rising consonant arpeggios = achievement (the Zelda "item get" shape)
+//   · falling dissonant intervals (tritone/minor 2nd) = loss
+//   · major triad mirrors the natural harmonic series, which is why it reads as "right"
+const IV={u:1, m2:16/15, M2:9/8, m3:6/5, M3:5/4, P4:4/3, TT:45/32, P5:3/2, M6:5/3, M7:15/8, P8:2,
+          M9:9/4, P8M3:5/2, P8P5:3, P15:4};
+const SNDS={
+ bell   :{root:261.63,osc:'sine',    harm:[[1,1],[2,.42],[3.01,.16],[4.2,.07]],verb:.30,atk:.004},
+ pad    :{root:220.00,osc:'sine',    harm:[[1,1],[1.5,.3],[2,.22],[3,.08]],   verb:.42,atk:.030},
+ wood   :{root:293.66,osc:'triangle',harm:[[1,1],[2.4,.26],[4.1,.08]],        verb:.16,atk:.002},
+ marimba:{root:349.23,osc:'sine',    harm:[[1,1],[4,.24],[9.2,.08]],          verb:.24,atk:.003},
+ glass  :{root:392.00,osc:'sine',    harm:[[1,1],[2.76,.34],[5.4,.14]],       verb:.38,atk:.003},
+ deep   :{root:174.61,osc:'sine',    harm:[[1,1],[2,.46],[2.7,.18],[4,.09]],  verb:.36,atk:.006},
+ arcade :{root:329.63,osc:'square',  harm:[[1,1],[2,.18]],                    verb:.14,atk:.002},
+ kalimba:{root:246.94,osc:'sine',    harm:[[1,1],[3,.26],[5,.1]],             verb:.28,atk:.003},
+ click  :{root:440.00,osc:'square',  harm:[[1,1]],                            verb:.08,atk:.001},
+ koto   :{root:277.18,osc:'triangle',harm:[[1,1],[2,.3],[3.4,.12]],           verb:.22,atk:.002}
+};
+// ===== AUDIO PACKS =====
+// Independent of the visual theme. Each varies key, timbre, envelope, space and pacing,
+// so they feel like genuinely different instruments rather than the same beep re-tuned.
+const PACKS=[
+ {id:'auto',   name:'Match Theme',      blurb:'Follows whichever appearance you have selected.',icon:'◎'},
+ {id:'crystal',name:'Crystal Bells',    blurb:'Bright struck glass, long shimmering tail. Classic achievement.',
+  s:{root:523.25,osc:'sine',harm:[[1,1],[2.76,.34],[5.4,.15],[8.1,.05]],verb:.46,atk:.003,dec:1.35,space:1}},
+ {id:'marimba',name:'Warm Marimba',     blurb:'Wooden mallet, round and mellow. Satisfying without glare.',
+  s:{root:349.23,osc:'sine',harm:[[1,1],[4,.26],[9.2,.09]],verb:.22,atk:.003,dec:.8,space:.92}},
+ {id:'musicbox',name:'Music Box',       blurb:'Delicate high tines. Nostalgic, precise, gentle.',
+  s:{root:659.25,osc:'triangle',harm:[[1,1],[2,.4],[3.9,.2],[6.2,.08]],verb:.4,atk:.001,dec:1.1,space:.85}},
+ {id:'cathedral',name:'Deep Cathedral', blurb:'Low bronze bells with a long decay. Weighty and ceremonial.',
+  s:{root:174.61,osc:'sine',harm:[[1,1],[2,.5],[2.7,.22],[4,.12],[5.4,.06]],verb:.55,atk:.007,dec:1.9,space:1.18}},
+ {id:'arcade', name:'Arcade 8-Bit',     blurb:'Square-wave chiptune. Punchy, nostalgic, unmistakably a reward.',
+  s:{root:440.00,osc:'square',harm:[[1,1],[2,.2]],verb:.12,atk:.001,dec:.65,space:.78}},
+ {id:'rhodes', name:'Electric Piano',   blurb:'Rhodes-style bell tine. Warm, jazzy, expensive-sounding.',
+  s:{root:293.66,osc:'sine',harm:[[1,1],[2,.34],[3,.14],[5.1,.06]],verb:.3,atk:.004,dec:1.15,space:1}},
+ {id:'kalimba',name:'Kalimba',          blurb:'Plucked thumb piano. Organic, woody, calm.',
+  s:{root:246.94,osc:'sine',harm:[[1,1],[3,.28],[5,.11]],verb:.3,atk:.002,dec:.9,space:.9}},
+ {id:'harp',   name:'Harp',             blurb:'Plucked strings with air around them. Elegant and flowing.',
+  s:{root:392.00,osc:'triangle',harm:[[1,1],[2,.3],[3,.16],[4,.07]],verb:.42,atk:.002,dec:1.25,space:.72}},
+ {id:'bowl',   name:'Zen Bowl',         blurb:'Singing bowl. Very long, meditative, almost no attack.',
+  s:{root:196.00,osc:'sine',harm:[[1,1],[2.4,.4],[3.8,.2],[5.9,.08]],verb:.6,atk:.020,dec:2.4,space:1.35}},
+ {id:'synth',  name:'Neon Synth',       blurb:'Detuned analog stack. Modern, glossy, cinematic.',
+  s:{root:329.63,osc:'sawtooth',harm:[[1,.7],[2,.3],[3,.12]],verb:.38,atk:.010,dec:1.2,space:1}}
+];
+function theme(){return THEMES.find(t=>t.id===(S&&S.theme))||THEMES[0]}
+function pack(){return PACKS.find(p=>p.id===(S&&S.audioPack))||PACKS[0]}
+function snd(){
+  const p=pack();
+  const base=p.s||SNDS[theme().snd]||SNDS.bell;
+  return Object.assign({dec:1,space:1},base);
+}
+function applyTheme(id,announce){
+  const t=THEMES.find(x=>x.id===id)||THEMES[0];
+  const r=document.documentElement,v=t.v;
+  const set=(k,val)=>r.style.setProperty(k,val);
+  set('--bg',v.bg);set('--bgGrad',v.bgGrad);set('--card',v.card);set('--ink',v.ink);set('--sub',v.sub);set('--line',v.line);
+  set('--acc',v.acc);set('--accSoft',v.accSoft);set('--grn',v.acc);set('--grnGlow',v.glow);
+  set('--good',v.good);set('--goodSoft',v.goodSoft);set('--warn',v.warn);set('--warnSoft',v.warnSoft);
+  set('--bad',v.bad);set('--badSoft',v.badSoft);set('--gold',v.gold);set('--goldSoft',v.goldSoft);
+  set('--rad',v.rad);set('--btnInk',v.btnInk);set('--headFont',t.head);
+  // Popup surfaces are computed here as concrete colours — no color-mix(), which silently
+  // invalidates the whole declaration on engines that don't support it (card renders invisible).
+  const hex=c=>/^#[0-9a-f]{6}$/i.test(c)?c:null;
+  const bgHex=hex(v.bg)||(t.dark?'#0c0f12':'#ffffff');
+  set('--popBg',bgHex+'f7');
+  set('--popBg2',bgHex+'ff');
+  set('--popBorder',(hex(v.acc)||'#888888')+'8c');
+  set('--popTint',(hex(v.acc)||'#888888')+'24');
+  set('--popGlow',v.glow);
+  r.setAttribute('data-pop',t.pop);
+  r.setAttribute('data-scan',t.scan?'on':'off');
+  r.style.colorScheme=t.dark?'dark':'light';
+  document.body.classList.toggle('lightmode',!t.dark);
+  if(S){S.theme=t.id;save()}
+  if(announce){toast(t.name+' theme');ding('ok')}
+  if(typeof chart!=='undefined'&&chart)try{drawChart()}catch(e){}
+}
+function themePreview(t){
+  const v=t.v;
+  const bgc=(v.bgGrad&&v.bgGrad!=='none')?v.bgGrad:v.bg;
+  return '<div class="tPrev" style="background:'+bgc+'">'+
+    '<span class="pAcc" style="background:'+v.acc+'"></span>'+
+    '<span class="pTxt" style="background:'+v.ink+'"></span>'+
+    '<span class="pTxt2" style="background:'+v.sub+'"></span>'+
+    '<span class="pDots"><i style="background:'+v.good+'"></i><i style="background:'+v.gold+'"></i><i style="background:'+v.bad+'"></i></span>'+
+  '</div>';
+}
+function renderThemes(){
+  const box=document.getElementById('themeSel');if(!box)return;
+  const cur=theme();
+  box.innerHTML=
+    '<div class="themeBtn" onclick="document.getElementById(\'themeSel\').classList.toggle(\'open\')">'+
+      themePreview(cur)+
+      '<div class="tMeta"><div class="tN" style="color:'+cur.v.acc+'">'+cur.name+'</div>'+
+      '<div class="tB">'+cur.blurb+'</div>'+
+      '<div class="tTags">'+(cur.dark?'dark':'light')+' · '+cur.snd+' audio · '+cur.pop+' popups</div></div>'+
+      '<span class="caret">▼</span></div>'+
+    '<div class="themeList">'+THEMES.map(t=>
+      '<div class="tOpt'+(t.id===cur.id?' on':'')+'" onclick="pickTheme(\''+t.id+'\')">'+
+        themePreview(t)+
+        '<div class="tMeta"><div class="tN" style="color:'+t.v.acc+'">'+t.name+'</div>'+
+        '<div class="tB">'+t.blurb+'</div>'+
+        '<div class="tTags">'+(t.dark?'dark':'light')+' · '+t.snd+' audio · '+t.pop+' popups</div></div>'+
+        (t.id===cur.id?'<span class="tCheck">✓</span>':'')+
+      '</div>').join('')+'</div>';
+}
+function renderPacks(){
+  const box=document.getElementById('packSel');if(!box)return;
+  const cur=pack();
+  const row=(pk,inList)=>{
+    const eff=pk.id==='auto'?('follows '+theme().name):(pk.s.root.toFixed(0)+' Hz root');
+    return (inList?'<div class="tOpt'+(pk.id===cur.id?' on':'')+'" onclick="pickPack(\''+pk.id+'\')">':'')+
+      '<span class="pkIcon">'+(pk.icon||'♪')+'</span>'+
+      '<div class="tMeta"><div class="tN">'+pk.name+'</div>'+
+      '<div class="tB">'+pk.blurb+'</div>'+
+      '<div class="tTags">'+eff+'</div></div>'+
+      (inList?'<button class="pkPlay" title="Preview" onclick="previewPack(\''+pk.id+'\',event)">🔊</button>':'<span class="caret">▼</span>')+
+      (inList?'</div>':'');
+  };
+  box.innerHTML=
+    '<div class="themeBtn" onclick="document.getElementById(\'packSel\').classList.toggle(\'open\')">'+row(cur,false)+'</div>'+
+    '<div class="themeList">'+PACKS.map(pk=>row(pk,true)).join('')+'</div>';
+}
+function pickPack(id){
+  S.audioPack=id;save();
+  const box=document.getElementById('packSel');if(box)box.classList.remove('open');
+  renderPacks();ding('complete');toast(pack().name);
+}
+// Cues are scheduled synchronously, so swapping the pack around the call is safe.
+function previewPack(id,ev){
+  if(ev)ev.stopPropagation();
+  const prevPack=S.audioPack,prevSound=S.sound;
+  S.audioPack=id;S.sound=true;
+  ding('complete');
+  setTimeout(()=>{S.audioPack=id;S.sound=true;ding('levelup');
+    S.audioPack=prevPack;S.sound=prevSound;},1500);
+  S.audioPack=prevPack;S.sound=prevSound;
+}
+document.addEventListener('click',e=>{
+  const b=document.getElementById('packSel');
+  if(b&&!b.contains(e.target))b.classList.remove('open');
+},true);
+function pickTheme(id){
+  applyTheme(id,true);
+  const box=document.getElementById('themeSel');if(box)box.classList.remove('open');
+  renderThemes();
+}
+document.addEventListener('click',e=>{
+  const box=document.getElementById('themeSel');
+  if(box&&!box.contains(e.target))box.classList.remove('open');
+},true);
+
 // ---------- state ----------
 let S=load();
 function load(){
@@ -786,6 +1245,10 @@ function fill(s){
   if(s.usedQ===undefined)s.usedQ={};
   if(s.section===undefined)s.section='FAR';
   if(s.coachLog===undefined)s.coachLog=[];
+  if(s.theme===undefined)s.theme='terminal';
+  if(s.audioPack===undefined)s.audioPack='auto';
+  if(s.perfects===undefined)s.perfects=0;
+  if(s.events===undefined)s.events={};
   if(s.ai===undefined)s.ai={provider:'builtin',key:'',model:''};
   if(s.weak===undefined)s.weak=[];
   if(s.dayDone===undefined)s.dayDone={};
@@ -872,12 +1335,12 @@ async function cloudPull(){
       const remote=rows[0].data,rt=remote.__t||0,lt=S.__t||0;
       if(rt>lt){ // last-write-wins: remote is newer, adopt it
         localStorage.setItem(KEY,JSON.stringify(remote));
-        S=load();syncBadge('synced','g');render();pulling=false;return;
+        S=load();applyTheme(S.theme||'terminal');syncBadge('synced','g');render();pulling=false;return;
       }
       if(lt>rt){await cloudPush(true)}
     }else{await cloudPush(true)}
     syncBadge('synced','g');
-  }catch(e){syncBadge('offline','w')}
+  }catch(e){syncBadge(/fetch/i.test(e&&e.message||'')?'preview · no network':'offline','w')}
   pulling=false;
 }
 async function cloudPush(force){
@@ -907,17 +1370,23 @@ async function doAuth(kind){
   const email=idToEmail(raw);
   const st=document.getElementById('acctStatus');st.textContent='working…';
   try{await authCall(kind,email,pw);st.textContent='signed in';renderAccount();await cloudPull();
-    popup('SYNCED','profile linked · '+emailToId(email));ding('ok');
+    popup('SYNCED','profile linked · '+emailToId(email),false,null,null,'ok');
   }catch(e){
     let m=e.message||'sign-in failed';
-    if(/invalid login/i.test(m))m='ID or password not recognized. New here? Use Create account.';
-    if(/already registered|already been/i.test(m))m='That ID is taken — use Sign in instead.';
+    if(/failed to fetch|networkerror|load failed/i.test(m))
+      m='Cloud sync is blocked in this preview window — the sandbox allows no outside network calls. '+
+        'Open the deployed app (your Netlify URL) and sign in there; it works normally on the real site.';
+    else if(/invalid login/i.test(m))m='ID or password not recognized. New here? Use Create account.';
+    else if(/already registered|already been/i.test(m))m='That ID is taken — use Sign in instead.';
     st.textContent=m;
   }
 }
 function signOut(){setSess(null);syncBadge('off','b');renderAccount();toast('Signed out')}
 function renderAccount(){
   const c=cloudCfg(),s=sess();
+  const p2=document.getElementById('syncPill2');
+  if(p2){p2.textContent=s?('signed in · '+(emailToId(s.email)||'')):'no account yet';
+    p2.className='pill '+(s?'g':'b')}
   const cfgBox=document.getElementById('cloudCfgBox'),acctBox=document.getElementById('acctBox');
   if(!cfgBox)return;
   const custom=(()=>{try{const x=JSON.parse(localStorage.getItem(CKEY));return x&&x.url?x:null}catch(e){return null}})();
@@ -975,18 +1444,38 @@ function burst(x,y,n,gold,palX){const pal=palX||(gold?GOLDS:COLS);
   for(let i=0;i<n;i++){const a=Math.random()*6.283,v=2+Math.random()*4;
     P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1.2,g:.13,d:.985,s:4+Math.random()*4,c:pal[i%pal.length],
       sh:Math.random()<.45?'spark':'rect',life:34+Math.random()*22,max:56,rot:Math.random()*6,vr:.25*(Math.random()-.5)})}kick()}
-function confettiRain(n,gold,palX){const pal=palX||(gold?GOLDS:COLS);
-  for(let i=0;i<n;i++){const r=Math.random();
-    P.push({x:Math.random()*cv.width,y:-15-Math.random()*cv.height*.4,vx:(Math.random()-.5)*2.6,vy:2+Math.random()*3.2,g:.045,
-      s:5+Math.random()*7,c:pal[i%pal.length],sh:r<.22?'spark':(r<.42?'streamer':'rect'),
-      life:130+Math.random()*80,max:210,rot:Math.random()*6,vr:.3*(Math.random()-.5)})}kick()}
-function fountain(n,gold,palX){ // upward cannon from bottom corners — celebratory, unlike falling confetti
+// Full-screen celebration burst: everything leaves the centre travelling outward,
+// flattened and nearly weightless, so it reads as a shockwave rather than falling debris.
+function screenExplode(n,gold,palX){
   const pal=palX||(gold?GOLDS:COLS);
-  [[cv.width*.12,cv.height],[cv.width*.88,cv.height]].forEach(([ox,oy],side)=>{
-    for(let i=0;i<n/2;i++){const a=-1.571+(side?-1:1)*(0.15+Math.random()*.6),v=13+Math.random()*10;
-      P.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.28,d:.99,s:5+Math.random()*6,c:pal[i%pal.length],
-        sh:Math.random()<.35?'spark':'rect',life:80+Math.random()*45,max:125,rot:Math.random()*6,vr:.35*(Math.random()-.5)})}});
-  kick()}
+  const cx2=cv.width/2,cy2=cv.height/2;
+  for(let i=0;i<n;i++){
+    const a=Math.random()*6.283,v=9+Math.random()*17;
+    P.push({x:cx2,y:cy2,vx:Math.cos(a)*v,vy:Math.sin(a)*v*.58,g:.005,d:.938,
+      s:2.8+Math.random()*4,c:pal[i%pal.length],sh:Math.random()<.62?'spark':'rect',
+      life:36+Math.random()*30,max:70,rot:Math.random()*6,vr:.25*(Math.random()-.5)});
+  }
+  kick();
+}
+// Explosion off the card's edge: each particle starts ON the perimeter and travels
+// along the outward normal, so the box itself appears to burst rather than a point source.
+function cardBurst(rect,n,gold){
+  const pal=gold?GOLDS:COLS;
+  const cx2=rect.left+rect.width/2,cy2=rect.top+rect.height/2;
+  const hw=rect.width/2,hh=rect.height/2;
+  for(let i=0;i<n;i++){
+    const a=(i/n)*6.283+(Math.random()-.5)*.14;
+    const ca=Math.cos(a),sa=Math.sin(a);
+    const t=Math.min(hw/(Math.abs(ca)||1e-6),hh/(Math.abs(sa)||1e-6)); // hit the rect edge
+    const px=cx2+ca*t,py=cy2+sa*t;
+    const v=8+Math.random()*8;
+    // flattened vertically → the burst spreads across the surface like a droplet impact
+    P.push({x:px,y:py,vx:ca*v,vy:sa*v*.52,g:.004,d:.918,s:2.6+Math.random()*3.2,
+      c:pal[i%pal.length],sh:Math.random()<.62?'spark':'rect',
+      life:34+Math.random()*22,max:56,rot:Math.random()*6,vr:.22*(Math.random()-.5)});
+  }
+  kick();
+}
 function rays(gold){RAYS.push({x:cv.width/2,y:cv.height/2,rot:0,vr:.012,n:12,len:Math.max(cv.width,cv.height)*.75,w:16,
   c:gold?'#ffd75e':'#3dff8b',life:80,max:80});kick()}
 function screenFlash(kind){let f=document.getElementById('flash');
@@ -997,8 +1486,10 @@ function screenFlash(kind){let f=document.getElementById('flash');
   f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
 // Layered celebration: sound + light + particles, scaled to the moment.
 function celebrate(level,gold){
-  if(level==='day'){screenFlash(gold);ring(cv.width/2,cv.height/2,gold?'#ffd75e':'#3dff8b',16,5,40);confettiRain(130,gold);fountain(40,gold)}
-  else if(level==='week'){screenFlash(gold);rays(gold);ring(cv.width/2,cv.height/2,gold?'#ffd75e':'#3dff8b',20,6,50);confettiRain(200,gold);fountain(80,gold)}
+  if(level==='day'){screenFlash(gold);ring(cv.width/2,cv.height/2,gold?'#ffd75e':'#3dff8b',16,5,40);
+    screenExplode(110,gold);setTimeout(()=>screenExplode(40,gold),170)}
+  else if(level==='week'){screenFlash(gold);ring(cv.width/2,cv.height/2,gold?'#ffd75e':'#3dff8b',20,6,50);
+    screenExplode(180,gold);setTimeout(()=>screenExplode(80,gold),160);setTimeout(()=>screenExplode(45,gold),340)}
   else if(level==='max'){ // LEVEL UP: prismatic ascension — nothing else in the app looks like this
     screenFlash('lvl');
     RAYS.push({x:cv.width/2,y:cv.height/2,rot:0,vr:.016,n:12,len:Math.max(cv.width,cv.height)*.8,w:15,c:'#7df9ff',life:95,max:95});
@@ -1007,96 +1498,368 @@ function celebrate(level,gold){
     setTimeout(()=>ring(cv.width/2,cv.height/2,'#ffffff',19,5,48),150);
     setTimeout(()=>ring(cv.width/2,cv.height/2,'#b388ff',16,4,42),300);
     setTimeout(()=>ring(cv.width/2,cv.height/2,'#5dffd6',13,3,38),460);
-    confettiRain(280,false,ASCEND);fountain(120,false,ASCEND);
-    setTimeout(()=>fountain(80,false,ASCEND),420);setTimeout(()=>confettiRain(90,false,ASCEND),700);
+    screenExplode(230,false,ASCEND);
+    setTimeout(()=>screenExplode(120,false,ASCEND),180);
+    setTimeout(()=>screenExplode(70,false,ASCEND),400);
     kick()}
 }
-function toast(txt,big,neg){const el=document.createElement('div');el.className='xtoast'+(big?' big':'')+(neg?' neg':'');el.textContent=txt;
-  el.style.left=Math.min(lastX,innerWidth-140)+'px';el.style.top=(lastY-10)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1000)}
+function toast(txt,big,neg,ox,oy){const el=document.createElement('div');el.className='xtoast'+(big?' big':'')+(neg?' neg':'');el.textContent=txt;
+  const x=(ox==null?lastX:ox),y=(oy==null?lastY:oy);
+  el.style.left=Math.min(x,innerWidth-140)+'px';el.style.top=(y-10)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1000)}
+// Rotating sub-lines so the same achievement never reads identically twice.
+const LINES={
+ day:['locked in. that is the whole move','no notes. same time tomorrow',
+  'zero exceptions noted on that session','you did not feel like it. you did it anyway',
+  'that one gets an unqualified opinion','nobody clapped. it still counted',
+  'seat time is the skill. you bought some','quietly getting harder to beat',
+  'capitalised, not expensed','future you just got luckier',
+  'the boring reps are the ones that pass','discipline is accruing interest',
+  'showed up tired. cleared it anyway','no adjusting entries needed',
+  'one more day you did not skip','small day. compounding anyway',
+  'rest earned, not taken','you are becoming the person who does this',
+  'consistency over intensity. exactly right','the plan did not beat you today',
+  'no drama. just done','you cooked quietly tonight',
+  'streak intact. ego intact','that is a credit to you',
+  'materially better than yesterday','showing up is most of it. you showed up',
+  'the version of you that passes does this','logged and reconciled',
+  'you kept the appointment with yourself','nothing heroic. just repeatable'],
+ objectives:['you can DO this now, not just recognise it','that is command, not familiarity',
+  'this section will not ambush you again','you could teach this one',
+  'locked in, not memorised','no impairment detected',
+  'real understanding. not vibes','exam day just got quieter',
+  'you own this material outright','sampled and tested. no findings',
+  'the trap answers stopped working on you','you understood the assignment',
+  'this one lives in long-term memory now','recognised in full. no deferral',
+  'you can defend every one of these','from guessing to knowing',
+  'that is an asset on your balance sheet','you would survive a follow-up question',
+  'carried at full value','no more eliminating. just knowing',
+  'competence, not confidence','the concept actually clicked. that is rare',
+  'substantive testing not required','you are not bluffing this section'],
+ week:['a full week. no negotiating','you are on a genuine roll',
+  'seven days the plan did not win','this is what passing actually looks like',
+  'ahead of who you were on Monday','week closed. books balanced',
+  'nothing flashy. relentless','the momentum is real now',
+  'that is a whole unit you own','unqualified opinion on that week',
+  'you built a week out of ordinary days','the compounding is visible now',
+  'most people quit before this part','week reconciled. no variances',
+  'you are dangerous now','that is not motivation. that is a system',
+  'the plan works because you do','closed the period clean',
+  'you outlasted the boring stretch','no findings. next unit',
+  'this is the pace that clears a 75','week banked with interest',
+  'you did the whole thing. all of it','seven for seven. no notes'],
+ preseason:['day 1 needs zero decisions','the hardest part was starting',
+  'setup done. now it is only reps','no excuses left to build',
+  'the plan is armed. go','you prepared instead of hoping',
+  'opening balances set','everything from here is execution',
+  'you did the unglamorous part first'],
+ streak:['that is not luck any more','the habit has you now',
+  'unbroken. keep it that way','this is where most people fold',
+  'you made it automatic','no gaps. no excuses',
+  'the calendar is on your side now','that is a run, not a fluke',
+  'you have out-stubborned yourself','consecutive. that is the hard part',
+  'the streak is doing the work now','proof you are not who you were'],
+ perfect:['every explanation understood','not one guess',
+  'that is exam-day precision','you did not need the eliminations',
+  'clean sweep','no gaps in that set','textbook. literally',
+  'flawless. no exceptions noted','you knew, you did not narrow',
+  'perfect issuance','that is a 100 on a real curve',
+  'no partial credit needed','absolutely no notes'],
+ levelup:['promoted. you earned that','the work is showing',
+  'new rank, same discipline','you levelled the hard way',
+  'keep climbing','that is a raise nobody had to approve',
+  'the title caught up to the effort','moving up the org chart of yourself',
+  'earned, not granted','you outgrew the last tier']
+};
+let lastLine={};
+function pickLine(kind){
+  const a=LINES[kind];if(!a||!a.length)return '';
+  let p,g=0;do{p=a[Math.floor(Math.random()*a.length)]}while(a.length>1&&p===lastLine[kind]&&g++<12);
+  lastLine[kind]=p;return p;
+}
 // Popup queue: one celebration on screen at a time. Each entry can carry its own fx
 // (confetti/sound) which fire only when ITS popup appears — so a level-up triggered by a
 // week-complete stays hidden until the week banner clears, then hits as a surprise.
 let popQ=[],popActive=false;
-function popup(title,sub,gold,fx){popQ.push({title,sub,gold,fx});pumpPop()}
+function popup(title,sub,gold,fx,bonus,cue){popQ.push({title,sub,gold,fx,bonus,cue});pumpPop()}
+// Scale the popup title down until it fits inside the card — no clipping, no wrapping,
+// consistent at any title length or viewport width.
+function fitTitle(box){
+  const t1=box.querySelector('.t1');if(!t1)return;
+  const cs=getComputedStyle(box);
+  const avail=box.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  if(!avail||avail<40)return;
+  let fs=parseFloat(getComputedStyle(t1).fontSize)||30;
+  let ls=parseFloat(getComputedStyle(t1).letterSpacing)||4;
+  let guard=0;
+  while(t1.scrollWidth>avail&&guard++<60){
+    if(ls>1.2){ls=Math.max(1.2,ls-0.5);t1.style.letterSpacing=ls+'px'}
+    else if(fs>14){fs-=1;t1.style.fontSize=fs+'px'}
+    else break;
+  }
+}
 function pumpPop(){
   if(popActive||!popQ.length)return;
   popActive=true;
   const it=popQ.shift();
   let w=document.getElementById('popWrap');
   if(!w){w=document.createElement('div');w.id='popWrap';document.body.appendChild(w)}
-  const b=document.createElement('div');b.className='popbox'+(it.gold===true?' gold':it.gold==='lvl'?' lvl':'');
-  b.innerHTML='<div class="t1">'+it.title+'</div>'+(it.sub?'<div class="t2">'+it.sub+'</div>':'');
+  const b=document.createElement('div');b.className='popbox'+(it.gold===true?' gold':it.gold==='lvl'?' lvl':it.gold==='perf'?' gold perf':'');
+  const icon=it.gold==='lvl'?'★':it.gold==='perf'?'💯':(it.gold===true?'✦':'✓');
+  // letters animate individually via transform only — no reflow, no clipping
+  // 16 slow motes drifting through the card — enough to feel alive, not enough to distract
+  const snow=Array.from({length:16},()=>{
+    const sz=(1.1+Math.random()*1.5).toFixed(1);
+    return '<i style="left:'+(Math.random()*100).toFixed(1)+'%;top:'+(-10+Math.random()*30).toFixed(1)+'%;'+
+      'width:'+sz+'px;height:'+sz+'px;'+
+      '--o:'+(0.16+Math.random()*0.3).toFixed(2)+';'+
+      '--dx:'+((Math.random()-.5)*46).toFixed(0)+'px;'+
+      '--dy:'+(120+Math.random()*90).toFixed(0)+'px;'+
+      'animation-duration:'+(6.5+Math.random()*6).toFixed(1)+'s;'+
+      'animation-delay:-'+(Math.random()*8).toFixed(1)+'s"></i>';
+  }).join('');
+  b.innerHTML='<div class="popStack"></div><div class="popAura"></div><div class="popFloor"></div>'+
+    '<div class="popFrame"></div><div class="popFrame f2"></div>'+
+    '<div class="popVig"></div><div class="popRim"></div>'+
+    '<div class="popSnow">'+snow+'</div>'+
+    '<div class="popBadge">'+
+      '<svg class="popRing" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>'+
+      '<div class="popWave"></div><div class="popWave w2"></div>'+
+      '<div class="popIcon">'+icon+'</div>'+
+    '</div><div class="popRule"></div>'+
+    '<div class="t1">'+it.title+'</div>'+
+    (it.sub?'<div class="t2">'+it.sub+'</div>':'')+
+    (it.bonus?'<div class="popXp">+'+it.bonus+' XP</div>':'')+
+    '<div class="popEdge"></div>';
   w.appendChild(b);
-  if(it.fx)try{it.fx()}catch(e){}
-  const hold=it.gold==='lvl'?2900:2050;
-  setTimeout(()=>b.classList.add('out'),hold);
-  setTimeout(()=>{b.remove();popActive=false;setTimeout(pumpPop,220)},hold+470);
+  fitTitle(b);
+  // real particles scatter outward from the badge as the card lands
+  // Everything — including the celebration fx and its sound — detonates on the impact
+  // frame of the slam. Previously fx ran the instant the card mounted, so confetti was
+  // already falling while the card was still swelling toward the viewer.
+  setTimeout(()=>{
+    // Sound is fired independently and FIRST — a fault in any visual effect can never
+    // silence the cue again (that is exactly what a swallowed exception did once).
+    if(it.cue)try{ding(it.cue)}catch(e){}
+    if(it.fx)try{it.fx()}catch(e){}
+    const gold=it.gold===true||it.gold==='perf'||it.gold==='lvl';
+    w.classList.remove('slam');void w.offsetWidth;w.classList.add('slam');
+    const r1=b.getBoundingClientRect();
+    if(r1.width){
+      cardBurst(r1,44,gold);                                        // firework off the edge
+      ring(r1.left+r1.width/2,r1.top+r1.height/2,gold?'#ffd75e':null,20,3,32);
+      const ic=b.querySelector('.popIcon');
+      if(ic){const r=ic.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,14,gold)}
+      setTimeout(()=>{const r2=b.getBoundingClientRect();if(r2.width)cardBurst(r2,24,gold)},200);
+    }
+  },560);
+  const hold=it.gold==='lvl'?2900:1500;   // trimmed ~1.5s
+  let closed=false;
+  const close=()=>{
+    if(closed)return;closed=true;
+    // An entrance animation with fill:both keeps overriding opacity/transform, so the
+    // .out styles were being ignored and the card vanished instead of fading. Release
+    // the animation first (its end state equals the base state, so nothing jumps),
+    // then the exit transition can actually run.
+    b.style.animation='none';
+    const aura=b.querySelector('.popAura');if(aura)aura.style.animation='none';
+    void b.offsetWidth;
+    b.classList.add('out');
+    setTimeout(()=>{b.remove();popActive=false;setTimeout(pumpPop,760)},620);
+  };
+  if(it.bonus){
+    // The card launches its own orbs and stays up until every one has landed —
+    // each achievement's XP is its own visible, self-contained event.
+    setTimeout(()=>{
+      const rb=b.getBoundingClientRect();
+      const ox=rb.width?rb.left+rb.width/2:innerWidth/2;
+      const oy=rb.height?rb.bottom-16:innerHeight/2;
+      toast('+'+it.bonus+' XP',true,false,ox,oy);
+      xpStream(it.bonus,ox,oy,()=>setTimeout(close,180));
+    },660);
+    setTimeout(close,7000);                       // hard safety net
+  }else{
+    setTimeout(close,hold);
+  }
 }
-let AC=null;
-function actx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();return AC}
-// A single oscillator voice with a proper attack/decay envelope.
-function voice(f,t0,dur,o1){
-  const A=actx(),o=A.createOscillator(),g=A.createGain();
-  const opt=o1||{};
-  o.type=opt.type||'sine';o.frequency.setValueAtTime(f,t0);
-  if(opt.detune)o.detune.setValueAtTime(opt.detune,t0);
-  const v=opt.vol||.1;
+let AC=null,MASTER=null,VERB=null;
+function actx(){
+  if(!AC){
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    MASTER=AC.createGain();MASTER.gain.value=.8;
+    const comp=AC.createDynamicsCompressor();      // limiter: dense cues can't clip into mush
+    comp.threshold.value=-14;comp.knee.value=16;comp.ratio.value=8;
+    comp.attack.value=.004;comp.release.value=.22;
+    MASTER.connect(comp);comp.connect(AC.destination);
+    // small algorithmic space so cues bloom instead of sounding dry and cheap
+    VERB=AC.createGain();VERB.gain.value=1;
+    const d1=AC.createDelay(1),d2=AC.createDelay(1),fb=AC.createGain(),lp=AC.createBiquadFilter(),wet=AC.createGain();
+    d1.delayTime.value=.075;d2.delayTime.value=.113;fb.gain.value=.34;
+    lp.type='lowpass';lp.frequency.value=3400;wet.gain.value=.5;
+    VERB.connect(d1);d1.connect(lp);lp.connect(fb);fb.connect(d2);d2.connect(d1);
+    d1.connect(wet);d2.connect(wet);wet.connect(MASTER);
+  }
+  if(AC.state==='suspended')AC.resume();
+  return AC;
+}
+// One voice: filtered oscillator with a plucked envelope, dry + reverb send.
+let voices=0;
+function note(f,t0,dur,o){
+  const opt=o||{};
+  if(opt&&opt.budget&&voices>26)return;             // budget applies to repeating pips only,
+                                                   // so a composed jingle is never truncated
+  const A=actx(),P=snd();
+  voices++;setTimeout(()=>{voices=Math.max(0,voices-1)},(dur+0.1)*1000);
+  const osc=A.createOscillator(),g=A.createGain(),lp=A.createBiquadFilter();
+  osc.type=opt.type||P.osc;osc.frequency.setValueAtTime(f,t0);
+  if(opt.detune)osc.detune.setValueAtTime(opt.detune,t0);
+  lp.type='lowpass';
+  lp.frequency.setValueAtTime(Math.min(f*8,14000),t0);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(f*2.2,320),t0+dur);
+  const v=opt.vol==null?.09:opt.vol,atk=opt.atk==null?P.atk:opt.atk;
   g.gain.setValueAtTime(.0001,t0);
-  g.gain.exponentialRampToValueAtTime(v,t0+.012);
+  g.gain.exponentialRampToValueAtTime(v,t0+atk);
   g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  o.connect(g);g.connect(A.destination);o.start(t0);o.stop(t0+dur+.05);
+  osc.connect(lp);lp.connect(g);g.connect(MASTER);
+  const send=A.createGain();send.gain.value=(opt.verb==null?P.verb:opt.verb)*v;
+  g.connect(send);send.connect(VERB);
+  osc.start(t0);osc.stop(t0+dur+.06);
 }
-// Bell/chime timbre: fundamental + octave + a slightly sharp 3rd partial + detuned twin (chorus shimmer).
-function bell(f,t0,dur,v){
-  voice(f,t0,dur,{vol:v});
-  voice(f*2,t0,dur*.7,{vol:v*.45});
-  voice(f*3.01,t0,dur*.45,{vol:v*.2});
-  voice(f,t0,dur,{vol:v*.5,detune:7});
+// A struck tone with its natural partials — reads as a real instrument, not a beep.
+function tone(f,t0,dur,v,o){
+  const P=snd(),opt=o||{};
+  P.harm.forEach(([mult,amp],i)=>note(f*mult,t0,dur*(i?Math.max(.35,1-i*.22):1),
+    {vol:v*amp,type:opt.type,verb:opt.verb}));
+  note(f*1.001,t0,dur,{vol:v*.35,detune:6,type:opt.type});   // chorus body
 }
-// Pitch sweep — used for risers (anticipation) and the XP-clawback drop.
-function sweep(f0,f1,t0,dur,o1){
-  const A=actx(),o=A.createOscillator(),g=A.createGain();const opt=o1||{};
-  o.type=opt.type||'sine';
-  o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
-  const v=opt.vol||.08;
-  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+dur*.25);
-  g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
-  o.connect(g);g.connect(A.destination);o.start(t0);o.stop(t0+dur+.05);
+function ratioHz(r){return snd().root*r}
+let pipStep=0;
+const PENTA=[IV.u,IV.M2,IV.M3,IV.P5,IV.M6];   // no wrong notes
+function ding(kind){
+  if(!S.sound)return;
+  try{
+    const t=actx().currentTime,R=r=>ratioHz(r);
+    const P=snd(),D=P.dec||1,SP=P.space||1;
+    if(kind==='one'){
+      note(R(IV.P15),t,.075*D,{vol:.055,verb:.12});
+      note(R(IV.P15*IV.P5),t,.045*D,{vol:.018,verb:.1});
+    }
+    else if(kind==='pip'){
+      // XP orbs: climbs the pentatonic so a stream reads as an arpeggio. Deliberately thin
+      // (2 partials, low level) — these fire under a ringing chord and must not crowd it.
+      const deg=PENTA[pipStep%PENTA.length],oct=1+Math.floor((pipStep%(PENTA.length*2))/PENTA.length);
+      pipStep++;
+      const f=R(deg*IV.P8*oct);
+      note(f,t,.16*D,{vol:.020,verb:.18,budget:1});
+      note(f*2,t,.09*D,{vol:.007,verb:.12,budget:1});
+    }
+    else if(kind==='ok'){
+      // rising perfect fifth = the classic "approved" gesture
+      tone(R(IV.u*IV.P8),t,.26*D,.075);
+      tone(R(IV.P5*IV.P8),t+.085*SP,.34*D,.070);
+    }
+    else if(kind==='undo'){
+      // falling tritone, slightly detuned: unmistakably a loss
+      tone(R(IV.P5),t,.20,.055,{type:'triangle'});
+      note(R(IV.TT)*.5,t+.075,.30,{vol:.055,type:'triangle',detune:-28});
+      note(R(IV.m2)*.5,t+.15,.34,{vol:.042,type:'triangle',detune:-42});
+    }
+    else if(kind==='complete'||kind==='big'){
+      // ITEM-GET: rising major arpeggio resolving onto the octave, then a held triad
+      const seq=[IV.u,IV.M3,IV.P5,IV.P8],st=.085*SP;
+      seq.forEach((r,i)=>tone(R(r*IV.P8),t+i*st,.42*D,.085));
+      const t2=t+seq.length*st;
+      tone(R(IV.P8P5),t2,.30*D,.075);                    // peak
+      [IV.P8,IV.P8M3,IV.P8P5].forEach(r=>tone(R(r),t2+.06,1.5*D,.045)); // triad rings out
+      note(R(IV.P15),t2+.12,.9*D,{vol:.026,verb:.5});     // sparkle
+      note(R(IV.u)*.5,t,.5*D,{vol:.05});                  // low anchor
+    }
+    else if(kind==='objectives'){
+      // MASTERY — a call-and-response: question phrase answered by its resolution
+      note(R(IV.u)*.5,t,.5*D,{vol:.05});
+      [IV.u,IV.P5].forEach((r,i)=>tone(R(r*IV.P8),t+i*.10*SP,.34*D,.078));      // call
+      const t2=t+.24*SP;
+      [IV.M3,IV.M6,IV.P8].forEach((r,i)=>tone(R(r*IV.P8),t2+i*.09*SP,.42*D,.082)); // answer
+      const t3=t2+.30*SP;
+      [IV.P8M3,IV.P8P5,IV.M9*IV.P8].forEach(r=>tone(R(r),t3,1.5*D,.042));       // add9 shimmer
+      note(R(IV.P15),t3+.14,.9*D,{vol:.024,verb:.5});
+    }
+    else if(kind==='preseason'){
+      // GATE OPENING — low swell rising into a bright suspended-to-major resolve
+      note(R(IV.u)*.25,t,1.0*D,{vol:.09});
+      note(R(IV.u)*.5,t+.05,.8*D,{vol:.06});
+      [IV.u,IV.P4,IV.P5].forEach((r,i)=>tone(R(r),t+.18+i*.11*SP,.5*D,.07));    // sus build
+      const t2=t+.52*SP;
+      [IV.P8,IV.P8M3,IV.P8P5].forEach(r=>tone(R(r),t2,1.8*D,.05));              // resolve to major
+      [IV.P15,IV.P15*IV.M3].forEach((r,i)=>note(R(r),t2+.2+i*.14,1.0*D,{vol:.02,verb:.55}));
+    }
+    else if(kind==='week'){
+      // WEEK BANKED — six-note climb, octave toll, then a wide six-voice chord
+      note(R(IV.u)*.25,t,1.1*D,{vol:.10});
+      const seq=[IV.u,IV.M3,IV.P5,IV.P8,IV.P8M3,IV.P8P5],st=.082*SP;
+      seq.forEach((r,i)=>tone(R(r),t+i*st,.46*D,.085));
+      const t2=t+seq.length*st;
+      tone(R(IV.P15),t2,.55*D,.09);                                             // toll
+      const t3=t2+.16*SP;
+      [IV.P5,IV.P8,IV.P8M3,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t3,2.0*D,.046));
+      note(R(IV.u)*.5,t3,1.7*D,{vol:.05});
+      [IV.P15*IV.M3,IV.P15*IV.P5].forEach((r,i)=>note(R(r),t3+.24+i*.15,1.0*D,{vol:.02,verb:.55}));
+    }
+    else if(kind==='streak'){
+      // STREAK — fast ascending run with a hard accent on top
+      const run=[IV.u,IV.M2,IV.M3,IV.P5,IV.M6,IV.P8],st=.055*SP;
+      run.forEach((r,i)=>tone(R(r*IV.P8),t+i*st,.26*D,.062));
+      const t2=t+run.length*st;
+      tone(R(IV.P8P5),t2,.7*D,.095);
+      [IV.P8,IV.P8M3,IV.P8P5].forEach(r=>tone(R(r),t2+.05,1.2*D,.04));
+    }
+    else if(kind==='perfect'){
+      // FLAWLESS — a trill that breaks into a fanfare, then the widest chord in the app
+      note(R(IV.u)*.25,t,1.0*D,{vol:.09});
+      for(let k=0;k<6;k++)                                        // rapid trill
+        tone(R(k%2?IV.P8P5:IV.P8M3),t+k*.052*SP,.14*D,.05);
+      const t1=t+.33*SP;
+      [IV.P8,IV.P8P5,IV.P15].forEach((r,i)=>tone(R(r),t1+i*.10*SP,.34*D,.088)); // fanfare
+      const t2=t1+.34*SP;
+      tone(R(IV.P15*IV.M3),t2,.9*D,.10);                          // peak strike
+      [IV.P5,IV.P8,IV.P8M3,IV.P8P5,IV.P15,IV.P15*IV.M3]
+        .forEach(r=>tone(R(r),t2+.06,2.2*D,.042));                // six-voice chord
+      note(R(IV.u)*.5,t2,1.8*D,{vol:.055});
+      [IV.P15*IV.P5,IV.P15*IV.P8,IV.P15*IV.P8*IV.M3]
+        .forEach((r,i)=>note(R(r),t2+.26+i*.14,1.0*D,{vol:.018,verb:.6}));
+    }
+    else if(kind==='levelup'||kind==='fanfare'){
+      // ===== THE JINGLE — longest, widest and richest cue in the app =====
+      // anticipation → two-octave ascent → impact → IV–V–I cadence → long shimmering tail.
+      // Structurally unlike every other cue: nothing else has a riser, a cadence, or a 3s tail.
+      const B=R(IV.u);
+      // 1 · anticipation — sub swell under a rising sweep
+      note(B*.25,t,.9*D,{vol:.115});
+      note(B*.5,t+.04,.72*D,{vol:.06});
+      sweep(B*.5,B*4,t,.44,{type:'triangle',vol:.05});
+      // 2 · the ascent — eight notes climbing two full octaves
+      const asc=[IV.u,IV.M3,IV.P5,IV.P8,IV.M9,IV.P8M3,IV.P8P5,IV.P15];
+      const t1=t+.30*SP,step=.064*SP;
+      asc.forEach((r,i)=>tone(R(r),t1+i*step,.40*D,.076));
+      // 3 · arrival — a stacked power hit with sub underneath
+      const t2=t1+asc.length*step;
+      note(B*.25,t2,1.25*D,{vol:.125});
+      [IV.u,IV.P5,IV.P8,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t2,.58*D,.072));
+      // 4 · IV – V – I : the cadence that actually says 'arrived'
+      const t3=t2+.44*SP;
+      [IV.P4,IV.M6,IV.P8].forEach(r=>tone(R(r*IV.P8),t3,.52*D,.056));      // IV
+      const t4=t3+.31*SP;
+      [IV.P5,IV.M7,IV.M9].forEach(r=>tone(R(r*IV.P8),t4,.52*D,.060));      // V
+      const t5=t4+.33*SP;
+      [IV.P8,IV.P8M3,IV.P8P5,IV.P15].forEach(r=>tone(R(r),t5,3.1*D,.053)); // I — held
+      note(B*.5,t5,2.5*D,{vol:.062});
+      note(B*.25,t5,2.0*D,{vol:.05});
+      // 5 · shimmer tail — stardust drifting over the held chord
+      [IV.P15*IV.M3,IV.P15*IV.P5,IV.P15*IV.P8].forEach((r,i)=>
+        note(R(r),t5+.22+i*.17,1.5*D,{vol:.017,verb:.68}));
+      tone(R(IV.P15),t5+1.05,1.7*D,.027);
+    }
+  }catch(e){}
 }
-// Reward ladder — distinct signatures so the ear learns the tier before the eyes do:
-// one  : crisp tick · ok: two-bell ping · undo: descending "XP clawed back" drop
-// complete: riser + 5-bell major run + ringing chord   (DAY / WEEK / streaks / perfect sets)
-// levelup : bass impact + long riser + 8-bell octave climb + huge sustained chord + sparkle cascade
-function ding(kind){if(!S.sound)return;try{
-  const t=actx().currentTime;
-  if(kind==='one'){voice(1245,t,.085,{type:'triangle',vol:.055});voice(2490,t,.045,{vol:.025})}
-  else if(kind==='undo'){ // taking it back: detuned descending drop, deliberately unsatisfying
-    sweep(700,240,t,.26,{type:'triangle',vol:.075});
-    voice(330,t+.02,.2,{type:'sine',vol:.05,detune:-32});
-    voice(247,t+.12,.24,{type:'sine',vol:.045,detune:-45});
-  }
-  else if(kind==='ok'){bell(880,t,.3,.075);bell(1320,t+.08,.36,.065)}
-  else if(kind==='complete'||kind==='big'){
-    sweep(300,900,t,.2,{type:'triangle',vol:.05});            // riser into the hit
-    voice(131,t+.16,.4,{vol:.07});                            // soft impact
-    [784,988,1175,1568,1976].forEach((f,i)=>bell(f,t+.16+i*.08,.55,.08));
-    const t2=t+.16+5*.08;
-    [1175,1568,1976].forEach(f=>bell(f,t2,1.25,.05));         // ringing major triad
-    bell(3136,t2+.1,.9,.028);                                 // sparkle
-  }
-  else if(kind==='levelup'||kind==='fanfare'){ // ASCENSION: brighter, higher, longer than anything else
-    voice(98,t,.5,{vol:.09});                                  // light launch thump
-    sweep(400,3200,t,.42,{type:'triangle',vol:.055});          // fast upward rip
-    sweep(800,4200,t+.08,.4,{type:'sine',vol:.03});            // twin riser, octave up
-    const t1=t+.44;
-    [659,784,1047,1319,1568,2093,2637,3136,3520,4186].forEach((f,i)=>bell(f,t1+i*.055,.42,.08)); // 10-bell rocket climb
-    const t2=t1+10*.055;
-    [1568,2093,2637,3136].forEach(f=>bell(f,t2,2.4,.048));     // high shimmering chord, held
-    voice(3136,t2,.9,{vol:.02,detune:9});voice(3136,t2,.9,{vol:.02,detune:-9}); // chorus halo
-    [4699,5274,5920,6272].forEach((f,i)=>bell(f,t2+.15+i*.11,.8,.018)); // stardust twinkles
-    bell(4186,t2+.85,1.2,.03);                                 // final high ting
-  }
-}catch(e){}}
 const LVLS=['Intern','Staff I','Staff II','Senior I','Senior II','Supervisor','Manager','Senior Manager','Director','Partner','CPA Legend'];
 // XP is fully DERIVED from state — never incremented. Uncheck anything and the bar drains to match reality. No farming.
 function computeXp(){
@@ -1115,25 +1878,136 @@ function computeXp(){
   }
   for(const d in (S.dayDone||{}))if(d>=S.start)xp+=50;        // day complete bonus (set once per date)
   for(const d in (S.quizXp||{}))xp+=S.quizXp[d];              // quiz XP (daily capped at 50)
+  xp+=(S.perfects||0)*25;                                     // flawless-set bonus
   const pt=(S.preTasks||[]);
   xp+=pt.filter(x=>x.done).length*25+(S.preObj||[]).filter(Boolean).length*15;
   if(pt.length&&pt.every(x=>x.done))xp+=50;                   // pre-season complete bonus
   return xp;
 }
-function xpFx(pts){if(!pts)return;toast((pts>0?'+':'')+pts+' XP',false,pts<0);if(pts<0)ding('undo')}
+// XP dots fly from the click point into the XP bar and pop in as they land.
+function clearOrbs(){document.querySelectorAll('.xpdot').forEach(x=>x.remove())}
+addEventListener('visibilitychange',()=>{if(document.hidden)clearOrbs()});
+// Streams are queued: two awards never fill the bar at once, so each popup's XP
+// is a distinct, readable event rather than a blended blur.
+let xpQ=[],xpBusy=false;
+function xpStream(pts,fromX,fromY,onDone,immediate){
+  if(pts<=0){if(onDone)onDone();return}
+  // Clicking a checkbox must feel instant, so small awards fire straight away and are
+  // never held behind a popup's stream. Only popup bonuses queue, to stay readable.
+  if(immediate){runStream(pts,fromX,fromY,onDone);return}
+  xpQ.push({pts,fromX,fromY,onDone});pumpXp();
+}
+function pumpXp(){
+  if(xpBusy||!xpQ.length)return;
+  xpBusy=true;
+  const j=xpQ.shift();
+  runStream(j.pts,j.fromX,j.fromY,()=>{
+    xpBusy=false;
+    if(j.onDone)try{j.onDone()}catch(e){}
+    setTimeout(pumpXp,120);
+  });
+}
+function runStream(pts,fromX,fromY,done){
+  pipStep=0;
+  const bar=document.getElementById('xpBar');if(!bar){if(done)done();return}
+  const r=bar.getBoundingClientRect();
+  // If the XP bar is off-screen (another tab open, scrolled away), aim at the top-centre
+  // so the reward still reads instead of vanishing silently.
+  const onScreen=r.width>0&&r.bottom>4&&r.top<innerHeight-4;
+  // If the bar is scrolled out of view, keep its real x-position and clamp y into the
+  // viewport so orbs still land on the bar's line instead of drifting off-screen.
+  const tgt=onScreen?r:{left:r.width?r.left:innerWidth*0.5-90,width:r.width||180,
+                        top:Math.max(10,Math.min(r.top,innerHeight-30)),height:r.height||10};
+  const n=Math.min(Math.max(Math.round(Math.abs(pts)/2),8),44);
+  const pipEvery=Math.max(1,Math.ceil(n/8));
+  const c=getComputedStyle(document.documentElement);
+  const col=c.getPropertyValue('--gold').trim()||'#ffd75e';
+  if(dispXp==null)dispXp=S.xp;
+  const startXp=Math.min(dispXp,S.xp-pts>=0?dispXp:dispXp); // bar position this award starts from
+  const per=pts/n;                                          // XP each orb carries
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div');
+    d.className='xpdot';d.style.background=col;d.style.boxShadow='0 0 8px '+col;
+    const sx=fromX+(Math.random()-.5)*26,sy=fromY+(Math.random()-.5)*20;
+    const landedXp=startXp+per*(i+1);
+    const lvAt=Math.min(Math.floor(landedXp/600),10);
+    const frac=Math.min((landedXp-lvAt*600)/600,1);
+    const tx=tgt.left+tgt.width*frac+(Math.random()-.5)*22;
+    const ty=tgt.top+tgt.height/2;
+    d.style.left=sx+'px';d.style.top=sy+'px';
+    document.body.appendChild(d);
+    const dly=i*22+Math.random()*30;
+    const arc=-60-Math.random()*70;
+    const dur=470+Math.random()*130;
+    // fill:'both' is doing two jobs: the FIRST keyframe (opacity 0) applies during the
+    // stagger delay so an orb never sits visible at the click point waiting its turn,
+    // and the LAST frame persists so it never snaps back to origin when the flight ends.
+    const anim=d.animate([
+      {transform:'translate(0,0) scale(.5)',opacity:0},
+      {transform:'translate('+((tx-sx)*.45)+'px,'+((ty-sy)*.35+arc)+'px) scale(1.25)',opacity:1,offset:.45},
+      {transform:'translate('+((tx-sx)*.92)+'px,'+((ty-sy)*.92)+'px) scale(.85)',opacity:1,offset:.9},
+      {transform:'translate('+(tx-sx)+'px,'+(ty-sy)+'px) scale(.3)',opacity:0}
+    ],{duration:dur,delay:dly,easing:'cubic-bezier(.35,-0.2,.45,1)',fill:'both'});
+    // Remove on the animation's own completion — no timer race, so nothing is ever
+    // left on screen mid-flight or re-rendered at the start point.
+    const land=()=>{
+      try{anim.cancel()}catch(e){}
+      d.remove();
+      dispXp=Math.min((dispXp==null?S.xp:dispXp)+per,S.xp);   // this orb's XP enters the bar
+      drawXpBar();
+      if(onScreen){bar.classList.remove('pulse');void bar.offsetWidth;bar.classList.add('pulse')}
+      if(S.sound&&(i%pipEvery===0||i===n-1))ding('pip');   // ≤8 pips per stream, evenly spread
+      if(i===n-1&&done)setTimeout(done,90);                   // last orb closes the stream
+    };
+    anim.onfinish=land;
+    anim.oncancel=()=>{d.remove()};
+    setTimeout(()=>{if(d.isConnected)land()},dly+dur+700); // belt-and-braces sweeper
+  }
+}
+// Draining is its own language: the bar visibly bleeds back, no orbs, with the clawback tone.
+function barDrain(){
+  const bar=document.getElementById('xpBar');if(!bar)return;
+  bar.classList.remove('drain');void bar.offsetWidth;bar.classList.add('drain');
+  const wrap=bar.parentElement;
+  if(wrap){wrap.classList.remove('drainw');void wrap.offsetWidth;wrap.classList.add('drainw')}
+}
+function xpFx(pts){
+  if(!pts)return;
+  toast((pts>0?'+':'')+pts+' XP',false,pts<0);
+  if(pts>0){xpStream(pts,lastX,lastY,null,true)}   // instant: this came from a click
+  else{barDrain();ding('undo')}
+}
+let dispXp=null,snapT=null;
+// The bar renders dispXp, not raw XP — orbs landing are what advance it, so every
+// separate award (task XP, then a completion bonus) visibly fills its own share.
+function drawXpBar(){
+  const v=Math.max(0,dispXp==null?S.xp:dispXp);
+  const lv=Math.min(Math.floor(v/600),LVLS.length-1);
+  const into=v-lv*600;
+  const el=document.getElementById('xpBar');
+  if(el)el.style.width=Math.min(into/600*100,100)+'%';
+}
 function renderXp(){
   S.xp=computeXp();
   const lv=Math.min(Math.floor(S.xp/600),LVLS.length-1);
-  if(S.lvlSeen===undefined)S.lvlSeen=lv;                      // first load: no popup storm
-  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv],'lvl',()=>{celebrate('max');ding('levelup')})}
+  if(S.lvlSeen===undefined)S.lvlSeen=lv;
+  if(lv>S.lvlSeen){popup('LEVEL UP','Lv '+(lv+1)+' · '+LVLS[lv]+' · '+pickLine('levelup'),'lvl',()=>celebrate('max'),70,'levelup')}
   S.lvlSeen=lv;save();
   document.getElementById('lvlPill').textContent='Lv '+(lv+1)+' · '+LVLS[lv];
   document.getElementById('xpNum').textContent=S.xp+' XP';
   const into=S.xp-lv*600;
   document.getElementById('xpNext').textContent=lv>=LVLS.length-1?'MAX RANK':(600-into)+' XP to '+LVLS[lv+1];
-  document.getElementById('xpBar').style.width=Math.min(into/600*100,100)+'%';
+  if(dispXp==null)dispXp=S.xp;
+  if(dispXp>S.xp)dispXp=S.xp;              // losses land immediately
+  drawXpBar();
+  // If nothing animates the gap closed (sound off, hidden tab, no stream), settle it.
+  clearTimeout(snapT);
+  const settle=()=>{
+    if(xpBusy||xpQ.length){snapT=setTimeout(settle,600);return} // wait for the queue to drain
+    dispXp=S.xp;drawXpBar();
+  };
+  snapT=setTimeout(settle,3000);
 }
-
 // ---------- tabs ----------
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
@@ -1162,7 +2036,7 @@ function checkin(){
   S.checkins[t]=true; if(m>0)S.minutes[t]=(S.minutes[t]||0)+m;
   toast('+15 XP — checked in');
   const st=streak();
-  if(MILES.includes(st)){popup(st+'-DAY STREAK','🔥 that is how CPAs are made',true,()=>{celebrate('week',true);ding('complete')});document.getElementById('checkinNote').textContent='🔥 '+st+'-day streak!'}
+  if(MILES.includes(st)){popup(st+'-DAY STREAK','🔥 '+pickLine('streak'),true,()=>celebrate('week',true),null,'streak');document.getElementById('checkinNote').textContent='🔥 '+st+'-day streak!'}
   else{ding('ok');document.getElementById('checkinNote').textContent='Logged. See you tomorrow.'}
   save();render();
 }
@@ -1212,7 +2086,7 @@ function autoSyncWeeks(){
   // Pre-season agenda steps and Week 0 tasks are ONE state (S.preTasks) — no sync loop needed, they can never diverge.
   const preFull=S.preTasks.length&&S.preTasks.every(x=>x.done);
   if(preFull&&!S.weekPopped.pre){S.weekPopped.pre=1;changed=true;
-    popup('PRE-SEASON COMPLETE','+50 XP · day 1 needs zero decisions',true,()=>{celebrate('week',true);ding('complete')})}
+    popup('PRE-SEASON COMPLETE',pickLine('preseason'),true,()=>celebrate('week',true),50,'preseason')}
   else if(!preFull&&S.weekPopped.pre){delete S.weekPopped.pre;changed=true}
   S.weeks.forEach((wk,i)=>{
     const wd=weekDates(i);
@@ -1233,7 +2107,7 @@ function autoSyncWeeks(){
     const full=wk.tasks.length&&wk.tasks.every(x=>x.done);
     if(full&&!S.weekPopped[i]){
       S.weekPopped[i]=1;changed=true;
-      popup('WEEK '+(i+1)+' COMPLETE','+100 XP · '+wk.unit.split('—')[0].trim()+' in the books',true,()=>{celebrate('week',true);ding('complete')});
+      popup('WEEK '+(i+1)+' COMPLETE',wk.unit.split('—')[0].trim()+' · '+pickLine('week'),true,()=>celebrate('week',true),100,'week');
     }else if(!full&&S.weekPopped[i]){delete S.weekPopped[i];changed=true}
   });
   if(changed)save();
@@ -1330,13 +2204,13 @@ function render(){
     document.getElementById('twBar').style.width=Math.round(avgP*100)+'%';
     document.getElementById('twTasks').innerHTML=wk.tasks.map((x,i)=>taskRow(wi0,i,x)).join('');
   }
-  renderWeeks(w); renderWork(); renderExList(); renderSet(); renderScores();
+  renderWeeks(w); renderWork(); renderExList(); renderSet(); renderScores(); renderCal();
 }
 function togStep(d,i,total){S.steps[d]=S.steps[d]||{};const on=!S.steps[d][i];S.steps[d][i]=on;
   S.dayDone=S.dayDone||{};
   let allDone=true;for(let j=0;j<total;j++)if(!S.steps[d][j])allDone=false;
   if(on){burst(lastX,lastY,14);xpFx(10);ding('one');
-    if(allDone&&!S.dayDone[d]){S.dayDone[d]=1;popup('DAY COMPLETE','+50 XP · session banked',false,()=>{celebrate('day');ding('complete')})}}
+    if(allDone&&!S.dayDone[d]){S.dayDone[d]=1;popup('DAY COMPLETE',pickLine('day'),false,()=>celebrate('day'),50,'complete')}}
   else{xpFx(-10);if(!allDone&&S.dayDone[d])delete S.dayDone[d]}
   save();render()}
 function togMid(d,k){S.steps[d]=S.steps[d]||{};const on=!S.steps[d][k];S.steps[d][k]=on;
@@ -1355,7 +2229,7 @@ function togObj(wi,oi){
   const on=!S.weeks[wi].obj[oi];S.weeks[wi].obj[oi]=on;
   const now=S.weeks[wi].obj.every(Boolean);
   if(on){burst(lastX,lastY,12);xpFx(20);ding('one');
-    if(now&&!was){popup('OBJECTIVES MASTERED','+50 XP · you can DO this unit now',false,()=>{celebrate('day');ding('complete')})}}
+    if(now&&!was){popup('OBJECTIVES MASTERED',pickLine('objectives'),false,()=>celebrate('day'),50,'objectives')}}
   else xpFx(-20);
   save();render()}
 
@@ -1387,6 +2261,128 @@ function renderWeeks(cw){
       '<h3>Tasks</h3>'+wk.tasks.map((x,j)=>taskRow(i,j,x)).join('')+'</div>';
   }).join('');
 }
+
+// ===================== CALENDAR =====================
+let calY=null,calM=null;
+function calInit(){if(calY===null){const d=parseD(today());calY=d.getFullYear();calM=d.getMonth()}}
+function calShift(n){calInit();calM+=n;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}renderCal()}
+function calToday(){const d=parseD(today());calY=d.getFullYear();calM=d.getMonth();renderCal()}
+function dstr(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+// everything known about one date, in one place
+function dayInfo(ds){
+  const d=parseD(ds),dn=DAYS[d.getDay()];
+  const diff=Math.floor((d-parseD(S.start))/864e5);
+  const wk=diff<0?0:Math.min(Math.floor(diff/7)+1,12);
+  const inPlan=diff>=0&&wk<=12;
+  const unit=inPlan?(S.weeks[wk-1]||{}).unit||'':'';
+  const ex=S.exceptions.find(e=>e.from<=ds&&ds<=e.to);
+  const w=S.work[dn]||{};
+  const key=ex?'light':(dn==='fri'?'fri':(w.load==='travel'?'light':(dn==='sat'?'sat':dn==='sun'?'sun':(wk>=11?'rev_wk':'lecture'))));
+  const ag=AGENDA[inPlan?key:'pre']||AGENDA.lecture;
+  const steps=S.steps[ds]||{};
+  const total=ag[1].length;
+  let doneN=0;for(let i=0;i<total;i++)if(steps[i])doneN++;
+  const full=!!(S.dayDone||{})[ds];
+  const past=ds<today();
+  const rest=(!inPlan&&ds>=S.start)||key==='fri';
+  return {ds,d,dn,wk,inPlan,unit,ex,ag,steps,total,doneN,full,
+    checked:!!S.checkins[ds],mins:S.minutes[ds]||0,past,rest,
+    scores:(S.scores||[]).filter(s=>s.date===ds),
+    events:((S.events||{})[ds])||[],
+    isExam:ds===S.exam,isStart:ds===S.start};
+}
+function renderCal(){
+  calInit();
+  const g=document.getElementById('calGrid');if(!g)return;
+  const dows=document.getElementById('calDows');
+  if(dows&&!dows.innerHTML)dows.innerHTML=['S','M','T','W','T','F','S'].map(x=>'<span>'+x+'</span>').join('');
+  document.getElementById('calTitle').textContent=
+    new Date(calY,calM,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const first=new Date(calY,calM,1).getDay(),len=new Date(calY,calM+1,0).getDate();
+  const prevLen=new Date(calY,calM,0).getDate();
+  let cells='';
+  for(let i=first-1;i>=0;i--)cells+='<div class="calCell pad"><div class="calN">'+(prevLen-i)+'</div></div>';
+  let doneCount=0;
+  for(let dnum=1;dnum<=len;dnum++){
+    const ds=dstr(calY,calM,dnum),I=dayInfo(ds);
+    if(I.full)doneCount++;
+    const cls=['calCell'];
+    if(ds===today())cls.push('today');
+    if(I.isExam)cls.push('exam');
+    let bar='',tag='';
+    if(I.isExam){bar='var(--gold)';tag='EXAM DAY'}
+    else if(I.ex){bar='var(--gold)';tag=I.ex.type.split(' ')[0]}
+    else if(!I.inPlan&&ds<S.start){tag='pre-season'}
+    else if(I.rest){bar='var(--sub)';tag='rest'}
+    else if(I.full){bar='var(--good)';tag='W'+I.wk+' · done'}
+    else if(I.doneN>0){bar='var(--warn)';tag='W'+I.wk+' · '+I.doneN+'/'+I.total}
+    else if(I.past&&I.inPlan){bar='var(--bad)';tag='W'+I.wk+' · missed'}
+    else if(I.inPlan){tag='W'+I.wk+(I.unit?' · '+I.unit.split('—')[0].trim():'')}
+    let dots='';
+    if(I.checked)dots+='<i style="background:var(--good)"></i>';
+    if(I.events.length)dots+='<i style="background:var(--acc)"></i>';
+    if(I.scores.length)dots+='<i style="background:var(--gold)"></i>';
+    cells+='<div class="'+cls.join(' ')+'" onclick="openDay(\''+ds+'\')">'+
+      (bar?'<div class="calBar" style="background:'+bar+'"></div>':'')+
+      '<div class="calN">'+dnum+'</div>'+
+      (tag?'<div class="calTag">'+tag+'</div>':'')+
+      (dots?'<div class="calDots">'+dots+'</div>':'')+
+    '</div>';
+  }
+  const tail=(7-((first+len)%7))%7;
+  for(let i=1;i<=tail;i++)cells+='<div class="calCell pad"><div class="calN">'+i+'</div></div>';
+  g.innerHTML=cells;
+  const pill=document.getElementById('calPill');
+  if(pill)pill.textContent=doneCount+' day'+(doneCount===1?'':'s')+' completed';
+}
+// ---- day detail ----
+let dmDate=null;
+function openDay(ds){
+  dmDate=ds;const I=dayInfo(ds);
+  const dt=I.d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  let sub=I.isExam?'EXAM DAY':(I.inPlan?('Week '+I.wk+(I.unit?' · '+I.unit.split('—')[0].trim():'')):(ds<S.start?'Pre-season':'After the plan'));
+  if(I.ex)sub+=' · '+I.ex.type;
+  let html='<div class="dmDate">'+dt+'</div><div class="dmSub">'+sub+'</div>';
+  if(I.unit&&I.inPlan)html+='<div class="mut" style="margin-top:8px">'+I.unit+'</div>';
+  // agenda
+  html+='<div class="dmSec"><h4>'+I.ag[0]+'</h4>';
+  html+=I.ag[1].map((s,i)=>'<div class="dmRow"><span class="'+(I.steps[i]?'ok':'no')+'">'+(I.steps[i]?'✓':'○')+'</span><span>'+s[2]+'</span></div>').join('');
+  html+='</div>';
+  // status
+  html+='<div class="dmSec"><h4>Status</h4>'+
+    '<div class="dmRow"><span class="'+(I.full?'ok':'no')+'">'+(I.full?'✓':'○')+'</span><span>'+
+      (I.full?'Full session completed':(I.doneN?I.doneN+' of '+I.total+' steps done':'Nothing logged'))+'</span></div>'+
+    '<div class="dmRow"><span class="'+(I.checked?'ok':'no')+'">'+(I.checked?'✓':'○')+'</span><span>'+
+      (I.checked?('Checked in'+(I.mins?' · '+I.mins+' min logged':'')):'No check-in')+'</span></div>'+
+    '</div>';
+  if(I.scores.length)
+    html+='<div class="dmSec"><h4>Scores logged</h4>'+I.scores.map(s=>
+      '<div class="dmRow"><span class="ok">'+s.pct+'%</span><span>'+s.unit+' · '+s.type+' ('+s.n+'Q)</span></div>').join('')+'</div>';
+  // personal events
+  html+='<div class="dmSec"><h4>Your events</h4>'+
+    (I.events.length?I.events.map((e,i)=>'<div class="dmEv"><span>'+(e.tm?'<b>'+e.tm+'</b> · ':'')+e.txt+
+      '</span><button class="btn2" onclick="delEvent(\''+ds+'\','+i+')">✕</button></div>').join('')
+      :'<div class="mut">Nothing scheduled.</div>')+
+    '<div class="frm" style="margin-top:10px;margin-bottom:0">'+
+      '<div><label>Time</label><input id="evTm" placeholder="7:00 PM" style="width:96px"></div>'+
+      '<div><label>Event</label><input id="evTx" placeholder="e.g. Lakeside on-site" style="width:210px"></div>'+
+      '<div><button class="btn" onclick="addEvent(\''+ds+'\')">Add</button></div>'+
+    '</div></div>';
+  document.getElementById('dmBody').innerHTML=html;
+  document.getElementById('dayModal').classList.add('open');
+}
+function closeDay(){document.getElementById('dayModal').classList.remove('open')}
+function addEvent(ds){
+  const tx=document.getElementById('evTx').value.trim();
+  if(!tx)return;
+  const tm=document.getElementById('evTm').value.trim();
+  S.events=S.events||{};(S.events[ds]=S.events[ds]||[]).push({tm,txt:tx});
+  save();openDay(ds);renderCal();toast('Event added');
+}
+function delEvent(ds,i){
+  if(S.events&&S.events[ds]){S.events[ds].splice(i,1);if(!S.events[ds].length)delete S.events[ds];save();openDay(ds);renderCal()}
+}
+addEventListener('keydown',e=>{if(e.key==='Escape')closeDay()});
 
 // work schedule editor
 function renderWork(){
@@ -1423,7 +2419,8 @@ function renderExList(){
     '<div class="rule" style="display:flex;justify-content:space-between;gap:8px"><span><b>'+e.from+' → '+e.to+'</b> · '+e.type+(e.note?' — '+e.note:'')+'</span><button class="btn2" style="padding:2px 8px" onclick="S.exceptions.splice('+i+',1);save();render()">✕</button></div>').join('')||'<div class="mut">None. Nice.</div>';
 }
 function renderSet(){
-  renderAccount();
+  renderAccount();renderThemes();renderPacks();
+  const tp=document.getElementById('themePill');if(tp)tp.textContent=theme().name;
   document.getElementById('verPill').textContent='CADENCE '+BUILD;
   document.getElementById('verNote').textContent='CPA · FAR track';
   document.getElementById('setStart').value=S.start;
@@ -1464,6 +2461,7 @@ function softReset(){
     checkins:{},minutes:{},scores:[],steps:{},dayDone:{},quizXp:{},usedQ:{},weak:[],coachLog:[],
     weekPopped:{},xp:0,lvlSeen:0,section:'FAR'};
   localStorage.setItem(KEY,JSON.stringify(fresh));
+  xpQ=[];xpBusy=false;clearOrbs();
   location.reload();
 }
 function hardReset(){
@@ -1489,7 +2487,7 @@ function importData(){
 }
 function saveDates(){S.start=document.getElementById('setStart').value;S.exam=document.getElementById('setExam').value;save();render();
   toast('Plan re-anchored to '+S.start,true);
-  if(parseD(today())<parseD(S.start))popup('PRE-SEASON','build mode until '+S.start);
+  if(parseD(today())<parseD(S.start))popup('PRE-SEASON','build mode until '+S.start,false,null,null,'ok');
   const note=document.createElement('div');note.className='mut';note.textContent='Syncing notification pings…';
   document.getElementById('setStart').closest('.card').appendChild(note);
   syncPings().then(msg=>{note.textContent=msg;setTimeout(()=>note.remove(),8000)});
@@ -1576,9 +2574,17 @@ function gradeSet(target){
   document.getElementById(pfx+'Submit').disabled=true;
   document.getElementById(pfx+'Again').style.display='inline-block';
   const t=today();S.quizXp=S.quizXp||{};S.quizXp[t]=(S.quizXp[t]||0);
-  if(S.quizXp[t]<50){const pts=Math.min(right*5,50-S.quizXp[t]);S.quizXp[t]+=pts;save();renderXp();if(pts)toast('+'+pts+' XP')}
+  if(S.quizXp[t]<50){const pts=Math.min(right*5,50-S.quizXp[t]);S.quizXp[t]+=pts;save();renderXp();if(pts){toast('+'+pts+' XP');xpStream(pts,lastX,lastY,null,true)}}
   else toast('Practice mode — XP capped for today');
-  if(pct===100){popup('PERFECT SET',set.length+'/'+set.length+' · 💯',true,()=>{celebrate('day',true);ding('complete')})}else if(pct>=80){burst(lastX,lastY,26);ding('ok')}
+  if(pct===100){
+    S.perfects=(S.perfects||0)+1;save();
+    const nth=S.perfects;
+    const ordinal=nth+(nth%10===1&&nth%100!==11?'st':nth%10===2&&nth%100!==12?'nd':nth%10===3&&nth%100!==13?'rd':'th');
+    popup('FLAWLESS',ordinal+' perfect set · '+pickLine('perfect'),'perf',
+      ()=>{celebrate('week',true);
+        setTimeout(()=>{for(let k=0;k<5;k++)setTimeout(()=>burst(innerWidth*(.2+k*.15),innerHeight*.34,18,true),k*110)},250);
+      },25,'perfect');
+  }else if(pct>=80){burst(lastX,lastY,26);ding('ok')}
   S.scores.push({date:t,unit:curSet.unitLabel,type:curSet.scoreType,n:set.length,pct});
   S.scores.sort((a,b)=>a.date<b.date?-1:1);save();renderScores();
 }
@@ -1966,6 +2972,7 @@ function renderCoachLog(){
     '<div class="rule"><b>'+l.d+'</b> — “'+l.txt.slice(0,120)+(l.txt.length>120?'…':'')+'”'+(l.applied?' <span class="pill g">'+l.applied+' applied</span>':'')+'<br><span class="mut">'+l.reply+'</span></div>').join('')
     :'<div class="mut">Nothing yet. First time something shifts at work, tell the coach instead of suffering in silence.</div>';
 }
+applyTheme(S.theme||'terminal');
 render();
 
 // cloud: initial pull + refresh whenever the app regains focus (covers phone→desktop handoff)
