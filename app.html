@@ -149,12 +149,12 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
   100%{opacity:1;transform:translateZ(0) scale(1)}}
 .popbox.out{opacity:0;transform:translateZ(-260px) scale(.88);filter:blur(10px)}
 .popbox.out .popAura{opacity:0;transition:opacity .5s ease}
-/* light sheen crossing the card */
-.popbox::before{content:'';position:absolute;top:0;bottom:0;left:0;width:55%;pointer-events:none;border-radius:20px;overflow:hidden;
-  background:linear-gradient(105deg,transparent,rgba(255,255,255,.16),transparent);
-  opacity:0;animation:sheen 1.4s .30s cubic-bezier(.3,.6,.3,1) both}
-@keyframes sheen{0%{opacity:0;transform:translateX(-200%)}
-  12%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateX(340%)}}
+/* light sheen — lives inside the clipped layer so it can never escape the card */
+.popSheen{position:absolute;top:0;bottom:0;left:-60%;width:55%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.18),transparent);
+  opacity:0;animation:sheen 1.25s .32s cubic-bezier(.3,.6,.3,1) both}
+@keyframes sheen{0%{opacity:0;transform:translateX(0)}
+  14%{opacity:1}82%{opacity:1}100%{opacity:0;transform:translateX(330%)}}
 /* static edge glow — no rotation */
 .popbox::after{content:'';position:absolute;inset:-1px;border-radius:23px;pointer-events:none;
   box-shadow:0 0 0 1px var(--popBorder),0 0 26px var(--popGlow) inset;opacity:0;
@@ -280,7 +280,7 @@ input[type=checkbox]:checked{animation:cbpop .35s ease}
 .popbox.perf .t1{background:linear-gradient(92deg,var(--gold),#fff 42%,var(--acc));-webkit-background-clip:text;background-clip:text}
 .popbox.gold .popIcon{background:radial-gradient(circle at 35% 30%,#fff7,transparent 55%),linear-gradient(150deg,var(--gold),#ffb347)}
 body.lightmode .popbox{background:#ffffff;background:linear-gradient(180deg,#ffffff,var(--popBg2));box-shadow:0 24px 70px rgba(0,0,0,.18),0 0 60px var(--popGlow)}
-body.lightmode .popbox::before{background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent)}
+body.lightmode .popSheen{background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent)}
 #xpBar.drain{animation:xpDrain .62s ease}
 @keyframes xpDrain{0%{filter:none}18%{filter:brightness(.55) saturate(2.4) hue-rotate(-55deg)}55%{filter:brightness(.7) saturate(2) hue-rotate(-55deg)}100%{filter:none}}
 .bar.drainw{animation:xpDrainW .62s ease}
@@ -381,6 +381,7 @@ html[data-pop='petal'] .popbox{animation:popPetal .85s cubic-bezier(.2,1,.3,1) b
 .tMeta .tB{font-size:11.5px;color:var(--sub);line-height:1.4;margin-top:2px}
 .tMeta .tTags{font-size:10.5px;color:var(--sub);margin-top:3px;opacity:.85;letter-spacing:.3px;text-transform:uppercase}
 .tCheck{color:var(--acc);font-weight:800;font-size:15px;flex-shrink:0}
+.svConf.on,.svTopic.on{border-color:var(--acc);background:var(--accSoft);color:var(--acc)}
 .pkIcon{width:44px;height:44px;flex-shrink:0;border-radius:11px;display:flex;align-items:center;justify-content:center;
   font-size:19px;color:var(--acc);background:var(--accSoft);border:1px solid var(--line)}
 .pkPlay{flex-shrink:0;width:36px;height:36px;padding:0;border-radius:50%;font-size:15px;line-height:1;
@@ -572,6 +573,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <textarea id="coachIn" rows="4" style="width:100%;font-family:inherit;font-size:13.5px;padding:10px;border:1px solid var(--line);border-radius:8px;resize:vertical" placeholder="What's going on this week?"></textarea>
     <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
       <button class="btn" id="coachBtn" onclick="askCoach()">Send to coach</button>
+      <button class="btn2" id="micBtn" onclick="toggleMic()" title="Dictate">🎤 Speak</button>
       <span class="mut" id="coachStatus"></span>
     </div>
   </div>
@@ -579,6 +581,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <h2>Coach says</h2>
     <div class="big" id="coachReply" style="white-space:pre-wrap"></div>
     <div id="coachActions"></div>
+  </div>
+  <div class="card" id="surveyCard" style="display:none">
+    <h2>Check-in <span class="pill w" id="svTag"></span></h2>
+    <div class="mut" style="margin-bottom:10px" id="svIntro"></div>
+    <div id="svBody"></div>
+  </div>
+  <div class="card">
+    <h2>Check-ins</h2>
+    <div class="mut" style="margin-bottom:8px">Quick surveys at the middle and end of each unit keep the plan and your practice questions pointed at what is actually hard. They appear here automatically — or start one now.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn2" onclick="openSurvey('mid',true)">Mid-unit check-in</button>
+      <button class="btn2" onclick="openSurvey('end',true)">End-of-unit check-in</button>
+    </div>
+    <div id="svLog" style="margin-top:10px"></div>
   </div>
   <div class="card">
     <h2>Recent updates</h2>
@@ -767,7 +783,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 </div>
 
 <script>
-const BUILD='v6.3';
+const BUILD='v6.5';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1250,6 +1266,7 @@ function fill(s){
   if(s.audioPack===undefined)s.audioPack='auto';
   if(s.perfects===undefined)s.perfects=0;
   if(s.events===undefined)s.events={};
+  if(s.surveys===undefined)s.surveys={};
   if(s.ai===undefined)s.ai={provider:'builtin',key:'',model:''};
   if(s.weak===undefined)s.weak=[];
   if(s.dayDone===undefined)s.dayDone={};
@@ -1621,7 +1638,7 @@ function pumpPop(){
   b.innerHTML='<div class="popStack"></div><div class="popAura"></div><div class="popFloor"></div>'+
     '<div class="popFrame"></div><div class="popFrame f2"></div>'+
     '<div class="popVig"></div><div class="popRim"></div>'+
-    '<div class="popSnow">'+snow+'</div>'+
+    '<div class="popSnow">'+snow+'<div class="popSheen"></div></div>'+
     '<div class="popBadge">'+
       '<svg class="popRing" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45"/></svg>'+
       '<div class="popWave"></div><div class="popWave w2"></div>'+
@@ -1724,6 +1741,21 @@ function note(f,t0,dur,o){
   const send=A.createGain();send.gain.value=(opt.verb==null?P.verb:opt.verb)*v;
   g.connect(send);send.connect(VERB);
   osc.start(t0);osc.stop(t0+dur+.06);
+}
+// Pitch riser: a glide between two frequencies, used for anticipation before a big cue.
+function sweep(f0,f1,t0,dur,o){
+  const A=actx(),opt=o||{},P=snd();
+  const osc=A.createOscillator(),g=A.createGain();
+  osc.type=opt.type||'triangle';
+  osc.frequency.setValueAtTime(f0,t0);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(f1,1),t0+dur);
+  const v=opt.vol==null?.05:opt.vol;
+  g.gain.setValueAtTime(.0001,t0);
+  g.gain.exponentialRampToValueAtTime(v,t0+dur*.35);
+  g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  osc.connect(g);g.connect(MASTER);
+  const send=A.createGain();send.gain.value=(P.verb||.2)*v;g.connect(send);send.connect(VERB);
+  osc.start(t0);osc.stop(t0+dur+.05);
 }
 // A struck tone with its natural partials — reads as a real instrument, not a beep.
 function tone(f,t0,dur,v,o){
@@ -2015,7 +2047,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.getElementById('p-'+t.dataset.t).style.display='block';
   if(t.dataset.t==='scores')drawChart();
   if(t.dataset.t==='kb')renderKbUnits();
-  if(t.dataset.t==='coach')renderCoachLog();
+  if(t.dataset.t==='coach'){renderCoachLog();renderSvLog();const d=surveyDue();if(d)openSurvey(d);}
 });
 
 function streak(){
@@ -2748,6 +2780,120 @@ async function coachSend(prompt){
   }
   throw new Error('nobackend');
 }
+// ---------- CHECK-IN SURVEYS ----------
+// Short, high-signal questions at the middle and end of each unit. Answers feed the same
+// weak-area system the adaptive quiz generator reads, so the plan self-corrects.
+function surveyDue(){
+  const w=curWeek();
+  if(w<1||w>12)return null;
+  const wd=weekDates(w-1),t=today();
+  S.surveys=S.surveys||{};
+  if(t>=wd.wed&&t<=wd.thu&&!S.surveys['mid'+w])return 'mid';
+  if(t>=wd.sun&&!S.surveys['end'+w])return 'end';
+  return null;
+}
+function openSurvey(kind,manual){
+  const w=Math.max(curWeek(),1),unit=(S.weeks[Math.min(w,12)-1]||{}).unit||'';
+  const uNo=Math.min(w,10),topics=TOPICS[uNo]||[];
+  const card=document.getElementById('surveyCard');if(!card)return;
+  document.getElementById('svTag').textContent=(kind==='mid'?'MID-UNIT':'END OF UNIT')+' · WEEK '+w;
+  document.getElementById('svIntro').textContent=kind==='mid'
+    ? 'Halfway through '+unit.split('—')[0].trim()+'. Two questions — they steer the rest of the week.'
+    : 'You just closed '+unit.split('—')[0].trim()+'. Tell me what stuck and what did not.';
+  const conf=[['solid','Solid — I could teach it'],['ok','OK — shaky in places'],['rough','Rough — not landing yet']];
+  document.getElementById('svBody').innerHTML=
+    '<h3>How is this unit sitting?</h3>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+
+      conf.map(([v,l])=>'<button class="btn2 svConf" data-v="'+v+'" onclick="svPick(this)">'+l+'</button>').join('')+'</div>'+
+    '<h3>Which parts are giving you trouble?</h3>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'+
+      topics.map((t,i)=>'<button class="btn2 svTopic" data-i="'+i+'" onclick="svPick(this,1)">'+t+'</button>').join('')+
+      '<button class="btn2 svTopic" data-i="none" onclick="svPick(this,1)">None — all good</button></div>'+
+    '<h3>Anything else? <span class="mut" style="font-weight:400">(optional)</span></h3>'+
+    '<textarea id="svNote" rows="2" style="width:100%;font-family:inherit;font-size:13px;padding:9px;border:1px solid var(--line);border-radius:8px;resize:vertical" placeholder="e.g. the lease criteria keep blurring together"></textarea>'+
+    '<div style="margin-top:10px;display:flex;gap:8px;align-items:center">'+
+      '<button class="btn" onclick="submitSurvey(\''+kind+'\','+w+')">Apply to my plan</button>'+
+      '<button class="btn2" onclick="dismissSurvey(\''+kind+'\','+w+')">Skip</button>'+
+      '<span class="mut" id="svMsg"></span></div>';
+  card.style.display='block';
+  if(!manual)card.scrollIntoView({behavior:'smooth'});
+}
+function svPick(el,multi){
+  if(multi){el.classList.toggle('on')}
+  else{[...el.parentElement.querySelectorAll('.svConf')].forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+}
+function submitSurvey(kind,w){
+  const conf=(document.querySelector('.svConf.on')||{}).dataset;
+  const picks=[...document.querySelectorAll('.svTopic.on')].map(b=>b.dataset.i).filter(i=>i!=='none');
+  const note=(document.getElementById('svNote')||{}).value||'';
+  const uNo=Math.min(w,10);
+  S.surveys=S.surveys||{};S.surveys[kind+w]={conf:conf&&conf.v,picks,note,d:today()};
+  let applied=0;
+  picks.forEach(i=>{const t=+i;
+    if(!S.weak.some(x=>x.u===uNo&&x.t===t)){S.weak.push({u:uNo,t,note:'check-in week '+w});applied++}});
+  if(conf&&conf.v==='rough'){
+    const wk=S.weeks[Math.min(w,12)-1];
+    if(wk&&!wk.tasks.some(t=>/extra pass/i.test(t.t))){
+      wk.tasks.push({t:'⏱ Extra pass on F'+uNo+' — flagged rough at check-in',done:false});applied++}
+    if(!S.weak.some(x=>x.u===uNo&&x.t===null)){S.weak.push({u:uNo,t:null,note:'rough at check-in'});applied++}
+  }
+  if(conf&&conf.v==='solid'){
+    for(let i=S.weak.length-1;i>=0;i--)if(S.weak[i].u===uNo&&!picks.includes(String(S.weak[i].t))){S.weak.splice(i,1);applied++}
+  }
+  if(note.trim()){
+    S.coachLog.unshift({d:today(),txt:'[check-in] '+note.trim(),reply:'Logged from your '+(kind==='mid'?'mid-unit':'end-of-unit')+' check-in.',applied:0});
+    S.coachLog=S.coachLog.slice(0,12);
+  }
+  save();render();
+  document.getElementById('svMsg').textContent=applied?(applied+' change'+(applied>1?'s':'')+' applied — your quizzes just retargeted.'):'Logged.';
+  setTimeout(()=>{document.getElementById('surveyCard').style.display='none';renderSvLog()},1400);
+  burst(lastX,lastY,20,true);ding('ok');
+}
+function dismissSurvey(kind,w){
+  S.surveys=S.surveys||{};S.surveys[kind+w]={skipped:true,d:today()};save();
+  document.getElementById('surveyCard').style.display='none';renderSvLog();
+}
+function renderSvLog(){
+  const el=document.getElementById('svLog');if(!el)return;
+  const ks=Object.keys(S.surveys||{}).sort();
+  el.innerHTML=ks.length?ks.slice(-6).reverse().map(k=>{
+    const s=S.surveys[k],lab=(k.startsWith('mid')?'Mid':'End')+' · week '+k.replace(/\D/g,'');
+    if(s.skipped)return '<div class="rule mut">'+lab+' — skipped</div>';
+    const names=(s.picks||[]).map(i=>((TOPICS[Math.min(+k.replace(/\D/g,''),10)]||[])[+i]||'')).filter(Boolean);
+    return '<div class="rule"><b>'+lab+'</b> · '+(s.conf||'—')+
+      (names.length?' · struggling: '+names.join(', '):'')+
+      (s.note?'<br><span class="mut">"'+s.note+'"</span>':'')+'</div>';
+  }).join(''):'<div class="mut">No check-ins yet.</div>';
+}
+
+// ---------- VOICE DICTATION ----------
+let rec=null,recOn=false;
+function toggleMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=document.getElementById('micBtn'),st=document.getElementById('coachStatus');
+  if(!SR){st.textContent='Voice input is not supported in this browser — Chrome or Safari work best.';return}
+  if(recOn){try{rec.stop()}catch(e){}return}
+  rec=new SR();rec.lang='en-US';rec.continuous=true;rec.interimResults=true;
+  const box=document.getElementById('coachIn');
+  const base=box.value?box.value.replace(/\s+$/,'')+' ':'';
+  rec.onstart=()=>{recOn=true;btn.textContent='⏹ Stop';btn.style.borderColor='var(--bad)';btn.style.color='var(--bad)';
+    st.textContent='Listening… speak naturally, it keeps up.'};
+  rec.onresult=e=>{
+    let fin='',mid='';
+    for(let i=0;i<e.results.length;i++){
+      const t=e.results[i][0].transcript;
+      if(e.results[i].isFinal)fin+=t;else mid+=t;
+    }
+    box.value=base+fin+mid;
+  };
+  rec.onerror=e=>{st.textContent=e.error==='not-allowed'
+    ?'Microphone blocked — allow mic access for this site, then try again.'
+    :'Voice error: '+e.error};
+  rec.onend=()=>{recOn=false;btn.textContent='🎤 Speak';btn.style.borderColor='';btn.style.color='';
+    if(st.textContent.startsWith('Listening'))st.textContent='Captured. Edit if needed, then send.'};
+  try{rec.start()}catch(e){st.textContent='Could not start the microphone.'}
+}
+
 // ---------- LOCAL COACH ----------
 // Deterministic schedule reasoner. No AI required — works on phone, offline, everywhere.
 // Reads a plain-language dump and produces the same action objects the AI path emits.
@@ -2885,6 +3031,9 @@ async function askCoach(){
   '{"type":"focus","note":"short task text"} — adds an extra task to the current week (e.g. extra reps on a topic that is hurting).\n'+
   '{"type":"weak","unit":1-10,"topic":0|1|2|null,"note":"why"} — registers a weak area (use farTopicGroups in the state JSON to pick the right topic index, null = whole module). The practice generator then biases 60% of adaptive question sets toward these. Use this whenever the user says they are struggling with, stuck on, or scoring badly in something.\n'+
   '{"type":"unweak","unit":1-10,"topic":0|1|2|null} — removes a weak area the user says is now fixed.\n'+
+  '{"type":"extend","unit":1-10,"days":1-7,"note":"why"} — the user needs longer on a unit; flags it for extra time.\n'+
+  '{"type":"focus","note":"..."} — adds a specific extra task to this week (use for "spend an extra night on leases").\n'+
+  '{"type":"quizbias","unit":1-10,"topic":0|1|2|null} — makes daily knowledge checks pull harder from this material.\n'+
   'Dates: resolve relative dates ("next week Tue-Thu") against today. Never invent problems the user did not mention.\n'+
   'IMPORTANT: if the update describes work-schedule constraints (on-site days, long hours, engagement weeks, commutes), you MUST propose concrete day and/or exception actions that adapt the study schedule around those constraints — reason about when study time realistically fits (e.g. home 6pm → evening block 7:15-9:15 PM, or a morning block before a 7:30 start). Zero actions is only acceptable for pure status updates with no scheduling impact.';
   try{
@@ -2941,6 +3090,8 @@ function coachDesc(x){
   if(x.type==='focus')return '<b>Add task this week:</b> '+x.note;
   if(x.type==='weak')return '<b>Weak area:</b> F'+x.unit+(x.topic==null?' (whole module)':' · '+((TOPICS[x.unit]||[])[x.topic]||'topic '+x.topic))+(x.note?' — '+x.note:'')+' → adaptive practice sets will target this';
   if(x.type==='unweak')return '<b>Cleared weak area:</b> F'+x.unit+(x.topic==null?'':' · '+((TOPICS[x.unit]||[])[x.topic]||''));
+  if(x.type==='extend')return '<b>More time on F'+x.unit+':</b> +'+x.days+' day'+(x.days>1?'s':'')+(x.note?' — '+x.note:'')+' (adds a catch-up task)';
+  if(x.type==='quizbias')return '<b>Bias knowledge checks toward</b> F'+x.unit+(x.topic==null?'':' · '+((TOPICS[x.unit]||[])[x.topic]||''));
   return JSON.stringify(x);
 }
 function applyCoach(){
@@ -2958,6 +3109,13 @@ function applyCoach(){
       if(!S.weak.some(w=>w.u===x.unit&&w.t===t)){S.weak.push({u:x.unit,t,note:x.note||''});n++}}
     else if(x.type==='unweak'&&x.unit){const t=(x.topic===0||x.topic===1||x.topic===2)?x.topic:null;
       const bi=S.weak.findIndex(w=>w.u===x.unit&&(t==null||w.t===t));if(bi>=0){S.weak.splice(bi,1);n++}}
+    else if(x.type==='extend'&&x.unit>=1&&x.unit<=10){
+      const wk=S.weeks[Math.max(curWeek()-1,0)];
+      wk.tasks.push({t:'⏱ Extra '+x.days+'d on F'+x.unit+(x.note?' — '+x.note:''),done:false});
+      if(!S.weak.some(w=>w.u===x.unit&&w.t===null))S.weak.push({u:x.unit,t:null,note:'needs more time'});
+      n++}
+    else if(x.type==='quizbias'&&x.unit>=1&&x.unit<=10){const t=(x.topic===0||x.topic===1||x.topic===2)?x.topic:null;
+      if(!S.weak.some(w=>w.u===x.unit&&w.t===t)){S.weak.push({u:x.unit,t,note:'quiz bias'});n++}}
   });
   S.exceptions.sort((a,b)=>a.from<b.from?-1:1);
   if(S.coachLog[0])S.coachLog[0].applied=n;
