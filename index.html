@@ -854,7 +854,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 
 </div>
 <script>
-const BUILD='v7.1';
+const BUILD='v7.2';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
@@ -1745,15 +1745,27 @@ function pumpPop(){
   let closed=false;
   const close=()=>{
     if(closed)return;closed=true;
-    // An entrance animation with fill:both keeps overriding opacity/transform, so the
-    // .out styles were being ignored and the card vanished instead of fading. Release
-    // the animation first (its end state equals the base state, so nothing jumps),
-    // then the exit transition can actually run.
+    // Cancel EVERY running animation on the card and its descendants first. The badge
+    // breathe, title shine and snow drift all keep repainting otherwise, and the
+    // CSS animation → CSS transition handoff drops a frame at full opacity on iOS,
+    // which is what made the card flash back after it had gone.
+    try{b.getAnimations({subtree:true}).forEach(a=>{try{a.cancel()}catch(e){}})}catch(e){}
     b.style.animation='none';
-    const aura=b.querySelector('.popAura');if(aura)aura.style.animation='none';
-    void b.offsetWidth;
-    b.classList.add('out');
-    setTimeout(()=>{b.remove();popActive=false;setTimeout(pumpPop,760)},620);
+    const finish=()=>{
+      if(!b.isConnected)return;
+      b.remove();popActive=false;setTimeout(pumpPop,760);
+    };
+    let exit=null;
+    try{
+      // One controlled exit via the Web Animations API with fill:'forwards' — nothing
+      // can revert it mid-flight, so there is no second paint of the old state.
+      exit=b.animate([
+        {opacity:1,transform:'translateZ(0) scale(1)',filter:'blur(0px)'},
+        {opacity:0,transform:'translateZ(-240px) scale(.9)',filter:'blur(9px)'}
+      ],{duration:480,easing:'cubic-bezier(.4,0,.7,1)',fill:'forwards'});
+      exit.onfinish=finish;
+    }catch(e){b.style.opacity='0'}
+    setTimeout(finish,700);          // guarantee removal even if the animation never fires
   };
   if(it.bonus){
     // The card launches its own orbs and stays up until every one has landed —
