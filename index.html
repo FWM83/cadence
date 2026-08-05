@@ -304,6 +304,32 @@ html[data-pop='snap'] .popbox{border-width:2px;animation:popSnap .3s steps(2,end
 @keyframes popSnap{0%{opacity:0;transform:scale(.86)}50%{opacity:1;transform:scale(1.05)}100%{transform:none}}
 html[data-pop='petal'] .popbox{animation:popPetal .85s cubic-bezier(.2,1,.3,1) both}
 @keyframes popPetal{0%{opacity:0;transform:translateY(-34px) rotate(7deg) scale(.9)}100%{opacity:1;transform:none}}
+/* ===== desktop dashboard layout ===== */
+.wrap{max-width:1680px;margin:0 auto}
+.dashGrid{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+.dashGrid>.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dashGrid>.col>.card{margin-bottom:0}
+@media(min-width:1120px){
+  body{padding:20px 26px}
+  .dashGrid{grid-template-columns:1.3fr 1fr}
+  .dashGrid.even{grid-template-columns:1fr 1fr}
+  .dashGrid.wideLeft{grid-template-columns:1.7fr 1fr}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .tabs{gap:8px}
+  /* the XP rail becomes a slim persistent bar */
+  .xpCard{padding:10px 18px !important}
+  .stat{padding:16px 18px}
+  .stat .n{font-size:30px}
+}
+@media(min-width:1500px){
+  .dashGrid{grid-template-columns:1.35fr 1fr}
+  .calCell{min-height:78px}
+}
+/* denser tables and lists on desktop */
+@media(min-width:1120px){
+  .step,.task,.obj{padding-top:6px;padding-bottom:6px}
+  #chart{min-height:230px}
+}
 /* ===== calendar ===== */
 .calHead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .calNav{width:34px;height:32px;padding:0;font-size:16px;line-height:1}
@@ -419,6 +445,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
   <div class="bootline" style="opacity:.55" id="bootver">build</div>
 </div>
 <canvas id="fx"></canvas>
+<div class="wrap">
 <div class="top">
   <div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -476,6 +503,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="stat"><div class="n" id="stWeek">–</div><div class="l">current week</div></div>
     <div class="stat"><div class="n" id="stProg">0%</div><div class="l">plan complete</div></div>
   </div>
+  <div class="dashGrid wideLeft">
+  <div class="col">
   <div class="card">
     <h2 id="todayTitle"></h2>
     <div class="big" id="todayBody"></div>
@@ -499,6 +528,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
       <span id="qResult" style="font-weight:700"></span>
     </div>
   </div>
+  </div>
+  <div class="col">
   <div class="card">
     <h2>This week you're expected to learn</h2>
     <div class="mut" id="twUnitLbl" style="margin-bottom:6px"></div>
@@ -510,6 +541,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div style="margin-bottom:8px"><div class="bar"><div id="twBar" style="width:0%"></div></div></div>
     <div id="twTasks"></div>
   </div>
+  </div>
+  </div>
 </div>
 
 <!-- PLAN -->
@@ -520,6 +553,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
 
 <!-- KNOWLEDGE BASE -->
 <div class="pane" id="p-kb" style="display:none">
+  <div class="dashGrid even">
+  <div class="col">
   <div class="card">
     <h2>Practice generator</h2>
     <div class="mut" style="margin-bottom:10px">Build a custom MCQ set from the built-in FAR bank. Filter by module, set how many questions, and generate as many fresh sets as you want — questions don't repeat until you've cycled through the whole pool for that scope.</div>
@@ -544,6 +579,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
       <div><button class="btn2" onclick="addWeak()">+ Add weak area</button></div>
     </div>
   </div>
+  </div>
+  <div class="col">
   <div class="card" id="kbCard" style="display:none">
     <h2>Practice set <span class="pill b" id="kScope"></span></h2>
     <div id="kBody"></div>
@@ -557,10 +594,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <h2>Grow this bank with your Becker materials</h2>
     <div class="mut" style="line-height:1.7">There's no direct Becker API, but you can make this bank match your course exactly: copy your Becker module outlines, notes, or missed-question topics into a chat with Claude and say <b>"add questions to my CPA dashboard bank for F5 based on this."</b> Claude will write new tagged questions into the app so your daily checks and this generator stay aligned with exactly what you're studying. Same path later for AUD, REG, and your discipline section.</div>
   </div>
+  </div>
+  </div>
 </div>
 
 <!-- COACH -->
 <div class="pane" id="p-coach" style="display:none">
+  <div class="dashGrid wideLeft">
+  <div class="col">
   <div class="card">
     <h2>Tell your coach what changed <span class="pill b" id="brainPill"></span></h2>
     <div class="mut" style="margin-bottom:10px">Dump anything — schedule changes, engagement news, how studying is going, goals. No forms. The coach reads your current plan and work schedule, replies, and proposes concrete changes: exceptions for busy stretches, moved study windows, day-type switches. You approve before anything is applied. Brain: built-in Claude inside Cowork, or your own Anthropic/OpenAI API key on phone/standalone copies — pick in Settings.<br><span style="color:var(--ink)">Examples: "I'm on-site in Grand Rapids Tue–Thu next week, nights are shot" · "inventory count moved to Friday" · "F5 bonds is destroying me, I need more time on it" · "slept badly all week, sessions are garbage"</span></div>
@@ -576,6 +617,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="big" id="coachReply" style="white-space:pre-wrap"></div>
     <div id="coachActions"></div>
   </div>
+  </div>
+  <div class="col">
   <div class="card" id="surveyCard" style="display:none">
     <h2>Check-in <span class="pill w" id="svTag"></span></h2>
     <div class="mut" style="margin-bottom:10px" id="svIntro"></div>
@@ -593,6 +636,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
   <div class="card">
     <h2>Recent updates</h2>
     <div id="coachLog"></div>
+  </div>
+  </div>
   </div>
 </div>
 
@@ -615,12 +660,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     </div>
     <div class="mut" style="margin-top:8px">Tap any day for its full agenda, what you completed, and to add your own events — no work calendar link required.</div>
   </div>
+  <div class="dashGrid even">
+  <div class="col">
   <div class="card">
     <h2>Your work week</h2>
     <div class="mut" style="margin-bottom:10px">Describe each day the way it actually is. Pick the day type — office, light engagement, heavy engagement, travel, or off — set your hours, and flag days where the engagement has slack in the middle (waiting on client PBCs, downtime between sections). The dashboard turns that into a study window for each day, plus a <b>bonus midday sprint</b> on days with slack. Override any suggestion with your own time.</div>
     <div id="workDays"></div>
     <button class="btn" style="margin-top:10px" onclick="saveWork()">Save work schedule</button>
   </div>
+  </div>
+  <div class="col">
   <div class="card">
     <h2>Busy periods & exceptions</h2>
     <div class="mut" style="margin-bottom:10px">Multi-day crunches, travel stints, PTO. During an exception the daily plan drops to a 20–45 min "protect the streak" minimum and flags makeup time.</div>
@@ -637,10 +686,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <h2>Personal calendar sync <span class="pill b">available when you're ready</span></h2>
     <div class="mut" style="line-height:1.7">This dashboard can link to a <b>personal</b> Google, Outlook.com, or Apple calendar (work accounts with firm security policies won't connect). When you want it: connect the calendar's connector in Cowork settings, then tell Claude "wire my calendar into the CPA dashboard" — it will read your busy times and propose open study slots automatically. Until then, the manual schedule above drives everything.</div>
   </div>
+  </div>
+  </div>
 </div>
 
 <!-- SCORES -->
 <div class="pane" id="p-scores" style="display:none">
+  <div class="dashGrid even">
+  <div class="col">
   <div class="card">
     <h2>Log a score</h2>
     <div class="frm">
@@ -654,11 +707,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="mut">Targets: 65–75% first-pass module MCQs is fine. Unit exams: 70%+. Simulated Exam 1: 50%+ usually means on track.</div>
   </div>
   <div class="card" style="height:260px"><canvas id="chart"></canvas></div>
+  </div>
+  <div class="col">
   <div class="card"><table><thead><tr><th>Date</th><th>Unit</th><th>Type</th><th>#Q</th><th>Score</th><th></th></tr></thead><tbody id="scRows"></tbody></table></div>
+  </div>
+  </div>
 </div>
 
 <!-- RULES -->
 <div class="pane" id="p-rules" style="display:none">
+  <div class="dashGrid even">
+  <div class="col">
   <div class="card">
     <h2>The method <span class="pill b">Becker / Peter Olinto school</span> <span class="pill g">+ community-proven</span></h2>
     <div class="mut" style="margin-bottom:6px">Built from Becker's own guidance (Peter Olinto, JD, CPA — Becker's longtime national lead instructor), plus the habits that show up over and over from working candidates who passed (r/CPA, Another71, CPA TikTok/IG).</div>
@@ -670,6 +729,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="rule"><b>Working-candidate rhythm.</b> What passers report: consistent short weekday blocks (not hero 4-hour nights), protected weekend mornings, study something every single day even if it's 20 phone MCQs, and sit the exam soon after review ends — momentum decays fast.</div>
     <div class="rule"><b>Hardest topics get extra reps:</b> leases, bonds, income taxes, governmental, not-for-profit.</div>
   </div>
+  </div>
+  <div class="col">
   <div class="card">
     <h2>Discipline rules</h2>
     <div class="rule"><b>Schedule the exam first.</b> A paid-for date is the strongest forcing function. Book it this week.</div>
@@ -679,10 +740,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     <div class="rule"><b>Show up tired.</b> A bad 2-hour session beats a skipped one.</div>
     <div class="rule"><b>Check in daily and take the knowledge check.</b> The streak is the habit; the quiz is the proof it stuck.</div>
   </div>
+  </div>
+  </div>
 </div>
 
 <!-- SETTINGS -->
 <div class="pane" id="p-set" style="display:none">
+  <div class="dashGrid even">
+  <div class="col">
   <div class="card">
     <h2>Appearance <span class="pill b" id="themePill"></span></h2>
     <div class="mut" style="margin-bottom:10px">Ten complete looks — each with its own palette, popup style and sound character. Tap one to switch instantly; it syncs with your profile.</div>
@@ -699,6 +764,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     </div>
     <div class="mut" style="margin-top:8px">Updates deploy from GitHub automatically. If the version here looks behind after an update, fully close the app and reopen it — the offline cache serves the old copy once, then swaps.</div>
   </div>
+  </div>
+  <div class="col">
   <div class="card">
     <h2>Dates</h2>
     <div class="frm">
@@ -781,10 +848,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--grn);box
     </div>
     <div class="mut"><b>Soft clears:</b> XP &amp; rank, streak, hours logged, all checked tasks/objectives/daily steps, scores &amp; quiz history, weak areas, coach log. &nbsp;<b>Soft keeps:</b> API key &amp; provider, work week &amp; day types, exceptions, plan start &amp; exam date, sound setting, custom unit names.</div>
   </div>
+  </div>
+  </div>
 </div>
 
+</div>
 <script>
-const BUILD='v7.0';
+const BUILD='v7.1';
 const KEY='farStudy_v2';
 const DEF_WEEKS=[
  {unit:'F1 — Financial reporting & standards; income statement; public co. reporting'},
